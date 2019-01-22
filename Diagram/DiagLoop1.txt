@@ -1,0 +1,19 @@
+# DiagNum
+1
+# Topology
+ 3  2  1  0 
+# SymmetryFactor
+-1.0
+# Loop Bases
+ 1  0  1  0 
+ 0  1  1  0 
+ 1  0  0  1 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+1 2 0 3 
+#Ver Loop Bases
+-1  0 
+ 0  1 
+ 0 -1 
+#SpinFactor
+-1  1 
+

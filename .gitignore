@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+*.mod
+*.exe
+*.dat
+*.pdf
+*.png
+
+infile/
+outfile/
+Beta*/
+build/
+Data/

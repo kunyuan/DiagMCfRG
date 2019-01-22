@@ -1,0 +1,14 @@
+#DiagNum
+1
+
+# Topology
+ 1  0 
+# SymmetryFactor
+-1.0
+# Loop Bases
+ 1  0 
+ 1  1 
+#Ver Loop Bases
+
+#SpinFactor
+
