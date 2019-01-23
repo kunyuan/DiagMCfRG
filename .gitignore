@@ -44,3 +44,5 @@ build/
 Data/
 *.log
 *.dat
+blitz/
+src/blitz/

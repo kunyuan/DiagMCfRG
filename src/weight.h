@@ -6,59 +6,65 @@
 #include <iostream>
 #include "global.h"
 #include "utility/utility.h"
-#include <Eigen/Dense>
+#include <array>
 extern parameter Para;
 
 namespace diag
 {
-using namespace Eigen;
-const int MaxBranchNum = 1 << (MaxOrder - 1); //2**(MaxOrder-1)
+using namespace std;
+const size_t MaxBranchNum = 1 << (MaxOrder - 1); //2**(MaxOrder-1)
+
+//column-major two dimensional array
+template <class T, size_t ROW, size_t COL>
+using matrix = std::array<std::array<T, COL>, ROW>;
+
+// G pool to store all basis for Green's functions
+struct green
+{
+    int Type;                           //type of each green's function
+    array<int, MaxOrder + 1> LoopBasis; //loop basis for momentum
+    array<double, 2> TauBasis;          //tau basis
+    double Weight;                      //weight of each green's function
+};
+
+struct vertex
+{
+    // Ver pool to store all basis for interaction lines
+    // There two elements, one for direct interaction, another for exchange interaction
+    array<int, 2> Type;                     //type of each vertex function
+    matrix<int, 2, MaxOrder + 1> LoopBasis; //loop basis for momentum transfer
+    array<double, 2> TauBasis;              //tau basis, In and Out
+    array<double, 2> Weight;                //weight of each green's function
+};
+
+// Ver pool to store all basis for 4-vertex functions
+struct vertex4
+{
+    int Type;                               //type of each vertex function
+    array<green *, 4> Ver4Legs;             //the GIndex of four legs of every indepdent 4-vertex
+    matrix<int, 4, MaxOrder + 1> LoopBasis; //loop basis for momentum transfer
+    array<double, 2> TauBasis;              //tau basis, Left and Right
+    double Weight;                          //weight of each green's function
+};
+
 // A group can be diagrams with different orders,
 // or diagrams with same order but have little sign cancellation
 // store G and Ver indexes pointing to the corresponding pool
 struct group
 {
-    int HugenNum;                             //Number of Hugenholz diagrams in each group
-    int Order;                                //diagram order of the group
-    int LoopNum;                              //dimension of loop basis
-    int TauNum;                               //dimension of tau basis
-    int Ver4Num;                              //number of 4-vertex
-    int GNum;                                 //number of G
-    double SymFactor[MaxDiagNum];             //the symmetry factor of a diagram
-    int SpinFactor[MaxDiagNum][MaxBranchNum]; //the spin factor of a diagram
-    int GIndex[MaxDiagNum][2 * MaxOrder];     //the index of all indepdent G
-    int VerIndex[MaxDiagNum][2 * MaxOrder];   //the index of all indepdent interaction
-    int Ver4Index[MaxDiagNum][MaxGroupNum];   //the index of all indepdent 4-vertex
+    int HugenNum;                                         //Number of Hugenholz diagrams in each group
+    int Order;                                            //diagram order of the group
+    int LoopNum;                                          //dimension of loop basis
+    int TauNum;                                           //dimension of tau basis
+    int Ver4Num;                                          //number of 4-vertex
+    int GNum;                                             //number of G
+    array<double, MaxDiagNum> SymFactor;                  //the symmetry factor of a diagram
+    matrix<int, MaxDiagNum, MaxBranchNum> SpinFactor;     //the spin factor of a diagram
+    matrix<green *, MaxDiagNum, 2 * MaxOrder> GIndex;     //the index of all indepdent G
+    matrix<vertex *, MaxDiagNum, 2 * MaxOrder> VerIndex;  //the index of all indepdent interaction
+    matrix<vertex4 *, MaxDiagNum, MaxGroupNum> Ver4Index; //the index of all indepdent 4-vertex
 };
 
-// G pool to store all basis for Green's functions
-struct gPool
-{
-    int Type[MaxGPoolSize]; //type of each green's function
-    // int LoopBasis[MaxGPoolSize][MaxOrder + 1]; //loop basis for momentum
-    Matrix<int, MaxGPoolSize, MaxOrder + 1> LoopBasis; //loop basis for momentum
-    double TauBasis[MaxGPoolSize][2];                  //tau basis
-    double Weight[MaxGPoolSize];                       //weight of each green's function
-};
-
-// Ver pool to store all basis for interaction lines
-struct verPool
-{
-    int Type[2 * MaxVerPoolSize];                    //type of each vertex function
-    int LoopBasis[2 * MaxVerPoolSize][MaxOrder + 1]; //loop basis for momentum transfer
-    double TauBasis[2 * MaxVerPoolSize][2];          //tau basis, In and Out
-    double Weight[2 * MaxVerPoolSize];               //weight of each green's function
-};
-
-// Ver pool to store all basis for 4-vertex functions
-struct ver4Pool
-{
-    int Type[MaxVerPoolSize];                          //type of each vertex function
-    int Ver4Legs[4][MaxVerPoolSize];                   //the GIndex of four legs of every indepdent 4-vertex
-    double Weight[MaxVerPoolSize];                     //weight of each green's function
-    int LoopBasis[4 * MaxVerPoolSize][MaxOrder + 1];   //loop basis for momentum transfer
-    double TauBasis[4 * MaxVerPoolSize][2 * MaxOrder]; //tau basis, In and Out
-};
 
 class weight
 {
@@ -77,10 +83,10 @@ class weight
         double Tau[2 * MaxOrder];
         int LoopSpin[MaxOrder + 1];
     } variable;
-    std::vector<group> GroupList;
-    gPool GPool;
-    verPool VerPool;
-    ver4Pool Ver4Pool;
+    vector<group> GroupList;
+    vector<green> GPool;
+    vector<vertex> VerPool;
+    vector<vertex4> Ver4Pool;
     void _ReadOneGroup(ifstream &, group &);
     void _AddNewGToPool(group &, vector<int> &, vector<vector<int>> &, vector<int> &);
     void _AddNewVerToPool(group &, vector<vector<int>> &, vector<int> &);

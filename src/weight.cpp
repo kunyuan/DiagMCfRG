@@ -7,7 +7,6 @@
 
 using namespace diag;
 using namespace std;
-using namespace Eigen;
 
 template <typename T>
 vector<T> ExtractOneLine(ifstream &file)
@@ -108,7 +107,8 @@ void weight::_ReadOneGroup(ifstream &DiagFile, group &Group)
         /////// Spin Factor  ////////////////////
         getline(DiagFile, buff); //title
         auto SpinFactor = ExtractOneLine<int>(DiagFile);
-        AssignFromTo(&SpinFactor[0], Group.SpinFactor[i], SpinFactor.size());
+        // AssignFromTo(SpinFactor.data(), Group.SpinFactor[i].data(), SpinFactor.size());
+        copy(SpinFactor.begin(), SpinFactor.end(), Group.SpinFactor[i].begin()); //copy spin factor into the group member
 
         getline(DiagFile, buff); //blank
 
