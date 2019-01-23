@@ -7,6 +7,7 @@
 
 using namespace diag;
 using namespace std;
+using namespace Eigen;
 
 template <typename T>
 vector<T> ExtractOneLine(ifstream &file)
@@ -34,7 +35,25 @@ vector<T> ExtractOneLine(ifstream &file)
     return IntList;
 }
 
-void ExtractGroup(ifstream &DiagFile, group &Group)
+void weight::ReadDiagrams(string FilePrefix)
+{
+    int count = 0;
+    while (true)
+    {
+        count++;
+        ifstream DiagFile(FilePrefix + to_string(count) + ".txt");
+        if (DiagFile)
+        {
+            group Group;
+            LOG_INFO("Find " << FilePrefix + to_string(count) + ".txt\n");
+            _ReadOneGroup(DiagFile, Group);
+        }
+        else
+            break;
+    }
+}
+
+void weight::_ReadOneGroup(ifstream &DiagFile, group &Group)
 {
     string buff;
     Group.HugenNum = ExtractOneLine<int>(DiagFile)[0];
@@ -49,7 +68,6 @@ void ExtractGroup(ifstream &DiagFile, group &Group)
 
     for (int i = 0; i < Group.HugenNum; i++)
     {
-
         //////// Diagram Topology  ////////////////////////
         getline(DiagFile, buff); //title
         auto Permutation = ExtractOneLine<int>(DiagFile);
@@ -60,19 +78,13 @@ void ExtractGroup(ifstream &DiagFile, group &Group)
 
         //////// symmetry factor //////////////////
         getline(DiagFile, buff); //title
-        double SymFactor = ExtractOneLine<double>(DiagFile)[0];
+        Group.SymFactor[i] = ExtractOneLine<double>(DiagFile)[0];
 
         /////// Loop Basis  /////////////////////////
         getline(DiagFile, buff); //title
-        int LoopBasis[MaxOrder + 1][2 * MaxOrder];
+        vector<vector<int>> LoopBasis;
         for (int j = 0; j < Group.LoopNum; j++)
-        {
-            auto v = ExtractOneLine<int>(DiagFile);
-            for (int k = 0; k < Group.GNum; k++)
-            {
-                LoopBasis[j][k] = v[k];
-            }
-        }
+            LoopBasis.push_back(ExtractOneLine<int>(DiagFile));
 
         /////// 4 legs of 4-ver  /////////////////////////
         getline(DiagFile, buff); //title
@@ -88,40 +100,32 @@ void ExtractGroup(ifstream &DiagFile, group &Group)
 
         /////// Interaction Loop Basis  ////////////////////
         getline(DiagFile, buff); //title
-        int LoopBasisVer[MaxOrder + 1][2 * MaxOrder - 2];
+        vector<vector<int>> LoopBasisVer;
         if (Group.Order > 1)
-        {
             for (int j = 0; j < Group.LoopNum; j++)
-            {
-                auto v = ExtractOneLine<int>(DiagFile);
-                for (int k = 0; k < Group.Ver4Num * 2; k++)
-                    LoopBasisVer[j][k] = v[k];
-            }
-        }
+                LoopBasisVer.push_back(ExtractOneLine<int>(DiagFile));
 
         /////// Spin Factor  ////////////////////
         getline(DiagFile, buff); //title
         auto SpinFactor = ExtractOneLine<int>(DiagFile);
+        AssignFromTo(&SpinFactor[0], Group.SpinFactor[i], SpinFactor.size());
 
         getline(DiagFile, buff); //blank
+
+        // _AddNewGToPool(Group, Permutation, LoopBasis, GType);
+        // _AddNewVerToPool(Group, LoopBasisVer, VerType);
+        // _AddNewVer4ToPool(Group, LoopBasis, VerType);
     }
     return;
 }
 
-void weight::ReadDiagrams(string FilePrefix)
+void _AddNewGToPool(group &Group, vector<int> &Permutation, vector<vector<int>> &LoopBasis, vector<int> &GType)
 {
-    int count = 0;
-    while (true)
-    {
-        count++;
-        ifstream DiagFile(FilePrefix + to_string(count) + ".txt");
-        if (DiagFile)
-        {
-            group Group;
-            LOG_INFO("Find " << FilePrefix + to_string(count) + ".txt\n");
-            ExtractGroup(DiagFile, Group);
-        }
-        else
-            break;
-    }
+    // for (int i = 0; i < Group.TauNum; i++)
+    // {
+    // }
+}
+
+void _AddNewVerToPool(group &Group, vector<vector<int>> &LoopBasisVer, vector<int> &VerType)
+{
 }

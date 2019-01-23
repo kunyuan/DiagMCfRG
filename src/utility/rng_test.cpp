@@ -20,10 +20,11 @@ void Test_RNG_IO()
     RandomFactory RNG;
     stringstream RngStr;
     RngStr << RNG;
-    real a = RNG.urn();
-    for (int i = 0; i < 100; i++){
+    double a = RNG.urn();
+    for (int i = 0; i < 100; i++)
+    {
         RNG.urn();
-        std::cout << RNG.urn() <<endl;
+        std::cout << RNG.urn() << endl;
     }
     RngStr >> RNG;
     sput_fail_unless(RNG.urn() == a, "import/export the RNG state");
@@ -35,17 +36,18 @@ void Test_RNG_Bound_And_Efficiency()
     int N = 9999999;
     bool flag = false;
     int Temp;
-    double bin[bound] = { 0 };
+    double bin[bound] = {0};
     RandomFactory RNG;
 
     LOG_INFO("Real random number generator started...");
     timer T;
     T.start();
 
-    real mean = 0;
-    real std = 0;
-    for (int i = 0; i < N; i++) {
-        real r = RNG.urn();
+    double mean = 0;
+    double std = 0;
+    for (int i = 0; i < N; i++)
+    {
+        double r = RNG.urn();
         mean += r;
         std += (r - 0.5) * (r - 0.5);
     }
@@ -56,7 +58,8 @@ void Test_RNG_Bound_And_Efficiency()
 
     LOG_INFO("Int random number generator 0 started...");
     T.restart();
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++)
+    {
         Temp = RNG.irn(0, bound - 1);
         if (Temp < bound && Temp >= 0)
             bin[Temp]++;
@@ -67,7 +70,8 @@ void Test_RNG_Bound_And_Efficiency()
     LOG_INFO("Time for " << N << " real numbers: " << T);
     LOG_INFO("Distribution:" << endl);
     stringstream msg;
-    for (int i = 0; i < bound; i++) {
+    for (int i = 0; i < bound; i++)
+    {
         msg << "Number=" << i << ", Prob=" << setprecision(4) << bin[i] / N;
         bin[i] = 0.0;
     }
@@ -77,7 +81,8 @@ void Test_RNG_Bound_And_Efficiency()
     flag = false;
     LOG_INFO("Int random number generator 1 started...");
     T.restart();
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++)
+    {
         Temp = RNG.irn(0, bound - 1);
         if (Temp < bound && Temp >= 0)
             bin[Temp]++;
@@ -88,7 +93,8 @@ void Test_RNG_Bound_And_Efficiency()
     LOG_INFO("Time for " << N << " real numbers: " << T);
     LOG_INFO("Distribution:");
     msg.clear();
-    for (int i = 0; i < bound; i++) {
+    for (int i = 0; i < bound; i++)
+    {
         msg << "Number=" << i << ", Prob=" << setprecision(4) << bin[i] / N;
         bin[i] = 0.0;
     }
