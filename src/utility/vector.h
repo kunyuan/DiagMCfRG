@@ -1,27 +1,21 @@
-//
-//  vector.h
-//  Feynman_Simulator
-//
-//  Created by yuan on 10/14/14.
-//  Copyright (c) 2014 Kun Chen. All rights reserved.
-//
 
-#ifndef __Feynman_Simulator__vector__
-#define __Feynman_Simulator__vector__
+#ifndef __FeynCalc__vector__
+#define __FeynCalc__vector__
 
 #include <iosfwd>
 #include <sstream>
 #include <vector>
+#include <math.h>
 #include <initializer_list>
-#include "../utility/convention.h"
 using namespace std;
 
-template <typename T>
-class Vec {
-private:
+template <typename T, int D>
+class Vec
+{
+  private:
     T _Array[D];
 
-public:
+  public:
     Vec()
     {
     }
@@ -29,7 +23,8 @@ public:
     Vec(std::initializer_list<T> list)
     {
         int i = 0;
-        for (auto p = list.begin(); p < list.end() && i < D; ++p) {
+        for (auto p = list.begin(); p < list.end() && i < D; ++p)
+        {
             _Array[i] = *p;
             i++;
         }
@@ -41,23 +36,23 @@ public:
             _Array[j] = value;
     }
 
-    Vec(T* value)
+    Vec(T *value)
     {
         for (int j = 0; j < D; j++)
             _Array[j] = value[j];
     }
 
-    void CopyToArray(T* target) const
+    void CopyToArray(T *target) const
     {
         for (int i = 0; i < D; i++)
             target[i] = _Array[i];
     }
 
-    const T* begin() const
+    const T *begin() const
     {
         return _Array;
     }
-    const T* end() const
+    const T *end() const
     {
         return _Array + D;
     }
@@ -66,12 +61,12 @@ public:
         return D;
     }
 
-    T& operator[](int index)
+    T &operator[](int index)
     {
         return _Array[index];
     }
 
-    const T& operator[](int index) const
+    const T &operator[](int index) const
     {
         return _Array[index];
     }
@@ -84,7 +79,7 @@ public:
         return v;
     }
 
-    Vec operator*(const real& i) const
+    Vec operator*(const double &i) const
     {
         Vec v;
         for (int j = 0; j < D; j++)
@@ -92,7 +87,7 @@ public:
         return v;
     }
 
-    Vec operator+(const Vec& v2) const
+    Vec operator+(const Vec &v2) const
     {
         Vec v;
         for (int j = 0; j < D; j++)
@@ -100,7 +95,7 @@ public:
         return v;
     }
 
-    Vec operator-(const Vec& v2) const
+    Vec operator-(const Vec &v2) const
     {
         Vec v;
         for (int j = 0; j < D; j++)
@@ -108,38 +103,93 @@ public:
         return v;
     }
 
-    Vec& operator+=(const Vec& v2)
+    Vec &operator+=(const Vec &v2)
     {
         for (int j = 0; j < D; j++)
             _Array[j] += v2._Array[j];
         return *this;
     }
 
-    Vec& operator-=(const Vec& v2)
+    Vec &operator-=(const Vec &v2)
     {
         for (int j = 0; j < D; j++)
             _Array[j] -= v2._Array[j];
         return *this;
     }
 
-    string PrettyString();
+    // string PrettyString(){
+    //     std::ostringstream oss;
+    //     oss << *this;
+    //     return "(" + oss.str() + ")";
+    // }
 
-    template <typename TT>
-    friend std::ostream& operator<<(std::ostream& os, const Vec<TT>&);
-    template <typename TT>
-    friend std::istream& operator>>(std::istream& is, Vec<TT>&);
+    // template <typename TT>
+    // friend std::ostream& operator<<(std::ostream& os, const Vec<TT, D>&){
+    //     for (int i = 0; i < D - 1; i++)
+    //         os << v[i] << " ";
+    //     os << v[D - 1];
+    //     return os;
+    // }
 
-    friend bool operator==(const Vec<int>&, const Vec<int>&);
-    friend bool operator==(const Vec<real>&, const Vec<real>&);
+    // template <typename TT>
+    // friend std::istream& operator>>(std::istream& is, Vec<TT, D>&){
+    //     is >> v[0];
+    //     char sep;
+    //     for (int i = 1; i < D; i++) {
+    //         is >> sep >> v[i];
+    //         if (sep != " ")
+    //             is.setstate(ios::failbit);
+    //     }
+    //     return is;
+    // }
+
+    // friend bool operator==(const Vec<int>&, const Vec<int>&);
+    // friend bool operator==(const Vec<real>&, const Vec<real>&);
 };
-bool operator!=(const Vec<int>& v1, const Vec<int>& v2);
-bool operator!=(const Vec<real>& v1, const Vec<real>& v2);
+// bool operator!=(const Vec<int, D>& v1, const Vec<int, D>& v2);
+// bool operator!=(const Vec<double, D>& v1, const Vec<double, D>& v2);
 
-template <typename T>
-std::string ToString(Vec<T> value)
+template <typename T, int D>
+double dot(const Vec<T, D> &v1, const Vec<T, D> &v2)
+{
+    double sum = v1[0] * v2[0];
+    for (int i = 1; i < D; i++)
+    {
+        sum += v1[i] * v2[i];
+    }
+    return sum;
+}
+
+template <typename T, int D>
+double sum2(const Vec<T, D> &v1)
+{
+    double sum = v1[0] * v1[0];
+    for (int i = 1; i < D; i++)
+    {
+        sum += v1[i] * v1[i];
+    }
+    return sum;
+}
+
+template <typename T, int D>
+double norm2(const Vec<T, D> &v1)
+{
+    double sum = v1[0] * v1[0];
+    for (int i = 1; i < D; i++)
+    {
+        sum += v1[i] * v1[i];
+    }
+    return sqrt(sum);
+}
+
+template <typename T, int D>
+std::string ToString(Vec<T, D> value)
 {
     std::ostringstream oss;
-    oss << value;
+    for (int i = 0; i < D; i++)
+    {
+        oss << i << ' ';
+    }
     return oss.str();
 }
 

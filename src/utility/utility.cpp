@@ -13,16 +13,16 @@ using namespace std;
 
 //---------------------------------------------------------------------------
 
-bool Equal(real x1, real x2, real eps)
+bool Equal(double x1, double x2, double eps)
 {
     return (fabs(x1 - x2) < eps);
 }
-bool Equal(uint x1, uint x2, real eps)
+bool Equal(uint x1, uint x2, double eps)
 {
     return x1 == x2;
 }
 // FORTRAN abs
-real fabs(real x)
+double fabs(double x)
 {
     return ((x >= 0.0) ? x : -x);
 }
@@ -34,7 +34,7 @@ int iabs(int x)
 }
 // more functions ...
 
-bool Zero(real x, real eps)
+bool Zero(double x, double eps)
 {
     return (fabs(x) < eps);
 }

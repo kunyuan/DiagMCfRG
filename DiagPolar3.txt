@@ -1,5 +1,6 @@
-# DiagNum
-5
+# DiagNum    5
+# DiagOrder  3
+# DiagType   Normal
 
 # Topology
  4  3  1  5  2  0 

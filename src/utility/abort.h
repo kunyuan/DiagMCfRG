@@ -10,13 +10,13 @@
 #define __FeynCalc__error_handler__
 
 #include "logger.h"
-#include "convention.h"
 #include <stdexcept>
 
 #define EXCEPTION(name)                                        \
-    class name : public std::runtime_error {                   \
-    public:                                                    \
-        name(const std::string& msg) : std::runtime_error(msg) \
+    class name : public std::runtime_error                     \
+    {                                                          \
+      public:                                                  \
+        name(const std::string &msg) : std::runtime_error(msg) \
         {                                                      \
         }                                                      \
     };
@@ -30,7 +30,8 @@ EXCEPTION(MemoryException);
 EXCEPTION(RunTimeException);
 
 #define THROW(exception, msg, priority)                                             \
-    do {                                                                            \
+    do                                                                              \
+    {                                                                               \
         std::ostringstream ss;                                                      \
         ss << msg;                                                                  \
         LOGGER(priority, "Exception throwed: " << ss.str());                        \
@@ -46,21 +47,23 @@ EXCEPTION(RunTimeException);
     THROW(RunTimeException, msg, ERROR)
 
 #define ASSERT_ALLWAYS(expression, msg)                   \
-    do {                                                  \
+    do                                                    \
+    {                                                     \
         if ((expression) == false)                        \
             ABORT(#expression " does not hold! " << msg); \
     } while (0)
 
-class InterruptHandler {
-public:
+class InterruptHandler
+{
+  public:
     InterruptHandler();
     ~InterruptHandler();
     void Delay();
     void Resume();
     bool IsDelaying() { return __IsDelaying; }
 
-private:
-    static void __SignalHandler(int signum); //signal handler for normal state
+  private:
+    static void __SignalHandler(int signum);        //signal handler for normal state
     static void __DelayedSignalHandler(int signum); //signal handler after Delay() is called
     bool __IsDelaying;
     static int __Signal;
