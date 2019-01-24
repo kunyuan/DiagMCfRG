@@ -24,9 +24,7 @@ class weight
         int LoopSpin[MaxOrder + 1];
     } variable;
     vector<group> GroupList;
-    vector<green> GPool;
-    vector<vertex> VerPool;
-    vector<vertex4> Ver4Pool;
+    pool Pool;
     // void _ReadOneGroup(ifstream &, group &);
     void _AddNewGToPool(diagram &, vector<int> &, vector<loop> &, vector<int> &);
     void _AddNewVerToPool(group &, vector<loop> &, vector<int> &);

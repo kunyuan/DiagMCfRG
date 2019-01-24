@@ -1,10 +1,22 @@
 #include "diagram.h"
+#include "utility/utility.h"
 
 using namespace diag;
 using namespace std;
 
+string _GetOneLine(istream &file)
+{
+    //a line only contains space will be skipped
+    string buff;
+    do
+    {
+        getline(file, buff);
+    } while (buff.find_first_not_of(' ') == buff.npos);
+    return buff;
+}
+
 template <typename T>
-vector<T> ExtractOneLine(ifstream &file)
+vector<T> _ExtractOneLine(istream &file)
 {
     //This function extracts the first T type number in one line in the file stream.
     string line;
@@ -29,7 +41,7 @@ vector<T> ExtractOneLine(ifstream &file)
     return IntList;
 }
 
-vector<loop> Transpose(vector<vector<int>> &Basis)
+vector<loop> _Transpose(vector<vector<int>> &Basis)
 {
     vector<loop> NewBasis;
     if (Basis.size() == 0)
@@ -45,10 +57,105 @@ vector<loop> Transpose(vector<vector<int>> &Basis)
     return NewBasis;
 }
 
-vector<green> _ConstructGPool(vector<int> &Permutation, vector<loop> &LoopBasis, vector<int> &GType)
+green *_AddOneGToGPool(vector<green> &GPool, green &Green)
 {
-    vector<green> GPool;
-    int GNum = Permutation.size();
+    vector<green *> GPool_Type;
+    // select all green in GPooll have the type as GType[i]
+    for (auto &g : GPool)
+        if (g.Type == Green.Type)
+            GPool_Type.push_back(&g);
+    // select all green's function with same TauIn and TauOut
+    /////   ASSUME Tau(2*i)==Tau(2*i+1) !!!
+    vector<green *> GPool_Tau;
+    for (auto g : GPool_Type)
+    {
+        // cout << g->Type << ":" << g->TauBasis[0] << "->" << g->TauBasis[1] << endl;
+        if (((*g).TauBasis[0] / 2 == Green.TauBasis[0] / 2) && ((*g).TauBasis[1] / 2 == Green.TauBasis[1] / 2))
+            GPool_Tau.push_back(g);
+    }
+    // select all green's function with same LoopBasis
+    vector<green *> GPool_Basis;
+    for (auto g : GPool_Tau)
+        if (Equal<int>(g->LoopBasis.data(), Green.LoopBasis.data(), MaxLoopNum))
+            GPool_Basis.push_back(g);
+    // cout << "Basis pool: " << GPool_Basis.size() << "," << MaxLoopNum << endl;
+    //if GPool_Filter is not empty, means the green's function already exists
+    if (GPool_Basis.size() > 0)
+    {
+        ASSERT_ALLWAYS(GPool_Basis.size() == 1, "There are more than two same G in the GPool!");
+        return GPool_Basis[0];
+    }
+    else
+    {
+        GPool.push_back(Green);
+        return &GPool.back();
+    }
+}
+
+vertex *_AddOneVerToVerPool(vector<vertex> &VerPool, vertex &Vertex)
+{
+    vector<vertex *> VerPool_Type;
+    // select all vertex in VerPooll have the type as Vertex
+    for (auto &v : VerPool)
+        if (v.Type[0] == Vertex.Type[0])
+            if (v.Type[1] == Vertex.Type[1])
+                VerPool_Type.push_back(&v);
+
+    vector<vertex *> VerPool_Basis;
+    for (auto v : VerPool_Type)
+        if (Equal<int>(v->LoopBasis[0].data(), Vertex.LoopBasis[0].data(), MaxLoopNum))
+            if (Equal<int>(v->LoopBasis[1].data(), Vertex.LoopBasis[1].data(), MaxLoopNum))
+                VerPool_Basis.push_back(v);
+    // cout << "Basis pool: " << GPool_Basis.size() << "," << MaxLoopNum << endl;
+    //if GPool_Filter is not empty, means the green's function already exists
+    if (VerPool_Basis.size() > 0)
+    {
+        ASSERT_ALLWAYS(VerPool_Basis.size() == 1, "There are more than two same Vertex in the VerPool!");
+        return VerPool_Basis[0];
+    }
+    else
+    {
+        VerPool.push_back(Vertex);
+        return &VerPool.back();
+    }
+}
+
+vertex4 *_AddOneVer4ToVer4Pool(vector<vertex4> &Ver4Pool, vertex4 &Vertex4)
+{
+    vector<vertex4 *> Ver4Pool_Type;
+    // select all vertex in VerPooll have the type as Vertex
+    for (auto &v : Ver4Pool)
+        if (v.Type == Vertex4.Type)
+            Ver4Pool_Type.push_back(&v);
+
+    vector<vertex4 *> Ver4Pool_Basis;
+    for (auto v : Ver4Pool_Type)
+    {
+        bool Flag = true;
+        for (int leg = 0; leg < 4; leg++)
+            if (!Equal<int>(v->LoopBasis[leg].data(), Vertex4.LoopBasis[leg].data(), MaxLoopNum))
+                Flag = false;
+        if (Flag)
+            Ver4Pool_Basis.push_back(v);
+    }
+    // cout << "Basis pool: " << GPool_Basis.size() << "," << MaxLoopNum << endl;
+    //if GPool_Filter is not empty, means the green's function already exists
+    if (Ver4Pool_Basis.size() > 0)
+    {
+        ASSERT_ALLWAYS(Ver4Pool_Basis.size() == 1, "There are more than two same vertex4 in the Ver4Pool!");
+        return Ver4Pool_Basis[0];
+    }
+    else
+    {
+        Ver4Pool.push_back(Vertex4);
+        return &Ver4Pool.back();
+    }
+}
+
+vector<green *> _AddAllGToGPool(vector<green> &GPool, vector<int> &Permutation, vector<loop> &LoopBasis, vector<int> &GType)
+{
+    vector<green *> GIndex;
+    int GNum = LoopBasis.size();
     for (int i = 0; i < GNum; i++)
     {
         //construct a new green's function
@@ -56,91 +163,141 @@ vector<green> _ConstructGPool(vector<int> &Permutation, vector<loop> &LoopBasis,
         Green.Version = 0;
         Green.Type = GType[i];
         Green.LoopBasis.fill(0);
-        copy(LoopBasis[i].begin(), LoopBasis[i].end(), Green.LoopBasis.begin());
+        std::copy(LoopBasis[i].begin(), LoopBasis[i].end(), Green.LoopBasis.begin());
         Green.TauBasis[IN] = i;
         Green.TauBasis[OUT] = Permutation[i];
         Green.Weight = 1.0e-10;
-        GPool.push_back(Green);
+        // GList.push_back(Green);
+        GIndex.push_back(_AddOneGToGPool(GPool, Green));
     }
-    return GPool;
+    return GIndex;
 }
 
-diagram ReadOneDiagram(ifstream &DiagFile, int Order, int LoopNum)
+vector<vertex *> _AddAllVerToVerPool(vector<vertex> &VerPool, vector<int> &Permutation, vector<loop> &LoopBasisVer, vector<int> &VerType)
+{
+    vector<vertex *> VerIndex;
+    int Ver4Num = LoopBasisVer.size() / 2;
+    for (int i = 0; i < Ver4Num; i++)
+    {
+        int Inidx = 2 * i, Outidx = 2 * i + 1;
+        //construct a new green's function
+        vertex Vertex;
+        Vertex.Version = 0;
+        Vertex.Type[IN] = VerType[Inidx];
+        Vertex.Type[OUT] = VerType[Outidx];
+        Vertex.LoopBasis[IN].fill(0);
+        Vertex.LoopBasis[OUT].fill(0);
+        std::copy(LoopBasisVer[Inidx].begin(), LoopBasisVer[Inidx].end(), Vertex.LoopBasis[0].begin());
+        std::copy(LoopBasisVer[Outidx].begin(), LoopBasisVer[Outidx].end(), Vertex.LoopBasis[0].begin());
+        Vertex.Weight[0] = 1.0e-10;
+        Vertex.Weight[0] = 1.0e-10;
+        VerIndex.push_back(_AddOneVerToVerPool(VerPool, Vertex));
+    }
+    return VerIndex;
+}
+
+vector<vertex4 *> _AddAllVer4ToVer4Pool(vector<vertex4> &Ver4Pool, vector<int> &Permutation, vector<int> &Ver4Legs, vector<loop> &LoopBasis, vector<int> &VerType)
+{
+    vector<vertex4 *> Ver4Index;
+    int Ver4Num = LoopBasis.size() / 2;
+    for (int i = 0; i < Ver4Num; i++)
+    {
+        int Inidx = 2 * i, Outidx = 2 * i + 1;
+        //construct a new green's function
+        vertex4 Vertex4;
+        Vertex4.Version = 0;
+        Vertex4.Type = VerType[Inidx];
+        for (int leg = 0; leg < 4; leg++)
+        {
+            Vertex4.LoopBasis[leg].fill(0);
+            int gidx = Ver4Legs[leg];
+            std::copy(LoopBasis[gidx].begin(), LoopBasis[gidx].end(), Vertex4.LoopBasis[leg].begin());
+        }
+        Vertex4.Weight = 1.0e-10;
+        Ver4Index.push_back(_AddOneVer4ToVer4Pool(Ver4Pool, Vertex4));
+    }
+    return Ver4Index;
+}
+
+diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum, int Ver4Num)
 {
     string buff;
+    diagram Diagram;
     //////// Diagram Topology  ////////////////////////
-    getline(DiagFile, buff); //title
-    auto Permutation = ExtractOneLine<int>(DiagFile);
+    buff = _GetOneLine(DiagFile); //title
+    auto Permutation = _ExtractOneLine<int>(DiagFile);
 
     //////// Propagator type //////////////////
-    getline(DiagFile, buff); //title
-    auto GType = ExtractOneLine<int>(DiagFile);
-    cout << "GType" << GType[0] << endl;
+    buff = _GetOneLine(DiagFile); //title
+    auto GType = _ExtractOneLine<int>(DiagFile);
 
     //////// symmetry factor //////////////////
-    getline(DiagFile, buff); //title
-    auto SymFactor = ExtractOneLine<double>(DiagFile)[0];
+    buff = _GetOneLine(DiagFile); //title
+    Diagram.SymFactor = _ExtractOneLine<double>(DiagFile)[0];
 
     /////// Loop Basis  /////////////////////////
-    getline(DiagFile, buff); //title
+    buff = _GetOneLine(DiagFile); //title
     vector<vector<int>> TransposedLoopBasis;
     for (int j = 0; j < LoopNum; j++)
-        TransposedLoopBasis.push_back(ExtractOneLine<int>(DiagFile));
-    vector<loop> LoopBasis = Transpose(TransposedLoopBasis);
+        TransposedLoopBasis.push_back(_ExtractOneLine<int>(DiagFile));
+    vector<loop> LoopBasis = _Transpose(TransposedLoopBasis);
 
     /////// 4 legs of 4-ver  /////////////////////////
-    getline(DiagFile, buff); //title
+    buff = _GetOneLine(DiagFile); //title
     vector<int> Ver4Legs;
-    if (Order > 1)
-        Ver4Legs = ExtractOneLine<int>(DiagFile);
+    if (Ver4Num > 0)
+        Ver4Legs = _ExtractOneLine<int>(DiagFile);
 
     /////// Interaction Type  /////////////////////////
-    getline(DiagFile, buff); //title
+    buff = _GetOneLine(DiagFile); //title
     vector<int> VerType;
-    if (Order > 1)
-        VerType = ExtractOneLine<int>(DiagFile);
+    if (Ver4Num > 0)
+        VerType = _ExtractOneLine<int>(DiagFile);
 
     /////// Interaction Loop Basis  ////////////////////
-    getline(DiagFile, buff); //title
+    buff = _GetOneLine(DiagFile); //title
     vector<vector<int>> TransposedLoopBasisVer;
-    if (Order > 1)
+    if (Ver4Num > 0)
         for (int j = 0; j < LoopNum; j++)
-            TransposedLoopBasisVer.push_back(ExtractOneLine<int>(DiagFile));
-    vector<loop> LoopBasisVer = Transpose(TransposedLoopBasisVer);
+            TransposedLoopBasisVer.push_back(_ExtractOneLine<int>(DiagFile));
+    vector<loop> LoopBasisVer = _Transpose(TransposedLoopBasisVer);
 
     /////// Spin Factor  ////////////////////
-    getline(DiagFile, buff); //title
-    auto SpinFactor = ExtractOneLine<int>(DiagFile);
-
-    //construct a diagram
-    diagram Diagram;
+    buff = _GetOneLine(DiagFile); //title
+    auto SpinFactor = _ExtractOneLine<int>(DiagFile);
     copy(SpinFactor.begin(), SpinFactor.end(), Diagram.SpinFactor.begin()); //copy spin factor into the group member
-    Diagram.SymFactor = SymFactor;
-    //TODO: add other members of diagram
+
+    ////////   Add G to GPool ////////////////////////
+    vector<green *> GIndex = _AddAllGToGPool(Pool.GPool, Permutation, LoopBasis, GType);
+    copy(GIndex.begin(), GIndex.end(), Diagram.GIndex.begin());
+    if (Ver4Num > 0)
+    {
+        vector<vertex *> VerIndex = _AddAllVerToVerPool(Pool.VerPool, Permutation, LoopBasisVer, VerType);
+        copy(VerIndex.begin(), VerIndex.end(), Diagram.VerIndex.begin());
+        vector<vertex4 *> Ver4Index = _AddAllVer4ToVer4Pool(Pool.Ver4Pool, Permutation,Ver4Legs,  LoopBasis, VerType);
+        copy(Ver4Index.begin(), Ver4Index.end(), Diagram.Ver4Index.begin());
+    }
+
     return Diagram;
 }
 
-void diag::_ReadOneGroup(ifstream &DiagFile, group &Group, vector<green> &GPool)
+group diag::ReadOneGroup(istream &DiagFile, pool &Pool)
 {
     string buff;
-    Group.HugenNum = ExtractOneLine<int>(DiagFile)[0];
-    Group.Order = ExtractOneLine<int>(DiagFile)[0];
+    group Group;
+    Group.HugenNum = _ExtractOneLine<int>(DiagFile)[0];
+    Group.Order = _ExtractOneLine<int>(DiagFile)[0];
+    _GetOneLine(DiagFile); //skip the line for the group type
+
     Group.LoopNum = Group.Order + 1;
     Group.TauNum = Group.Order * 2;
     Group.GNum = Group.Order * 2;
     Group.Ver4Num = Group.Order - 1;
 
-    getline(DiagFile, buff); //skip the line for the diagram type
-    getline(DiagFile, buff); //skip the blank line
-
     for (int i = 0; i < Group.HugenNum; i++)
     {
-        Group.DiagList.push_back(ReadOneDiagram(DiagFile, Group.Order, Group.LoopNum)); //add a new diagram structure
-        getline(DiagFile, buff);                                                        //blank
-
-        // _AddNewGToPool(Group.DiagList[i], Permutation, LoopBasis, GType);
-        // _AddNewVerToPool(Group, LoopBasisVer, VerType);
-        // _AddNewVer4ToPool(Group, LoopBasis, VerType);
+        diagram Diagram = ReadOneDiagram(DiagFile, Pool, Group.Order, Group.LoopNum, Group.Ver4Num);
+        Group.DiagList.push_back(Diagram);
     }
-    return;
+    return Group;
 }

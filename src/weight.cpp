@@ -11,23 +11,29 @@ using namespace std;
 void weight::ReadDiagrams(string FilePrefix)
 {
     int count = 0;
+    Pool.GPool.clear();
+    Pool.VerPool.clear();
+    Pool.Ver4Pool.clear();
+
     while (true)
     {
         count++;
         ifstream DiagFile(FilePrefix + to_string(count) + ".txt");
         if (DiagFile)
         {
-            group Group;
+            // group Group;
             LOG_INFO("Find " << FilePrefix + to_string(count) + ".txt\n");
-            vector<green> GPoolofOneGroup;
-            _ReadOneGroup(DiagFile, Group, GPoolofOneGroup);
+            // vector<green> GList;
+            istream& DiagFileStream=DiagFile;
+            group Group=ReadOneGroup(DiagFileStream, Pool);
+            // ReadOneGroup(DiagFile, Group, GList);
         }
         else
             break;
     }
-    LOG_INFO("Find " << GPool.size() << " indepdent green's function.");
-    LOG_INFO("Find " << VerPool.size() << " indepdent interactions.");
-    LOG_INFO("Find " << Ver4Pool.size() << " indepdent 4-vertex.");
+    LOG_INFO("Find " << Pool.GPool.size() << " indepdent green's function.");
+    LOG_INFO("Find " << Pool.VerPool.size() << " indepdent interactions.");
+    LOG_INFO("Find " << Pool.Ver4Pool.size() << " indepdent 4-vertex.");
 }
 
 // vector<green> _ConstructGPool(vector<int> &Permutation, vector<loop> &LoopBasis, vector<int> &GType)

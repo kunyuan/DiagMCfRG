@@ -36,6 +36,7 @@ struct vertex
     long long int Version;    //keep track of the version
     array<int, 2> Type;       //type of each vertex function
     array<loop, 2> LoopBasis; //loop basis for momentum transfer
+    // array<tau, 2> TauBasis;   //tau basis (in and out)
     tau TauBasis;             //tau basis, In and Out
     array<double, 2> Weight;  //weight of each green's function
 };
@@ -47,8 +48,14 @@ struct vertex4
     int Type;                   //type of each vertex function
     array<green *, 4> Ver4Legs; //the GIndex of four legs of every indepdent 4-vertex
     array<loop, 4> LoopBasis;   //loop basis for momentum transfer
-    tau TauBasis;               //tau basis, Left and Right
+    // tau TauBasis;               //tau basis, Left and Right
     double Weight;              //weight of each green's function
+};
+
+struct pool{
+    vector<green> GPool;
+    vector<vertex> VerPool;
+    vector<vertex4> Ver4Pool;
 };
 
 struct diagram
@@ -75,8 +82,7 @@ struct group
     vector<diagram> DiagList; //diagrams
 };
 
-void _ReadOneGroup(ifstream &, group &, vector<green> &);
-// green MakeG(int GType, loop &LoopBasis, int TauIn, int TauOut);
+group ReadOneGroup(istream&, pool&);
 }; // namespace diag
 
 #endif
