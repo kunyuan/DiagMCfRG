@@ -11,7 +11,6 @@ extern parameter Para;
 
 namespace diag
 {
-using namespace std;
 const size_t MaxBranchNum = 1 << (MaxOrder - 1); //2**(MaxOrder-1)
 
 //column-major two dimensional array
