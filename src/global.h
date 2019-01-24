@@ -32,11 +32,12 @@ const int InInAngleBinSize = 32;  //number of bins for the angle between InL and
 const int InOutAngleBinSize = 32; //number of bins for the angle between InL and OutL legs
 
 //////////   Diagram  ////////////////////////////
-const int MaxOrder = 8;          //Max diagram order
-const int MaxGroupNum = 8;       //Max number of diagram groups
-const int MaxDiagNum = 1024;     //Max number of Hugenholtz diagrams in each group
-const int MaxGPoolSize = 2048;   //Max total indepdent G for all diagrams
-const int MaxVerPoolSize = 1024; //Max total indepdent vertex for all diagrams
+const int MaxOrder = 8;              //Max diagram order
+const int MaxLoopNum = MaxOrder + 1; //Max diagram order
+const int MaxGroupNum = 8;           //Max number of diagram groups
+const int MaxDiagNum = 1024;         //Max number of Hugenholtz diagrams in each group
+const int MaxGPoolSize = 2048;       //Max total indepdent G for all diagrams
+const int MaxVerPoolSize = 1024;     //Max total indepdent vertex for all diagrams
 
 //////////   Generic Global Constants  /////////////////
 const double TM32 = 1.0 / (pow(2.0, 32));
@@ -62,6 +63,8 @@ const int OUT = 1;
 
 const int LEFT = 0;
 const int RIGHT = 1;
+
+const int INL = 0, INR = 1, OUTL = 3, OUTR = 4;
 #define FLIP(x) (1 - x)
 //////////////////////////////////////////////////////
 

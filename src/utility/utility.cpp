@@ -21,6 +21,10 @@ bool Equal(uint x1, uint x2, double eps)
 {
     return x1 == x2;
 }
+bool Equal(int x1, int x2, double eps)
+{
+    return x1 == x2;
+}
 // FORTRAN abs
 double fabs(double x)
 {
@@ -39,27 +43,31 @@ bool Zero(double x, double eps)
     return (fabs(x) < eps);
 }
 
-bool CleanFile(const string& FileName)
+bool CleanFile(const string &FileName)
 {
     ofstream ofs(FileName, std::ofstream::out | std::ofstream::trunc);
-    if (ofs.is_open()) {
+    if (ofs.is_open())
+    {
         ofs.close();
         return true;
     }
-    else {
+    else
+    {
         ofs.close();
         return false;
     }
 }
 
-bool DoesFileExist(const string& FileName)
+bool DoesFileExist(const string &FileName)
 {
     ofstream ofs(FileName, std::ofstream::in);
-    if (ofs.is_open()) {
+    if (ofs.is_open())
+    {
         ofs.close();
         return true;
     }
-    else {
+    else
+    {
         ofs.close();
         return false;
     }
@@ -69,8 +77,8 @@ std::string ToString(const double x, const int width, const int decDigits)
 {
     stringstream ss;
     ss << fixed << right;
-    ss.fill(' '); // fill space around displayed #
-    ss.width(width); // set  width around displayed #
+    ss.fill(' ');            // fill space around displayed #
+    ss.width(width);         // set  width around displayed #
     ss.precision(decDigits); // set # places after decimal
     ss << x;
     return ss.str();
@@ -82,7 +90,7 @@ std::string Center(const string s, const int w)
     for (int i = 0; i < padding / 2; ++i)
         spaces << " ";
     ss << spaces.str() << s << spaces.str(); // format with padding
-    if (padding > 0 && padding % 2 != 0) // if odd #, add 1 space
+    if (padding > 0 && padding % 2 != 0)     // if odd #, add 1 space
         ss << " ";
     return ss.str();
 }

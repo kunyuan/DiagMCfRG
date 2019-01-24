@@ -28,6 +28,7 @@ bool Zero(double x, double eps = eps0);
 // float equal
 bool Equal(double x1, double x2, double eps = eps0);
 bool Equal(uint x1, uint x2, double eps = eps0);
+bool Equal(int x1, int x2, double eps = eps0);
 template <typename T>
 bool Equal(const T *x1, const T *x2, uint num, double eps = eps0)
 {
