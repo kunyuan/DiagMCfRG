@@ -3,29 +3,32 @@
 #include <string>
 #include <array>
 #include "utility/vector.h"
+#include "utility/abort.h"
 #include "weight.h"
 
 using namespace diag;
+using namespace vertex;
 using namespace std;
 
 void weight::ReadDiagrams(string FilePrefix)
 {
-    int count = 0;
     Pool.GPool.clear();
     Pool.VerPool.clear();
     Pool.Ver4Pool.clear();
 
+    int GroupID = 0;
     while (true)
     {
-        count++;
-        ifstream DiagFile(FilePrefix + to_string(count) + ".txt");
+        GroupID++;
+        ifstream DiagFile(FilePrefix + to_string(GroupID) + ".txt");
         if (DiagFile)
         {
             // group Group;
-            LOG_INFO("Find " << FilePrefix + to_string(count) + ".txt\n");
+            LOG_INFO("Find " << FilePrefix + to_string(GroupID) + ".txt\n");
             // vector<green> GList;
-            istream& DiagFileStream=DiagFile;
-            group Group=ReadOneGroup(DiagFileStream, Pool);
+            istream &DiagFileStream = DiagFile;
+            group Group = ReadOneGroup(DiagFileStream, Pool);
+            Group.ID = GroupID;
             // ReadOneGroup(DiagFile, Group, GList);
         }
         else
@@ -36,71 +39,173 @@ void weight::ReadDiagrams(string FilePrefix)
     LOG_INFO("Find " << Pool.Ver4Pool.size() << " indepdent 4-vertex.");
 }
 
-// vector<green> _ConstructGPool(vector<int> &Permutation, vector<loop> &LoopBasis, vector<int> &GType)
-// {
-//     vector<green> GPool;
-//     int GNum = Permutation.size();
-//     for (int i = 0; i < GNum; i++)
-//     {
-//         cout << "i: " << i << "->" << Permutation[i] << endl;
-//         //check the green function from i to Permutation[i]
-//         vector<green *> GPool_Type;
-//         // select all green in GPooll have the type as GType[i]
-//         for (auto &g : GPool)
-//             if (g.Type == GType[i])
-//                 GPool_Type.push_back(&g);
-//         // remove all green's function with different TauIn and TauOut
-//         /////   ASSUME Tau(2*i)==Tau(2*i+1) !!!
-//         vector<green *> GPool_Tau;
-//         for (auto g : GPool_Type)
-//         {
-//             // cout << g->Type << ":" << g->TauBasis[0] << "->" << g->TauBasis[1] << endl;
-//             if (((*g).TauBasis[0] / 2 == i / 2) && ((*g).TauBasis[1] / 2 == Permutation[i] / 2))
-//                 GPool_Tau.push_back(g);
-//         }
-
-//         // remove all green's function with different LoopBasis
-//         vector<green *> GPool_Basis;
-//         for (auto g : GPool_Tau)
-//         {
-//             cout << g->LoopBasis[0] << "," << g->LoopBasis[1] << "," << g->LoopBasis[2] << "," << g->LoopBasis[3] << endl;
-//             cout << g->LoopBasis[4] << "," << g->LoopBasis[5] << "," << g->LoopBasis[6] << "," << g->LoopBasis[7] << endl;
-//             cout << LoopBasis[i][0] << "," << LoopBasis[i][1] << "," << LoopBasis[i][2] << "," << LoopBasis[i][3] << endl;
-//             cout << LoopBasis[i][4] << "," << LoopBasis[i][5] << "," << LoopBasis[i][6] << "," << LoopBasis[i][7] << endl;
-
-//             bool Flag = true;
-//             for (int j = 0; j < MaxLoopNum; j++)
-//             {
-//                 cout << "Compare " << g->LoopBasis[j] << ": " << LoopBasis[i][j] << endl;
-//                 if (g->LoopBasis[j] != LoopBasis[i][j])
-//                     Flag = false;
-//             }
-//             if (Flag)
-//                 GPool_Basis.push_back(g);
-//         }
-//         cout << "Basis pool: " << GPool_Basis.size() << "," << MaxLoopNum << endl;
-//         //if GPool_Filter is not empty, means the green's function already exists
-//         if (GPool_Basis.size() > 0)
-//         {
-
-//             cout << "G exits in Pool" << endl;
-//             cout << GPool_Basis.size() << endl;
-//             ASSERT_ALLWAYS(GPool_Basis.size() == 1, "There are more than two same G in the GPool!");
-//             Diagram.GIndex[i] = GPool_Basis[0];
-//         }
-//         else
-//         {
-//             cout << "Add G to Pool" << endl;
-//             GPool.push_back(MakeG(GType[i], LoopBasis[i], i, Permutation[i]));
-//             cout << "Type: " << GPool.back().Type << GPool.back().TauBasis[0] << "->" << GPool.back().TauBasis[1] << endl;
-//             green *g = &GPool.back();
-//             cout << g->LoopBasis[0] << "," << g->LoopBasis[1] << "," << g->LoopBasis[2] << "," << g->LoopBasis[3] << endl;
-//             cout << g->LoopBasis[4] << "," << g->LoopBasis[5] << "," << g->LoopBasis[6] << "," << g->LoopBasis[7] << endl;
-//             Diagram.GIndex[i] = &GPool.back();
-//         }
-//     }
-// }
-
-void _AddNewVerToPool(group &Group, vector<vector<int>> &LoopBasisVer, vector<int> &VerType)
+void weight::Initialization()
 {
+    LOG_INFO("Initializating variables ...")
+    Variable.CurrVersion = 0;
+    int GroupIndex = 0;
+    Variable.CurrGroup = &(GroupList[GroupIndex]);
+    ChangeGroup(GroupList[GroupIndex], true);
+    for (auto &mom : Variable.LoopMom)
+        for (int i = 0; i < D; i++)
+            mom[i] = Random.urn();
+    for (int i = 0; i < MaxTauNum / 2; i++)
+    {
+        Variable.Tau[2 * i] = Random.urn();
+        Variable.Tau[2 * i + 1] = Random.urn();
+    }
+    for (auto &sp : Variable.LoopSpin)
+        sp = (spin)(Random.irn(0, 1));
+    Variable.CurrWeight = GetNewWeight(*Variable.CurrGroup);
+    LOG_INFO("Initializating variables done.")
+}
+
+double weight::GetNewWeight(group &Group)
+{
+    Group.NewWeight = 1.0;
+    for (auto &d : Group.DiagList)
+    {
+        double GWeight = d.SymFactor;
+        for (int i = 0; i < Group.GNum; i++)
+        {
+            if (d.GIndex[i]->Excited)
+                GWeight *= d.GIndex[i]->NewWeight;
+            else
+                GWeight *= d.GIndex[i]->Weight;
+        }
+        double VerWeight = 1.0;
+        double TempWeightIn, TempWeightOut;
+        for (int i = 0; i < Group.Ver4Num; i++)
+            if (UseVertex4)
+            {
+                THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
+            }
+            else
+            {
+                //only for spinless case
+                vertex *Ver = d.VerIndex[i];
+                TempWeightIn = Ver->Excited[IN] ? Ver->NewWeight[IN] : Ver->Weight[IN];
+                TempWeightOut = Ver->Excited[OUT] ? Ver->NewWeight[OUT] : Ver->Weight[OUT];
+                VerWeight *= TempWeightIn - TempWeightOut;
+            }
+        d.NewWeight = GWeight * VerWeight / pow(1.0 / 2 / PI, D * Group.InternalLoopNum);
+        Group.NewWeight *= d.NewWeight;
+    }
+    return Group.NewWeight;
+}
+
+void weight::AcceptChange(group &Group)
+{
+    Variable.CurrVersion++;
+    Variable.CurrGroup = &Group;
+    Group.Weight = Group.NewWeight;
+    for (auto &d : Group.DiagList)
+    {
+        d.Weight = d.NewWeight;
+        for (int i = 0; i < Group.GNum; i++)
+        {
+            green *G = d.GIndex[i];
+            G->Version = Variable.CurrVersion;
+            if (G->Excited)
+            {
+                G->Excited = false;
+                G->Weight = G->NewWeight;
+            }
+        }
+        for (int i = 0; i < Group.Ver4Num; i++)
+            if (UseVertex4)
+            {
+                THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
+            }
+            else
+            {
+                vertex *Ver = d.VerIndex[i];
+                Ver->Version = Variable.CurrVersion;
+                if (Ver->Excited[IN])
+                {
+                    Ver->Excited[IN] = false;
+                    Ver->Weight[IN] = Ver->NewWeight[IN];
+                }
+                if (Ver->Excited[OUT])
+                {
+                    Ver->Excited[OUT] = false;
+                    Ver->Weight[OUT] = Ver->NewWeight[OUT];
+                }
+            }
+    }
+}
+
+momentum weight::_Mom(const loop &LoopBasis, const int &LoopNum)
+{
+    //In C++11, because of the move semantics, there is no additional cost by returning an array
+    momentum Mom;
+    for (int d = 0; d < D; d++)
+        for (int i = 0; i < LoopNum; i++)
+            Mom[d] += Variable.LoopMom[i][d] * LoopBasis[i];
+    return Mom;
+}
+
+void weight::ChangeGroup(group &Group, bool Forced)
+{
+    //the objects (G, Ver or Ver4) in the new group will be recalculated if the either of the following conditions is met:
+    //1) Forced=true, then all objects are forced recalculated
+    //2) object.Version<CurrVersion, means the objects are not in the current group, and are already outdated
+    cout << "change group" << endl;
+    for (auto &d : Group.DiagList)
+    {
+        cout << "diag ID: " << d.ID << endl;
+        for (int i = 0; i < Group.GNum; i++)
+        {
+            cout << "G: " << i << endl;
+            green *G = d.GIndex[i];
+            if (Forced || G->Version < Variable.CurrVersion)
+            {
+                double Tau = Variable.Tau[G->TauBasis[OUT]] - Variable.Tau[G->TauBasis[IN]];
+                G->Excited = true;
+                G->NewWeight = Green(Tau, _Mom(G->LoopBasis, Group.LoopNum), UP, G->Type);
+            }
+        }
+        for (int i = 0; i < Group.Ver4Num; i++)
+        {
+            cout << "Ver: " << i << endl;
+            if (UseVertex4)
+            {
+                THROW_ERROR(NOTIMPLEMENTED, "Vertex4 not implemented!");
+                // vertex4 *Ver4 = d.Ver4Index[i];
+                // Ver4->Excited=true;
+                // Ver4->NewWeight=
+            }
+            else
+            {
+                vertex *Ver = d.VerIndex[i];
+                if (Forced || Ver->Version < Variable.CurrVersion)
+                {
+                    Ver->Excited = {true, true};
+                    Ver->NewWeight[0] = Interaction(0.0, _Mom(Ver->LoopBasis[0], Group.LoopNum), Ver->Type[0]);
+                    Ver->NewWeight[1] = Interaction(0.0, _Mom(Ver->LoopBasis[1], Group.LoopNum), Ver->Type[1]);
+                }
+            }
+        }
+    }
+}
+
+void weight::ChangeTau(group &Group, int TauIndex)
+{
+    //TODO: we assume TauLeft==TauRight for now
+    for (auto &d : Group.DiagList)
+    {
+        for (int i = 0; i < Group.GNum; i++)
+        {
+            green *G = d.GIndex[i];
+            int TauIn = G->TauBasis[IN];
+            int TauOut = G->TauBasis[OUT];
+            if (TauIn / 2 == TauIndex / 2 || TauOut == TauIndex / 2)
+            {
+                //if TauIndex is equal to either TauIn or TauOut, trigger recalculation
+                double Tau = Variable.Tau[TauOut] - Variable.Tau[TauIn];
+                G->Excited = true;
+                G->NewWeight = Green(Tau, _Mom(G->LoopBasis, Group.LoopNum), UP, G->Type);
+            }
+        }
+    }
 }

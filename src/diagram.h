@@ -10,6 +10,7 @@
 
 namespace diag
 {
+using namespace std;
 const size_t MaxBranchNum = 1 << (MaxOrder - 1); //2**(MaxOrder-1)
 
 //column-major two dimensional array
@@ -27,6 +28,8 @@ struct green
     loop LoopBasis;        //loop basis for momentum
     tau TauBasis;          //tau basis
     double Weight;         //weight of each green's function
+    double NewWeight;      //weight of each green's function
+    bool Excited;
 };
 
 struct vertex
@@ -37,8 +40,10 @@ struct vertex
     array<int, 2> Type;       //type of each vertex function
     array<loop, 2> LoopBasis; //loop basis for momentum transfer
     // array<tau, 2> TauBasis;   //tau basis (in and out)
-    tau TauBasis;             //tau basis, In and Out
-    array<double, 2> Weight;  //weight of each green's function
+    tau TauBasis;               //tau basis, In and Out
+    array<double, 2> Weight;    //weight of each green's function
+    array<double, 2> NewWeight; //weight of each green's function
+    array<bool, 2> Excited;     //weight of each green's function
 };
 
 // Ver pool to store all basis for 4-vertex functions
@@ -49,10 +54,13 @@ struct vertex4
     array<green *, 4> Ver4Legs; //the GIndex of four legs of every indepdent 4-vertex
     array<loop, 4> LoopBasis;   //loop basis for momentum transfer
     // tau TauBasis;               //tau basis, Left and Right
-    double Weight;              //weight of each green's function
+    double Weight;    //weight of each green's function
+    double NewWeight; //weight of each green's function
+    bool Excited;
 };
 
-struct pool{
+struct pool
+{
     vector<green> GPool;
     vector<vertex> VerPool;
     vector<vertex4> Ver4Pool;
@@ -60,11 +68,14 @@ struct pool{
 
 struct diagram
 {
+    int ID;
     double SymFactor;                         //the symmetry factor of a diagram
-    array<int, MaxBranchNum> SpinFactor;      //the spin factor of a diagram
+    array<double, MaxBranchNum> SpinFactor;   //the spin factor of a diagram
     array<green *, 2 * MaxOrder> GIndex;      //the index of all indepdent G
     array<vertex *, 2 * MaxOrder> VerIndex;   //the index of all indepdent interaction
     array<vertex4 *, 2 * MaxOrder> Ver4Index; //the index of all indepdent 4-vertex
+    double Weight;
+    double NewWeight;
 };
 
 // A group can be diagrams with different orders,
@@ -73,16 +84,20 @@ struct diagram
 struct group
 {
     int ID;
-    int HugenNum;             //Number of Hugenholz diagrams in each group
-    int Order;                //diagram order of the group
-    int LoopNum;              //dimension of loop basis
-    int TauNum;               //dimension of tau basis
-    int Ver4Num;              //number of 4-vertex
-    int GNum;                 //number of G
+    int HugenNum;        //Number of Hugenholz diagrams in each group
+    int Order;           //diagram order of the group
+    int Ver4Num;         //number of 4-vertex
+    int GNum;            //number of G
+    int LoopNum;         //dimension of loop basis
+    int InternalLoopNum; //dimension of internal loop basis
+    int TauNum;          //dimension of tau basis
+    int InternalTauNum;  //dimension of internal tau basis
+    double Weight;
+    double NewWeight;
     vector<diagram> DiagList; //diagrams
 };
 
-group ReadOneGroup(istream&, pool&);
+group ReadOneGroup(istream &, pool &);
 }; // namespace diag
 
 #endif

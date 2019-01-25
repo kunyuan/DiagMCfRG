@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Kun Chen. All rights reserved.
 //
 
-#ifndef Fermion_Simulator_random_h
-#define Fermion_Simulator_random_h
+#ifndef FeynCalc_random_h
+#define FeynCalc_random_h
 
 #include <random>
 #include <string>

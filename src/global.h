@@ -2,7 +2,8 @@
 #define FeynCalc_global_h
 
 #include <math.h>
-#include "utility/vector.h"
+// #include "utility/vector.h"
+#include <array>
 
 //turn off all assert
 const bool DEBUGMODE = true;
@@ -27,17 +28,21 @@ struct parameter
 ///////////  Global Constants ////////////////////
 const int D = 2;                  //D=2 or D=3
 const int QBinSize = 64;          //number of q bins of the external momentum
-const int ScaleBinSize = 32;      //number of energy scales
+const bool UseVertex4 = false;    //Use 4-vertex or interaction line
 const int InInAngleBinSize = 32;  //number of bins for the angle between InL and InR legs
 const int InOutAngleBinSize = 32; //number of bins for the angle between InL and OutL legs
+const int ScaleBinSize = 32;      //number of energy scales, only useful in RG approach
 
 //////////   Diagram  ////////////////////////////
-const int MaxOrder = 8;              //Max diagram order
-const int MaxLoopNum = MaxOrder + 1; //Max diagram order
-const int MaxGroupNum = 8;           //Max number of diagram groups
-const int MaxDiagNum = 1024;         //Max number of Hugenholtz diagrams in each group
-const int MaxGPoolSize = 2048;       //Max total indepdent G for all diagrams
-const int MaxVerPoolSize = 1024;     //Max total indepdent vertex for all diagrams
+const int MaxOrder = 8;      //Max diagram order
+const int MaxGroupNum = 8;   //Max number of diagram groups
+const int MaxDiagNum = 1024; //Max number of Hugenholtz diagrams in one group
+// const int MaxGPoolSize = 2048;       //Max total indepdent G for all diagrams
+// const int MaxVerPoolSize = 1024;     //Max total indepdent vertex for all diagrams
+const int MaxLoopNum = MaxOrder + 1; //Max loop number in one group
+const int MaxTauNum = 2 * MaxOrder;  //Max tau number in one group
+const int MaxGNum = 2 * MaxOrder;    //Max G number in one group
+const int MaxVer4Num = MaxOrder;     //Max Ver4 number in one group
 
 //////////   Generic Global Constants  /////////////////
 const double TM32 = 1.0 / (pow(2.0, 32));
@@ -68,6 +73,8 @@ const int INL = 0, INR = 1, OUTL = 3, OUTR = 4;
 #define FLIP(x) (1 - x)
 //////////////////////////////////////////////////////
 
-typedef Vec<double, D> mom;
+// typedef Vec<double, D> mom;
+
+typedef std::array<double, D> momentum;
 
 #endif

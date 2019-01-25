@@ -160,7 +160,8 @@ vector<green *> _AddAllGToGPool(vector<green> &GPool, vector<int> &Permutation, 
     {
         //construct a new green's function
         green Green;
-        Green.Version = 0;
+        Green.Excited = false;
+        Green.Version = -1;
         Green.Type = GType[i];
         Green.LoopBasis.fill(0);
         std::copy(LoopBasis[i].begin(), LoopBasis[i].end(), Green.LoopBasis.begin());
@@ -182,15 +183,14 @@ vector<vertex *> _AddAllVerToVerPool(vector<vertex> &VerPool, vector<int> &Permu
         int Inidx = 2 * i, Outidx = 2 * i + 1;
         //construct a new green's function
         vertex Vertex;
-        Vertex.Version = 0;
-        Vertex.Type[IN] = VerType[Inidx];
-        Vertex.Type[OUT] = VerType[Outidx];
+        Vertex.Excited = {false, false};
+        Vertex.Version = -1;
+        Vertex.Type = {VerType[Inidx], VerType[Outidx]};
         Vertex.LoopBasis[IN].fill(0);
         Vertex.LoopBasis[OUT].fill(0);
         std::copy(LoopBasisVer[Inidx].begin(), LoopBasisVer[Inidx].end(), Vertex.LoopBasis[0].begin());
         std::copy(LoopBasisVer[Outidx].begin(), LoopBasisVer[Outidx].end(), Vertex.LoopBasis[0].begin());
-        Vertex.Weight[0] = 1.0e-10;
-        Vertex.Weight[0] = 1.0e-10;
+        Vertex.Weight = {1.0e-10, 1.0e-10};
         VerIndex.push_back(_AddOneVerToVerPool(VerPool, Vertex));
     }
     return VerIndex;
@@ -205,6 +205,7 @@ vector<vertex4 *> _AddAllVer4ToVer4Pool(vector<vertex4> &Ver4Pool, vector<int> &
         int Inidx = 2 * i, Outidx = 2 * i + 1;
         //construct a new green's function
         vertex4 Vertex4;
+        Vertex4.Excited = false;
         Vertex4.Version = 0;
         Vertex4.Type = VerType[Inidx];
         for (int leg = 0; leg < 4; leg++)
@@ -264,7 +265,7 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum, in
 
     /////// Spin Factor  ////////////////////
     buff = _GetOneLine(DiagFile); //title
-    auto SpinFactor = _ExtractOneLine<int>(DiagFile);
+    auto SpinFactor = _ExtractOneLine<double>(DiagFile);
     copy(SpinFactor.begin(), SpinFactor.end(), Diagram.SpinFactor.begin()); //copy spin factor into the group member
 
     ////////   Add G to GPool ////////////////////////
@@ -274,7 +275,7 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum, in
     {
         vector<vertex *> VerIndex = _AddAllVerToVerPool(Pool.VerPool, Permutation, LoopBasisVer, VerType);
         copy(VerIndex.begin(), VerIndex.end(), Diagram.VerIndex.begin());
-        vector<vertex4 *> Ver4Index = _AddAllVer4ToVer4Pool(Pool.Ver4Pool, Permutation,Ver4Legs,  LoopBasis, VerType);
+        vector<vertex4 *> Ver4Index = _AddAllVer4ToVer4Pool(Pool.Ver4Pool, Permutation, Ver4Legs, LoopBasis, VerType);
         copy(Ver4Index.begin(), Ver4Index.end(), Diagram.Ver4Index.begin());
     }
 
@@ -290,13 +291,16 @@ group diag::ReadOneGroup(istream &DiagFile, pool &Pool)
     _GetOneLine(DiagFile); //skip the line for the group type
 
     Group.LoopNum = Group.Order + 1;
+    Group.InternalLoopNum = Group.Order;
     Group.TauNum = Group.Order * 2;
+    Group.InternalTauNum = Group.Order * 2 - 2;
     Group.GNum = Group.Order * 2;
     Group.Ver4Num = Group.Order - 1;
 
     for (int i = 0; i < Group.HugenNum; i++)
     {
         diagram Diagram = ReadOneDiagram(DiagFile, Pool, Group.Order, Group.LoopNum, Group.Ver4Num);
+        Diagram.ID = i;
         Group.DiagList.push_back(Diagram);
     }
     return Group;

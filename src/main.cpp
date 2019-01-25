@@ -22,6 +22,7 @@ void Initilization();
 void MonteCarlo();
 
 parameter Para; // parameters as a global variable
+RandomFactory Random;
 
 int main(int argc, const char *argv[])
 {
@@ -30,6 +31,7 @@ int main(int argc, const char *argv[])
     Initilization();
     diag::weight Weight; //basis to calculate diagram weight
     Weight.ReadDiagrams("DiagPolar");
+    Weight.Initialization(); //initialize MC variables
     RunTest();
     MonteCarlo();
     return 0;
@@ -40,6 +42,8 @@ void Initilization()
     //// initialize the global log configuration   /////////////
     string LogFile = "_" + to_string(Para.PID) + ".log";
     LOGGER_CONF(LogFile, "MC", Logger::file_on | Logger::screen_on, INFO, INFO);
+
+    Random.Reset(Para.Seed);
 
     //// initialize the global parameter //////////////////////
     double Kf;

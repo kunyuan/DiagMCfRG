@@ -21,6 +21,7 @@
         }                                                      \
     };
 
+EXCEPTION(NOTIMPLEMENTED);
 EXCEPTION(IOInvalid);
 EXCEPTION(TypeInvalid);
 EXCEPTION(KeyInvalid);
