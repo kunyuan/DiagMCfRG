@@ -59,8 +59,11 @@ void InitPara() {
   Para.Mu = Para.Ef;
   Para.MaxExtMom *= Kf;
 
+  // scale all energy with E_F
+  Para.Beta /= Para.Ef;
   Para.UVScale = 8.0 * Para.Ef;
   Para.UVCoupling = 1.0 * Para.Ef;
+
   LOG_INFO("Inverse Temperature: " << Para.Beta << "\n"
                                    << "UV Energy Scale: " << Para.UVScale
                                    << "\n"
@@ -68,6 +71,10 @@ void InitPara() {
                                    << "r_s: " << Para.Rs << "\n"
                                    << "Fermi Mom: " << Para.Kf << "\n"
                                    << "Fermi Energy: " << Para.Ef << "\n");
+
+  Para.PrinterTimer = 5;
+  Para.SaveFileTimer = 30;
+  Para.ReweightTimer = 30;
 }
 
 int RunTest(markov &Markov) {
@@ -99,26 +106,26 @@ void MonteCarlo(markov &Markov) {
     for (int i = 0; i < 1000000; i++) {
       Markov.Hop(SWEEP);
       Markov.Measure();
-      // Markov.DynamicTest();
-    }
+      Markov.DynamicTest();
 
-    if (Step % 100 == 0) {
-      // MarkovMonitor.AddStatistics();
-      if (PrinterTimer.check(Para.PrinterTimer)) {
-        Markov.PrintMCInfo();
-        // MarkovMonitor.PrintOrderReWeight();
+      if (i % 100 == 0) {
+        Markov.PrintDeBugMCInfo();
+        if (PrinterTimer.check(Para.PrinterTimer)) {
+          Markov.PrintMCInfo();
+        }
+
+        if (SaveFileTimer.check(Para.SaveFileTimer)) {
+          Interrupt.Delay(); // the process can not be killed in saving
+          Markov.SaveToFile();
+          Interrupt.Resume(); // after this point, the process can be killed
+        }
+
+        if (ReweightTimer.check(Para.ReweightTimer)) {
+          Markov.AdjustGroupReWeight();
+          Para.ReweightTimer *= 1.5;
+        }
+        // Markov.DynamicTest();
       }
-
-      if (SaveFileTimer.check(Para.SaveFileTimer)) {
-        Interrupt.Delay(); // the process can not be killed in saving
-        Markov.SaveToFile("Diag_");
-        Interrupt.Resume(); // after this point, the process can be killed
-      }
-
-      if (ReweightTimer.check(Para.ReweightTimer))
-        Markov.AdjustGroupReWeight();
-
-      // Markov.DynamicTest();
     }
   }
   LOG_INFO("Markov is ended!");

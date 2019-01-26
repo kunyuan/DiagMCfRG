@@ -359,10 +359,7 @@ group diag::ReadOneGroup(istream &DiagFile, pool &Pool) {
 std::string ToString(const diagram &Diag) {
   std::ostringstream oss;
   oss << "DiagID: " << Diag.ID << "\n Weight=" << Diag.Weight
-      << "\n SymFactor=" << Diag.SymFactor << "\n SpinFactor="
-      << ToString<double>(Diag.SpinFactor.data(),
-                          (size_t)Diag.SpinFactor.size())
-      << endl;
+      << "\n SymFactor=" << Diag.SymFactor << endl;
   return oss.str();
 }
 std::string ToString(const group &Group) {

@@ -15,24 +15,17 @@ void weight::ReadDiagrams(string FilePrefix) {
   Pool.VerPoolSize = 0;
   Pool.Ver4PoolSize = 0;
 
-  int GroupID = 0;
+  int Index = 0;
   while (true) {
-    GroupID++;
-    ifstream DiagFile(FilePrefix + to_string(GroupID) + ".txt");
+    Index++;
+    ifstream DiagFile(FilePrefix + to_string(Index) + ".txt");
     if (DiagFile) {
       // group Group;
-      LOG_INFO("Find " << FilePrefix + to_string(GroupID) + ".txt\n");
+      LOG_INFO("Find " << FilePrefix + to_string(Index) + ".txt\n");
       // vector<green> GList;
       istream &DiagFileStream = DiagFile;
       Groups.push_back(ReadOneGroup(DiagFileStream, Pool));
-      Groups.back().ID = GroupID;
-      // ReadOneGroup(DiagFile, Group, GList);
-      // cout << "OutGroup" << endl;
-      // cout << ToString(*(Group.DiagList[0].GIndex[0])) << endl;
-      // cout << ToString(*(GroupList[0].DiagList[0].GIndex[0])) << endl;
-      // cout << ToString(Group) << endl;
-      // cout << ToString(GroupList[0]) << endl;
-      // cout << ToString(Pool.GPool[0]) << endl;
+      Groups.back().ID = Index - 1;
     } else
       break;
   }
@@ -98,7 +91,8 @@ void weight::Initialization() {
 
   // initialize external tau
   Var.Tau[0] = 0.0;
-  Var.Tau[1] = 0.0;
+  Var.Tau[1] = 1.0e-10; // do not make Tau[1]==Tau[0], otherwise the Green's
+                        // function is not well-defined
   Var.CurrTau = Var.Tau[1] - Var.Tau[0];
 
   // initialize group
@@ -108,82 +102,10 @@ void weight::Initialization() {
   LOG_INFO("Calculating the weights of all objects...")
 
   ChangeGroup(*Var.CurrGroup, true);
-  Var.CurrWeight = GetNewWeight(*Var.CurrGroup);
+  GetNewWeight(*Var.CurrGroup);
   AcceptChange(*Var.CurrGroup);
 
   LOG_INFO("Initializating variables done.")
-}
-
-double weight::GetNewWeight(group &Group) {
-  Group.NewWeight = 1.0;
-  for (auto &d : Group.Diag) {
-    double GWeight = d.SymFactor;
-    for (int i = 0; i < Group.GNum; i++) {
-      if (d.G[i]->Excited)
-        GWeight *= d.G[i]->NewWeight;
-      else
-        GWeight *= d.G[i]->Weight;
-    }
-    double VerWeight = 1.0;
-    double TempWeightIn, TempWeightOut;
-    for (int i = 0; i < Group.Ver4Num; i++)
-      if (UseVertex4) {
-        THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
-      } else {
-        // only for spinless case
-        vertex *Ver = d.Ver[i];
-        TempWeightIn = Ver->Excited[IN] ? Ver->NewWeight[IN] : Ver->Weight[IN];
-        TempWeightOut =
-            Ver->Excited[OUT] ? Ver->NewWeight[OUT] : Ver->Weight[OUT];
-        VerWeight *= TempWeightIn - TempWeightOut;
-      }
-    d.NewWeight =
-        GWeight * VerWeight / pow(1.0 / 2 / PI, D * Group.InternalLoopNum);
-    Group.NewWeight *= d.NewWeight;
-  }
-  return Group.NewWeight * Group.ReWeight;
-}
-
-void weight::AcceptChange(group &Group) {
-  Var.CurrVersion++;
-  Var.CurrGroup = &Group;
-  Group.Weight = Group.NewWeight; // accept group  newweight
-  for (auto &d : Group.Diag) {
-    d.Weight = d.NewWeight; // accept diagram newweight
-    for (int i = 0; i < Group.GNum; i++) {
-      green *G = d.G[i];
-      G->Version = Var.CurrVersion;
-      if (G->Excited) {
-        G->Excited = false;
-        G->Weight = G->NewWeight;
-      }
-    }
-    for (int i = 0; i < Group.Ver4Num; i++)
-      if (UseVertex4) {
-        THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
-      } else {
-        vertex *Ver = d.Ver[i];
-        Ver->Version = Var.CurrVersion;
-        if (Ver->Excited[IN]) {
-          Ver->Excited[IN] = false;
-          Ver->Weight[IN] = Ver->NewWeight[IN];
-        }
-        if (Ver->Excited[OUT]) {
-          Ver->Excited[OUT] = false;
-          Ver->Weight[OUT] = Ver->NewWeight[OUT];
-        }
-      }
-  }
-}
-
-momentum weight::_Mom(const loop &LoopBasis, const int &LoopNum) {
-  // In C++11, because of the move semantics, there is no additional cost by
-  // returning an array
-  momentum Mom;
-  for (int d = 0; d < D; d++)
-    for (int i = 0; i < LoopNum; i++)
-      Mom[d] += Var.LoopMom[i][d] * LoopBasis[i];
-  return Mom;
 }
 
 void weight::ChangeGroup(group &Group, bool Forced) {
@@ -192,9 +114,9 @@ void weight::ChangeGroup(group &Group, bool Forced) {
   // are forced recalculated 2) object.Version<CurrVersion, means the objects
   // are not in the current group, and are already outdated
   for (auto &d : Group.Diag) {
-    cout << "diag ID: " << d.ID << endl;
+    // cout << "diag ID: " << d.ID << endl;
     for (int i = 0; i < Group.GNum; i++) {
-      cout << "G: " << i << endl;
+      // cout << "G: " << i << endl;
       green *G = d.G[i];
       if (Forced || G->Version < Var.CurrVersion) {
         double Tau = Var.Tau[G->TauBasis[OUT]] - Var.Tau[G->TauBasis[IN]];
@@ -204,7 +126,7 @@ void weight::ChangeGroup(group &Group, bool Forced) {
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
-      cout << "Ver: " << i << endl;
+      // cout << "Ver: " << i << endl;
       if (UseVertex4) {
         THROW_ERROR(NOTIMPLEMENTED, "Vertex4 not implemented!");
         // vertex4 *Ver4 = d.Ver4Index[i];
@@ -299,6 +221,102 @@ void weight::ChangeTau(group &Group, int TauIndex) {
       }
     }
   }
+}
+
+double weight::GetNewWeight(group &Group) {
+  Group.NewWeight = 0.0;
+
+  for (auto &d : Group.Diag) {
+    double GWeight = d.SymFactor;
+    for (int i = 0; i < Group.GNum; i++) {
+      if (d.G[i]->Excited)
+        GWeight *= d.G[i]->NewWeight;
+      else
+        GWeight *= d.G[i]->Weight;
+    }
+    double VerWeight = 1.0;
+    double TempWeightIn, TempWeightOut;
+    for (int i = 0; i < Group.Ver4Num; i++) {
+      if (UseVertex4) {
+        THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
+      } else {
+        // only for spinless case
+        vertex *Ver = d.Ver[i];
+        TempWeightIn = Ver->Excited[IN] ? Ver->NewWeight[IN] : Ver->Weight[IN];
+        TempWeightOut =
+            Ver->Excited[OUT] ? Ver->NewWeight[OUT] : Ver->Weight[OUT];
+        VerWeight *= TempWeightIn - TempWeightOut;
+      }
+    }
+    d.NewWeight = GWeight * VerWeight / pow(2 * PI, D * Group.InternalLoopNum);
+
+    // Group Weight= sum of all diagram weight in the group
+    Group.NewWeight += d.NewWeight;
+  }
+  Group.NewWeight *= Group.ReWeight;
+  return Group.NewWeight;
+}
+
+void weight::AcceptChange(group &Group) {
+  Var.CurrVersion++;
+  Var.CurrGroup = &Group;
+  Group.Weight = Group.NewWeight; // accept group  newweight
+
+  for (auto &d : Group.Diag) {
+    d.Weight = d.NewWeight; // accept diagram newweight
+    for (int i = 0; i < Group.GNum; i++) {
+      green *G = d.G[i];
+      G->Version = Var.CurrVersion;
+      if (G->Excited) {
+        G->Excited = false;
+        G->Weight = G->NewWeight;
+      }
+    }
+    for (int i = 0; i < Group.Ver4Num; i++)
+      if (UseVertex4) {
+        THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
+      } else {
+        vertex *Ver = d.Ver[i];
+        Ver->Version = Var.CurrVersion;
+        if (Ver->Excited[IN]) {
+          Ver->Excited[IN] = false;
+          Ver->Weight[IN] = Ver->NewWeight[IN];
+        }
+        if (Ver->Excited[OUT]) {
+          Ver->Excited[OUT] = false;
+          Ver->Weight[OUT] = Ver->NewWeight[OUT];
+        }
+      }
+  }
+}
+
+void weight::RejectChange(group &Group) {
+  for (auto &d : Group.Diag) {
+    for (int i = 0; i < Group.GNum; i++) {
+      if (d.G[i]->Excited)
+        d.G[i]->Excited = false;
+      for (int i = 0; i < Group.Ver4Num; i++) {
+        if (UseVertex4) {
+          THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
+        } else {
+          if (d.Ver[i]->Excited[0])
+            d.Ver[i]->Excited[0] = false;
+          if (d.Ver[i]->Excited[1])
+            d.Ver[i]->Excited[1] = false;
+        }
+      }
+    }
+  }
+}
+
+momentum weight::_Mom(const loop &LoopBasis, const int &LoopNum) {
+  // In C++11, because of the move semantics, there is no additional cost by
+  // returning an array
+  momentum Mom;
+  for (int d = 0; d < D; d++)
+    for (int i = 0; i < LoopNum; i++)
+      Mom[d] += Var.LoopMom[i][d] * LoopBasis[i];
+  return Mom;
 }
 
 bool weight::IsInteractionReducible(loop &LoopBasisVer, int LoopNum) {

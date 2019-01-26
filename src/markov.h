@@ -22,22 +22,22 @@ public:
   void Initialization(std::string FilePrefix);
   void Hop(const int);
   void PrintMCInfo();
+  void PrintDeBugMCInfo();
   void AdjustGroupReWeight();
 
   void Measure();
-  void SaveToFile(std::string FilePrefix);
+  void SaveToFile();
 
   int DynamicTest();
 
 private:
-  diag::weight Weight;
-  diag::variable &Var;
-  vector<diag::group> &Groups;
-  // double SumofProbofCall[MCUpdates];
-  std::string UpdateName[MCUpdates];
-  double Accepted[MCUpdates][MaxGroupNum];
-  double Proposed[MCUpdates][MaxGroupNum];
+  // Observables
+  // polarizatoin for each group
+  vector<polar> Polar;
+  // polarizatoin for each group at the zero momentumr;
+  vector<double> PolarStatic;
 
+  // MC updates
   void ChangeTau();
   void ChangeMomentum();
   void IncreaseOrder();
@@ -53,6 +53,16 @@ private:
   double RemoveOldTau(double &);
   double RemoveOldK(momentum &);
 
+  // MC variables
+  diag::weight Weight;
+  diag::variable &Var;
+  vector<diag::group> &Groups;
+
+  // MC updates information
+  std::string UpdatesName[MCUpdates];
+  double Accepted[MCUpdates][MaxGroupNum];
+  double Proposed[MCUpdates][MaxGroupNum];
+
   enum Updates {
     INCREASE_ORDER = 0,
     DECREASE_ORDER,
@@ -62,11 +72,6 @@ private:
     END
   };
   std::string _DetailBalanceStr(Updates op);
-
-  // polarizatoin for each group
-  vector<polar> Polar;
-  // polarizatoin for each group at the zero momentumr;
-  vector<double> PolarStatic;
 };
 }; // namespace mc
 

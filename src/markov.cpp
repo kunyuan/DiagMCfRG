@@ -5,6 +5,7 @@
 //  Copyright (c) 2019 Kun Chen. All rights reserved.
 //
 #include "markov.h"
+#include <stdio.h>
 
 extern parameter Para;
 extern RandomFactory Random;
@@ -28,11 +29,14 @@ void markov::Initialization(string FilePrefix) {
   //===== initialize updates related variable ==========//
   Para.Counter = 0;
 
-  UpdateName[INCREASE_ORDER] = NAME(INCREASE_ORDER);
-  UpdateName[DECREASE_ORDER] = NAME(DECREASE_ORDER);
-  UpdateName[CHANGE_GROUP] = NAME(CHANGE_GROUP);
-  UpdateName[CHANGE_MOM] = NAME(CHANGE_MOM);
-  UpdateName[CHANGE_TAU] = NAME(CHANGE_TAU);
+  UpdatesName[INCREASE_ORDER] = NAME(INCREASE_ORDER);
+  UpdatesName[DECREASE_ORDER] = NAME(DECREASE_ORDER);
+  UpdatesName[CHANGE_GROUP] = NAME(CHANGE_GROUP);
+  UpdatesName[CHANGE_MOM] = NAME(CHANGE_MOM);
+  UpdatesName[CHANGE_TAU] = NAME(CHANGE_TAU);
+
+  // for(int i=0;i<MCUpdates;i++)
+  // UpdatesName[(Updates)i]=NAME((Updates))
 
   InitialArray(&Accepted[0][0], 1.0e-10, MCUpdates * MaxGroupNum);
   InitialArray(&Proposed[0][0], 1.0e-10, MCUpdates * MaxGroupNum);
@@ -44,11 +48,14 @@ void markov::Initialization(string FilePrefix) {
     Polar.push_back(p);
     PolarStatic.push_back(1.0e-10);
   }
+  ///=== Do all kinds of test  =======================//
+  Weight.StaticTest();
+  Weight.DynamicTest();
 }
 
 void markov::Hop(int Sweep) {
-  Para.Counter++;
   for (int i = 0; i < Sweep; i++) {
+    Para.Counter++;
     double x = Random.urn();
     if (x < 1.0 / MCUpdates)
       IncreaseOrder();
@@ -65,17 +72,88 @@ void markov::Hop(int Sweep) {
   }
 }
 
-void markov::PrintMCInfo(){};
+std::string markov::_DetailBalanceStr(Updates op) {
+  string Output = UpdatesName[op] + ":\n";
+  char temp[80];
+  double TotalProposed = 0.0, TotalAccepted = 0.0;
+  for (int i = 0; i <= Groups.size(); i++) {
+    if (!Equal(Proposed[op][i], 0.0)) {
+      TotalAccepted += Accepted[op][i];
+      TotalProposed += Proposed[op][i];
+      sprintf(temp, "\t%8s%2i:%15g%15g%15g\n", "Group", i, Proposed[op][i],
+              Accepted[op][i], Accepted[op][i] / Proposed[op][i]);
+      Output += temp;
+    }
+  }
+  if (!Equal(TotalProposed, 0.0)) {
+    sprintf(temp, "\t%10s:%15g%15g%15g\n", "Summation", TotalProposed,
+            TotalAccepted, TotalAccepted / TotalProposed);
+    Output += temp;
+  } else
+    Output += "\tNone\n";
+  return Output;
+}
+
+void markov::PrintMCInfo() {
+  string Output = "";
+  Output = string(60, '=') + "\n";
+  Output += "MC Counter: " + to_string(Para.Counter) + "\n";
+  for (int i = 0; i < MCUpdates; i++)
+    Output += _DetailBalanceStr((Updates)i);
+  Output += string(60, '=') + "\n";
+  LOG_INFO(Output);
+}
+
+void markov::PrintDeBugMCInfo() {
+  string msg;
+  msg = "\nMC Counter: " + to_string(Para.Counter) + ":\n";
+  msg += "Current Group Info:\n " + ToString(*Var.CurrGroup) + "\n";
+  LOG_INFO(msg);
+}
+
 void markov::AdjustGroupReWeight(){};
 
 void markov::Measure() {
-  double AbsWeight = fabs(Var.CurrWeight);
-  double WeightFactor = Var.CurrWeight / AbsWeight * Var.CurrGroup->ReWeight;
+  double AbsWeight = fabs(Var.CurrGroup->Weight);
+  double WeightFactor =
+      Var.CurrGroup->Weight / AbsWeight / Var.CurrGroup->ReWeight;
   Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
   PolarStatic[Var.CurrGroup->ID] += WeightFactor;
 };
 
-void markov::SaveToFile(std::string FilePrefix){};
+void markov::SaveToFile() {
+  for (int i = 0; i < Polar.size(); i++) {
+    ofstream PolarFile;
+    string FileName = "PID" + to_string(Para.PID) + "_Group" + to_string(i);
+    PolarFile.open(FileName, ios::out | ios::trunc);
+    if (PolarFile.is_open()) {
+      PolarFile << "#PID: " << Para.PID << ",  rs: " << Para.Rs
+                << ",  Beta: " << Para.Beta << ",  Group: " << i << endl;
+      for (int j = 0; j < Polar[i].size(); j++)
+        PolarFile << Var.ExtMomTable[j][0] << "     " << Polar[i][j] << endl;
+      PolarFile << endl;
+      PolarFile.close();
+    } else {
+      LOG_WARNING("Polarization for PID " << Para.PID << " fails to save!");
+    }
+  }
+
+  ofstream StaticPolarFile;
+  string FileName = "output.dat";
+  StaticPolarFile.open(FileName, ios::out | ios::app);
+  if (StaticPolarFile.is_open()) {
+    for (int i = 0; i < PolarStatic.size(); i++) {
+      StaticPolarFile << "#PID: " << Para.PID << ",  rs: " << Para.Rs
+                      << ",  Beta: " << Para.Beta;
+      StaticPolarFile << i << "     " << PolarStatic[i] << endl;
+      StaticPolarFile << endl;
+    }
+    StaticPolarFile.close();
+  } else {
+    LOG_WARNING("Static Polarization for PID " << Para.PID
+                                               << " fails to save!");
+  }
+};
 
 void markov::IncreaseOrder() {
   group &NewGroup = Groups[Random.irn(0, Groups.size() - 1)];
@@ -98,10 +176,12 @@ void markov::IncreaseOrder() {
 
   Weight.ChangeGroup(NewGroup);
   double NewWeight = Weight.GetNewWeight(NewGroup);
-  double R = Prop * fabs(NewWeight) / fabs(Var.CurrWeight);
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
     Accepted[INCREASE_ORDER][Var.CurrGroup->ID]++;
     Weight.AcceptChange(NewGroup);
+  } else {
+    Weight.RejectChange(NewGroup);
   }
 };
 
@@ -120,10 +200,12 @@ void markov::DecreaseOrder() {
 
   Weight.ChangeGroup(NewGroup);
   double NewWeight = Weight.GetNewWeight(NewGroup);
-  double R = Prop * fabs(NewWeight) / fabs(Var.CurrWeight);
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
     Accepted[DECREASE_ORDER][Var.CurrGroup->ID]++;
     Weight.AcceptChange(NewGroup);
+  } else {
+    Weight.RejectChange(NewGroup);
   }
 };
 
@@ -155,7 +237,7 @@ void markov::ChangeTau() {
 
   Weight.ChangeTau(*Var.CurrGroup, TauIndex);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
-  double R = Prop * fabs(NewWeight) / fabs(Var.CurrWeight);
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
     Accepted[CHANGE_TAU][Var.CurrGroup->ID]++;
     Weight.AcceptChange(*Var.CurrGroup);
@@ -164,6 +246,7 @@ void markov::ChangeTau() {
     if (TauIndex != 1)
       Var.Tau[TauIndex] = CurrTau;
     Var.Tau[TauIndex + 1] = CurrTau;
+    Weight.RejectChange(*Var.CurrGroup);
   }
 };
 
@@ -187,12 +270,13 @@ void markov::ChangeMomentum() {
 
   Weight.ChangeMom(*Var.CurrGroup, LoopIndex);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
-  double R = Prop * fabs(NewWeight) / fabs(Var.CurrWeight);
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
     Accepted[CHANGE_MOM][Var.CurrGroup->ID]++;
     Weight.AcceptChange(*Var.CurrGroup);
   } else {
     COPYFROMTO(CurrMom, Var.LoopMom[LoopIndex]);
+    Weight.RejectChange(*Var.CurrGroup);
   }
 };
 
@@ -316,4 +400,4 @@ double markov::ShiftTau(const double &OldTau, double &NewTau) {
   if (NewTau > Para.Beta)
     NewTau -= Para.Beta;
   return 1.0;
-};
+}

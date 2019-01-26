@@ -37,11 +37,11 @@ bool Equal(const T *x1, const T *x2, uint num, double eps = eps0) {
   return true;
 }
 
-// template <typename T> std::string ToString(const T &value) {
-//   std::ostringstream oss;
-//   oss << value;
-//   return oss.str();
-// }
+template <typename T> std::string ToString(const T &value) {
+  std::ostringstream oss;
+  oss << value;
+  return oss.str();
+}
 
 template <typename T> std::string ToString(const T *array, size_t Num) {
   std::ostringstream oss;

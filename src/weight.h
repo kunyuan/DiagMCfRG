@@ -14,7 +14,6 @@ struct variable {
   long int CurrVersion;
   int CurrExtMomBin;                   // current bin of the external momentum
   double CurrTau;                      // current external tau
-  double CurrWeight;                   // current weight of the system
   array<momentum, MaxLoopNum> LoopMom; // all momentum loop variables
   array<double, MaxTauNum> Tau;        // all tau variables
   array<int, MaxLoopNum> LoopSpin;     // all spin variables
@@ -39,9 +38,13 @@ public:
                    bool Forced = false); // recalculate the weights in one group
   double GetNewWeight(group &);          // return the current weight
   void AcceptChange(group &);
+  void RejectChange(group &);
 
   // run test in MC updates
   int DynamicTest();
+
+  // Test before MC
+  int StaticTest();
 
 private:
   pool Pool; // Pool to store indepdent G, Vertex, and 4-Vertex
