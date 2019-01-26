@@ -60,20 +60,22 @@ struct vertex4 {
 };
 
 struct pool {
-  vector<green> GPool;
-  vector<vertex> VerPool;
-  vector<vertex4> Ver4Pool;
+  std::array<green, MaxGPoolSize> GPool;      // array to store indepdent G
+  std::array<vertex, MaxVerPoolSize> VerPool; // array to store indepdent vertex
+  std::array<vertex4, MaxVerPoolSize>
+      Ver4Pool; // array to store indepdent vertex4
+  int GPoolSize;
+  int VerPoolSize;
+  int Ver4PoolSize;
 };
 
 struct diagram {
   int ID;
   double SymFactor;                       // the symmetry factor of a diagram
   array<double, MaxBranchNum> SpinFactor; // the spin factor of a diagram
-  array<green *, 2 * MaxOrder> GIndex;    // the index of all indepdent G
-  array<vertex *, 2 * MaxOrder>
-      VerIndex; // the index of all indepdent interaction
-  array<vertex4 *, 2 * MaxOrder>
-      Ver4Index; // the index of all indepdent 4-vertex
+  array<green *, 2 * MaxOrder> G;         // the index of all indepdent G
+  array<vertex *, 2 * MaxOrder> Ver;   // the index of all indepdent interaction
+  array<vertex4 *, 2 * MaxOrder> Ver4; // the index of all indepdent 4-vertex
   double Weight;
   double NewWeight;
 };
@@ -91,9 +93,10 @@ struct group {
   int InternalLoopNum; // dimension of internal loop basis
   int TauNum;          // dimension of tau basis
   int InternalTauNum;  // dimension of internal tau basis
+  double ReWeight;
   double Weight;
   double NewWeight;
-  vector<diagram> DiagList; // diagrams
+  vector<diagram> Diag; // diagrams
 };
 
 group ReadOneGroup(istream &, pool &);
