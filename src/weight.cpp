@@ -86,14 +86,19 @@ void weight::Initialization() {
 
   // initialize external momentum
   for (int i = 0; i < ExtMomBinSize; i++) {
-    Var.ExtMomTable[i] = i * Para.MaxExtMom / ExtMomBinSize;
+    // the external momentum only has x component
+    Var.ExtMomTable[i][0] = i * Para.MaxExtMom / ExtMomBinSize;
+    for (int j = 1; j < D; j++)
+      Var.ExtMomTable[j][0] = 0.0;
   }
   Var.CurrExtMomBin = 0;
   Var.LoopMom[0].fill(0.0);
-  Var.LoopMom[0][0] = Var.ExtMomTable[Var.CurrExtMomBin];
+  for (int i = 0; i < D; i++)
+    Var.LoopMom[0][i] = Var.ExtMomTable[Var.CurrExtMomBin][i];
 
   // initialize external tau
   Var.Tau[0] = 0.0;
+  Var.Tau[1] = 0.0;
   Var.CurrTau = Var.Tau[1] - Var.Tau[0];
 
   // initialize group
@@ -209,10 +214,18 @@ void weight::ChangeGroup(group &Group, bool Forced) {
         vertex *Ver = d.Ver[i];
         if (Forced || Ver->Version < Var.CurrVersion) {
           Ver->Excited = {true, true};
-          Ver->NewWeight[0] = Interaction(
-              0.0, _Mom(Ver->LoopBasis[0], Group.LoopNum), Ver->Type[0]);
-          Ver->NewWeight[1] = Interaction(
-              0.0, _Mom(Ver->LoopBasis[1], Group.LoopNum), Ver->Type[1]);
+          if (IsInteractionReducible(Ver->LoopBasis[0], Group.LoopNum)) {
+            Ver->NewWeight[0] = Interaction(
+                0.0, _Mom(Ver->LoopBasis[0], Group.LoopNum), Ver->Type[0]);
+          } else {
+            Ver->NewWeight[0] = 0.0;
+          }
+          if (IsInteractionReducible(Ver->LoopBasis[1], Group.LoopNum)) {
+            Ver->NewWeight[1] = Interaction(
+                0.0, _Mom(Ver->LoopBasis[1], Group.LoopNum), Ver->Type[1]);
+          } else {
+            Ver->NewWeight[1] = 0.0;
+          }
         }
       }
     }
@@ -269,7 +282,8 @@ void weight::ChangeTau(group &Group, int TauIndex) {
 
       // if TauIndex is 0, or 1, then G is recaculated only if TauIn or TauOut
       // exactly matches TauIndex
-      if (TauIndex <= 1 && (TauIn == TauIndex || TauOut == TauIndex))
+      // we also assume that 0 will never be changed!
+      if (TauIndex <= 1 && (TauIn == 1 || TauOut == 1))
         ReCalcFlag = true;
       // if TauIndex is >1, then G is recaculated if TauIndex/2==TauIn/2 or
       // TauOut/2

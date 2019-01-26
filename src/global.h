@@ -21,7 +21,7 @@ struct parameter {
   double Mass2;      // screening length^2
   double MaxExtMom;  // the maximum external momentum
   int TotalStep;     // total steps of the Monte Carlo
-  int ObsType;       // type of the observable
+  int ObsType;       // 0: static polarization, 1: equal-time polarization
   int Seed;          // rng seed
   int PID;           // ID of the job
   long long int Counter; // counter to save the current MC step

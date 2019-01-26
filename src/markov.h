@@ -44,9 +44,15 @@ private:
   void DecreaseOrder();
   void ChangeGroup();
 
-  int RandomPickExtK(const int &, double &);
-  void RandomPickK(const momentum &, momentum &, double &);
-  double RandomPickTau(const double &, double &);
+  double ShiftExtK(const int &, int &);
+  double ShiftK(const momentum &, momentum &);
+  double ShiftTau(const double &, double &);
+
+  double GetNewTau(double &);
+  double GetNewK(momentum &);
+  double RemoveOldTau(double &);
+  double RemoveOldK(momentum &);
+
   enum Updates {
     INCREASE_ORDER = 0,
     DECREASE_ORDER,

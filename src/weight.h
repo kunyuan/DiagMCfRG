@@ -18,7 +18,7 @@ struct variable {
   array<momentum, MaxLoopNum> LoopMom; // all momentum loop variables
   array<double, MaxTauNum> Tau;        // all tau variables
   array<int, MaxLoopNum> LoopSpin;     // all spin variables
-  array<double, ExtMomBinSize> ExtMomTable;
+  array<momentum, ExtMomBinSize> ExtMomTable;
 };
 
 class weight {
