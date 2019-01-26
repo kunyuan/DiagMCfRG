@@ -25,6 +25,8 @@ void markov::Initialization(string FilePrefix) {
   //===== initialize updates related variable ==========//
   Para.Counter = 0;
 
+  UpdateName[INCREASE_ORDER] = NAME(INCREASE_ORDER);
+  UpdateName[DECREASE_ORDER] = NAME(DECREASE_ORDER);
   UpdateName[CHANGE_GROUP] = NAME(CHANGE_GROUP);
   UpdateName[CHANGE_MOM] = NAME(CHANGE_MOM);
   UpdateName[CHANGE_TAU] = NAME(CHANGE_TAU);
@@ -34,12 +36,11 @@ void markov::Initialization(string FilePrefix) {
 
   ///==== initialize observable =======================//
   for (auto &g : Weight.Groups) {
-    PolarStatic.AddEstimator("Group" + to_string(g.ID));
     polar p = polar();
     p.fill(1.0e-10);
     Polar.push_back(p);
+    PolarStatic.push_back(1.0e-10);
   }
-  PolarStatic.ClearStatistics();
 }
 
 void markov::Hop(int Sweep) {
@@ -47,10 +48,14 @@ void markov::Hop(int Sweep) {
   for (int i = 0; i < Sweep; i++) {
     double x = Random.urn();
     if (x < 1.0 / MCUpdates)
-      ChangeGroup();
+      IncreaseOrder();
     else if (x < 2.0 / MCUpdates)
-      ChangeMomentum();
+      DecreaseOrder();
     else if (x < 3.0 / MCUpdates)
+      ChangeGroup();
+    else if (x < 4.0 / MCUpdates)
+      ChangeMomentum();
+    else if (x < 5.0 / MCUpdates)
       ChangeTau();
     else {
     }
@@ -60,12 +65,41 @@ void markov::Hop(int Sweep) {
 void markov::PrintMCInfo(){};
 void markov::AdjustGroupReWeight(){};
 
-void markov::Measure(){};
+void markov::Measure() {
+  double AbsWeight = fabs(Var.CurrWeight);
+  double WeightFactor = Var.CurrWeight / AbsWeight * Var.CurrGroup->ReWeight;
+  Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
+  PolarStatic[Var.CurrGroup->ID] += WeightFactor;
+};
+
 void markov::SaveToFile(std::string FilePrefix){};
 
+void markov::IncreaseOrder() {
+  group &NewGroup = Groups[Random.irn(0, Groups.size() - 1)];
+  if (NewGroup.Order != Var.CurrGroup->Order + 1)
+    return;
+  Proposed[INCREASE_ORDER][NewGroup.ID] += 1;
+};
+
+void markov::DecreaseOrder() {
+  group &NewGroup = Groups[Random.irn(0, Groups.size() - 1)];
+  if (NewGroup.Order != Var.CurrGroup->Order - 1)
+    return;
+  Proposed[DECREASE_ORDER][NewGroup.ID] += 1;
+};
+
+void markov::ChangeGroup() {
+  group &NewGroup = Groups[Random.irn(0, Groups.size() - 1)];
+  if (NewGroup.ID == Var.CurrGroup->ID)
+    return;
+  if (NewGroup.Order != Var.CurrGroup->Order)
+    return;
+  Proposed[CHANGE_GROUP][NewGroup.ID] += 1;
+};
+
 void markov::ChangeTau(){};
+
 void markov::ChangeMomentum(){};
-void markov::ChangeGroup(){};
 
 double markov::RandomPickTau(const double &OldTau, double &Prop) {
   double x = Random.urn();

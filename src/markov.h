@@ -10,12 +10,13 @@
 
 namespace mc {
 using namespace std;
-const int MCUpdates = 3;
+const int MCUpdates = 5;
 
 typedef array<double, ExtMomBinSize> polar;
 
 class markov {
 public:
+  markov() : Var(Weight.Var), Groups(Weight.Groups){};
   long long Counter;
 
   void Initialization(std::string FilePrefix);
@@ -30,6 +31,8 @@ public:
 
 private:
   diag::weight Weight;
+  diag::variable &Var;
+  vector<diag::group> &Groups;
   // double SumofProbofCall[MCUpdates];
   std::string UpdateName[MCUpdates];
   double Accepted[MCUpdates][MaxGroupNum];
@@ -37,18 +40,27 @@ private:
 
   void ChangeTau();
   void ChangeMomentum();
+  void IncreaseOrder();
+  void DecreaseOrder();
   void ChangeGroup();
 
   int RandomPickExtK(const int &, double &);
   void RandomPickK(const momentum &, momentum &, double &);
   double RandomPickTau(const double &, double &);
-  enum Updates { CHANGE_GROUP = 0, CHANGE_TAU, CHANGE_MOM, END };
+  enum Updates {
+    INCREASE_ORDER = 0,
+    DECREASE_ORDER,
+    CHANGE_GROUP,
+    CHANGE_TAU,
+    CHANGE_MOM,
+    END
+  };
   std::string _DetailBalanceStr(Updates op);
 
   // polarizatoin for each group
   vector<polar> Polar;
   // polarizatoin for each group at the zero momentumr;
-  EstimatorBundle<double> PolarStatic;
+  vector<double> PolarStatic;
 };
 }; // namespace mc
 

@@ -23,22 +23,28 @@ struct variable {
 
 class weight {
 public:
+  vector<group> Groups;
+  variable Var; // The variable of the integral
+
+  // initialization, read diagrams, then initialize variables
+  void ReadDiagrams(std::string FilePrefix);
+  void Initialization();
+
+  // MC updates related operations
   // double ChangeTemperature(double NewBeta);
-  double GetNewWeight(group &); // return the current weight
   void ChangeMom(group &, int Index);
   void ChangeTau(group &,
                  int TauIndex); // two tau index on the two sides of interaction
   void ChangeGroup(group &,
                    bool Forced = false); // recalculate the weights in one group
+  double GetNewWeight(group &);          // return the current weight
   void AcceptChange(group &);
-  void ReadDiagrams(std::string FilePrefix);
-  void Initialization();
+
+  // run test in MC updates
   int DynamicTest();
-  vector<group> Groups;
 
 private:
-  variable Var; // The variable of the integral
-  pool Pool;    // Pool to store indepdent G, Vertex, and 4-Vertex
+  pool Pool; // Pool to store indepdent G, Vertex, and 4-Vertex
   struct {
     int Num;
     array<double, MaxGNum> Weight;
