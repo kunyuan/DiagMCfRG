@@ -138,14 +138,20 @@ void markov::Initialization(string FilePrefix) {
   ///=== Do all kinds of test  =======================//
   Weight.StaticTest();
   Weight.DynamicTest();
+
+  ///==== Set Reweighting factor =====================//
+  AdjustGroupReWeight();
 }
 
-void markov::AdjustGroupReWeight(){};
+void markov::AdjustGroupReWeight() {
+  double factor[3] = {1.0, 1.0, 10.0};
+  for (int i = 0; i < Weight.Groups.size(); i++)
+    Weight.Groups[i].ReWeight = factor[i];
+};
 
 void markov::Measure() {
-  double AbsWeight = fabs(Var.CurrGroup->Weight);
-  double WeightFactor =
-      Var.CurrGroup->Weight / AbsWeight / Var.CurrGroup->ReWeight;
+  double MCWeight = fabs(Var.CurrGroup->Weight) * Var.CurrGroup->ReWeight;
+  double WeightFactor = Var.CurrGroup->Weight / MCWeight;
   Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
   PolarStatic[Var.CurrGroup->ID] += WeightFactor;
 };
@@ -207,8 +213,10 @@ void markov::IncreaseOrder() {
   COPYFROMTO(NewMom, Var.LoopMom[NewLoopIndex]);
 
   Weight.ChangeGroup(NewGroup);
-  double NewWeight = Weight.GetNewWeight(NewGroup);
-  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
+  double NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
+             Var.CurrGroup->ReWeight;
+
   if (Random.urn() < R) {
     Accepted[INCREASE_ORDER][Var.CurrGroup->ID]++;
     Weight.AcceptChange(NewGroup);
@@ -231,8 +239,10 @@ void markov::DecreaseOrder() {
   Prop *= RemoveOldK(Var.LoopMom[LoopToRemove]);
 
   Weight.ChangeGroup(NewGroup);
-  double NewWeight = Weight.GetNewWeight(NewGroup);
-  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
+  double NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
+             Var.CurrGroup->ReWeight;
+
   if (Random.urn() < R) {
     Accepted[DECREASE_ORDER][Var.CurrGroup->ID]++;
     Weight.AcceptChange(NewGroup);

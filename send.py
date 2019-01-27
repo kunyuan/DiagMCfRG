@@ -7,21 +7,11 @@ import os, sys
 Cluster="local"
 # Cluster="condor"
 
-compiler="ifort"
-# compiler="gfortran"
-
-execute="feyncalc"
 ############################################
 
-sourcedir=os.getcwd()
-filelist=os.listdir(sourcedir)
-sourcename=[elem for elem in filelist if elem[0:len(execute)]==execute and elem[-3:]=="f90"]
-print sourcename
-sourcename.sort()
-sourcename=sourcename[-1]
-
-tothomedir=os.getcwd()
-inlist=open(tothomedir+"/inlist","r")
+rootdir=os.getcwd()
+inlist=open(rootdir+"/inlist","r")
+execute="feyncalc.exe"
 
 for index, eachline in enumerate(inlist):
         para=eachline.split()
@@ -44,7 +34,7 @@ for index, eachline in enumerate(inlist):
 
         os.system("cp DiagPolar*.txt "+homedir)
         os.system("cp DiagLoop*.txt "+homedir)
-        os.system(compiler+" "+sourcedir+"/"+sourcename+" -O3 -o "+homedir+"/"+execute)
+        os.system("cp {0} {1}".format(execute, homedir))
 
         infilepath=homedir+"/infile"
         if(os.path.exists(infilepath)!=True):
@@ -55,8 +45,6 @@ for index, eachline in enumerate(inlist):
         jobfilepath=homedir+"/jobfile"
         if(os.path.exists(jobfilepath)!=True):
             os.system("mkdir "+jobfilepath)
-        if(os.path.exists(homedir+"/Data")!=True):
-            os.system("mkdir "+homedir+"/Data")
 
         for pid in range(int(para[-1])):
 
