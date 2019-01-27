@@ -4,7 +4,6 @@
 #include "global.h"
 #include "utility/utility.h"
 #include <array>
-#include <iostream>
 #include <string>
 #include <vector>
 

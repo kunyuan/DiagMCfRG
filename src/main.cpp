@@ -95,12 +95,11 @@ void MonteCarlo(markov &Markov) {
 
       if (i % 100 == 0) {
         // Markov.PrintDeBugMCInfo();
-        // Markov.DynamicTest();
         if (PrinterTimer.check(Para.PrinterTimer)) {
           Markov.DynamicTest();
-          LOG_INFO(ProgressBar((double)Step / Para.TotalStep));
           Markov.PrintDeBugMCInfo();
           Markov.PrintMCInfo();
+          LOG_INFO(ProgressBar((double)Step / Para.TotalStep));
         }
 
         if (SaveFileTimer.check(Para.SaveFileTimer)) {
@@ -116,5 +115,9 @@ void MonteCarlo(markov &Markov) {
       }
     }
   }
+  Markov.PrintMCInfo();
+  Interrupt.Delay(); // the process can not be killed in saving
+  Markov.SaveToFile();
+  Interrupt.Resume(); // after this point, the process can be killed
   LOG_INFO("Markov is ended!");
 }

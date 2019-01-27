@@ -92,9 +92,9 @@ std::string ProgressBar(double progress) {
   int pos = barWidth * progress;
   for (int i = 0; i < barWidth; ++i) {
     if (i < pos)
-      oss << "=";
+      oss << "I";
     else if (i == pos)
-      oss << ">";
+      oss << "I";
     else
       oss << " ";
   }

@@ -1,7 +1,6 @@
 #include "weight.h"
 
 using namespace diag;
-using namespace vertex;
 using namespace std;
 
 string weight::_DebugInfo() {

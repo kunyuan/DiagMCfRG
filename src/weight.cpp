@@ -7,7 +7,6 @@
 #include <string>
 
 using namespace diag;
-using namespace vertex;
 using namespace std;
 
 void weight::ReadDiagrams(string FilePrefix) {
@@ -100,7 +99,7 @@ void weight::Initialization() {
   Var.CurrVersion = 0;
   //   Var.CurrGroup = &Groups[0];
 
-  Var.CurrGroup = &Groups[2];
+  Var.CurrGroup = &Groups[0];
   LOG_INFO("Calculating the weights of all objects...")
 
   ChangeGroup(*Var.CurrGroup, true);
@@ -231,6 +230,7 @@ void weight::ChangeTau(group &Group, int TauIndex) {
 }
 
 double weight::GetNewWeight(group &Group) {
+  static double VIn, VOut, TotWeight;
   Group.NewWeight = 0.0;
 
   for (auto &d : Group.Diag) {
@@ -241,18 +241,53 @@ double weight::GetNewWeight(group &Group) {
       else
         GWeight *= d.G[i]->Weight;
     }
-    double VerWeight = 1.0;
-    double TempWeightIn, TempWeightOut;
-    for (int i = 0; i < Group.Ver4Num; i++) {
-      if (UseVertex4) {
-        THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
+
+    double VerWeight;
+    if (UseVertex4) {
+      THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
+    } else {
+      if (Group.Ver4Num == 0) {
+        VerWeight = d.SpinFactor[0];
+        // cout << "spin factor: " << d.SpinFactor[0] << endl;
       } else {
-        // only for spinless case
-        vertex *Ver = d.Ver[i];
-        TempWeightIn = Ver->Excited[IN] ? Ver->NewWeight[IN] : Ver->Weight[IN];
-        TempWeightOut =
+
+        vertex *Ver = d.Ver[0];
+        _Tree[0][0] = Ver->Excited[IN] ? Ver->NewWeight[IN] : Ver->Weight[IN];
+        _Tree[0][1] =
             Ver->Excited[OUT] ? Ver->NewWeight[OUT] : Ver->Weight[OUT];
-        VerWeight *= TempWeightIn - TempWeightOut;
+
+        int BlockNum = 2;
+        for (int level = 1; level < Group.Ver4Num; level++) {
+
+          vertex *Ver = d.Ver[level];
+          VIn = Ver->Excited[IN] ? Ver->NewWeight[IN] : Ver->Weight[IN];
+          VOut = Ver->Excited[OUT] ? Ver->NewWeight[OUT] : Ver->Weight[OUT];
+
+          for (int j = 0; j < BlockNum; j++) {
+            _Tree[level][2 * j] = _Tree[level - 1][j] * VIn;
+            _Tree[level][2 * j + 1] = _Tree[level - 1][j] * VOut;
+          }
+          BlockNum *= 2;
+        }
+
+        // cout << BlockNum << endl;
+        // cout << d.SpinFactor[0] << ", " << d.SpinFactor[1] << endl;
+
+        VerWeight = 0.0;
+        for (int j = 0; j < BlockNum; j++)
+          VerWeight += _Tree[Group.Ver4Num - 1][j] * d.SpinFactor[j];
+
+        //============= for spin case ===========================//
+
+        // double TempWeightIn, TempWeightOut;
+        // for (int i = 0; i < Group.Ver4Num; i++) {
+        //   //=========== for spinless case ===========================//
+        //   vertex *Ver = d.Ver[i];
+        //   TempWeightIn =
+        //       Ver->Excited[IN] ? Ver->NewWeight[IN] : Ver->Weight[IN];
+        //   TempWeightOut =
+        //       Ver->Excited[OUT] ? Ver->NewWeight[OUT] : Ver->Weight[OUT];
+        //   VerWeight *= TempWeightIn - TempWeightOut;
       }
     }
     d.NewWeight = GWeight * VerWeight / pow(2 * PI, D * Group.InternalLoopNum);
@@ -260,10 +295,6 @@ double weight::GetNewWeight(group &Group) {
     // Group Weight= sum of all diagram weight in the group
     Group.NewWeight += d.NewWeight;
   }
-  //   cout << "weight: " << Group.NewWeight << endl;
-  //   cout << "reweight: " << Group.ReWeight << endl;
-  //   Group.NewWeight *= Group.ReWeight;
-  //   cout << "weight: " << Group.NewWeight << endl;
   return Group.NewWeight;
 }
 

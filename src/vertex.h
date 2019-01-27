@@ -7,8 +7,8 @@
 double sum2(const momentum &);
 double norm2(const momentum &);
 
-namespace vertex {
+namespace diag {
 double Green(double Tau, const momentum &Momentum, spin Spin, int GType);
 double Interaction(double Tau, const momentum &Momentum, int VerType);
-} // namespace vertex
+} // namespace diag
 #endif

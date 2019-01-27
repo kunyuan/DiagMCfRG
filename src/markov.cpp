@@ -30,42 +30,43 @@ void markov::Hop(int Sweep) {
     // }
 
     double x = Random.urn();
-    // if (x < 1.0 / MCUpdates)
-    //   IncreaseOrder();
-    // else if (x < 2.0 / MCUpdates)
-    //   DecreaseOrder();
-    // else if (x < 3.0 / MCUpdates)
-    //   ChangeGroup();
-    // else if (x < 4.0 / MCUpdates)
-    //   ChangeMomentum();
-    // // ;
-    // else if (x < 5.0 / MCUpdates)
-    //   ChangeTau();
-    if (x < 0.5)
+    if (x < 1.0 / MCUpdates)
+      IncreaseOrder();
+    else if (x < 2.0 / MCUpdates)
+      DecreaseOrder();
+    else if (x < 3.0 / MCUpdates)
+      ChangeGroup();
+    else if (x < 4.0 / MCUpdates)
       ChangeMomentum();
     // ;
-    else
+    else if (x < 5.0 / MCUpdates)
       ChangeTau();
     // ;
+    // if (x < 0.5)
+    //   ChangeMomentum();
+    // // ;
+    // else
+    //   ChangeTau();
+    // // ;
 
     // if (Para.Counter == 8831001) {
     //   cout << "After: " << Para.Counter << endl;
     //   PrintDeBugMCInfo();
     // }
 
-    //   double Tau = Var.Tau[1] - Var.Tau[0];
-    //   momentum G1, G2;
-    //   for (int i = 0; i < D; i++) {
-    //     G1[i] = Var.LoopMom[0][i] + Var.LoopMom[1][i];
-    //     G2[i] = Var.LoopMom[1][i];
-    //   }
-    //   ASSERT_ALLWAYS(Equal(vertex::Green(Tau, G1, UP, 0),
-    //                        Var.CurrGroup->Diag[0].G[0]->Weight, 1.0e-8),
-    //                  Weight._DebugInfo());
+    // double Tau = Var.Tau[1] - Var.Tau[0];
+    // momentum G1, G2;
+    // for (int i = 0; i < D; i++) {
+    //   G1[i] = Var.LoopMom[0][i] + Var.LoopMom[1][i];
+    //   G2[i] = Var.LoopMom[1][i];
+    // }
+    // ASSERT_ALLWAYS(Equal(Green(Tau, G1, UP, 0),
+    //                      Var.CurrGroup->Diag[0].G[0]->Weight, 1.0e-8),
+    //                Weight._DebugInfo());
 
-    //   ASSERT_ALLWAYS(Equal(vertex::Green(-Tau, G2, UP, 0),
-    //                        Var.CurrGroup->Diag[0].G[1]->Weight, 1.0e-8),
-    //                  Weight._DebugInfo());
+    // ASSERT_ALLWAYS(Equal(Green(-Tau, G2, UP, 0),
+    //                      Var.CurrGroup->Diag[0].G[1]->Weight, 1.0e-8),
+    //                Weight._DebugInfo());
   }
 }
 
@@ -152,8 +153,8 @@ void markov::Measure() {
 void markov::SaveToFile() {
   for (int i = 0; i < Polar.size(); i++) {
     ofstream PolarFile;
-    string FileName =
-        "PID" + ToString(Para.PID) + "_Group" + ToString(i) + ".dat";
+    string FileName = +"Group" + ToString(Weight.Groups[i].ID) + "_" +
+                      ToString(Para.PID) + ".dat";
     PolarFile.open(FileName, ios::out | ios::trunc);
     if (PolarFile.is_open()) {
       PolarFile << "#PID: " << Para.PID << ",  rs: " << Para.Rs
@@ -173,7 +174,7 @@ void markov::SaveToFile() {
   if (StaticPolarFile.is_open()) {
     for (int i = 0; i < PolarStatic.size(); i++) {
       StaticPolarFile << "#PID: " << Para.PID << ",  rs: " << Para.Rs
-                      << ",  Beta: " << Para.Beta;
+                      << ",  Beta: " << Para.Beta << endl;
       StaticPolarFile << i << "     " << PolarStatic[i] << endl;
       StaticPolarFile << endl;
     }
@@ -185,6 +186,8 @@ void markov::SaveToFile() {
 };
 
 void markov::IncreaseOrder() {
+  static momentum NewMom;
+
   group &NewGroup = Groups[Random.irn(0, Groups.size() - 1)];
   if (NewGroup.Order != Var.CurrGroup->Order + 1)
     return;
@@ -199,7 +202,6 @@ void markov::IncreaseOrder() {
   Var.Tau[NewTauIndex + 1] = NewTau;
 
   // Generate New Mom
-  static momentum NewMom;
   Prop *= GetNewK(NewMom);
   int NewLoopIndex = Var.CurrGroup->LoopNum;
   COPYFROMTO(NewMom, Var.LoopMom[NewLoopIndex]);
@@ -339,7 +341,7 @@ double markov::GetNewK(momentum &NewMom) {
     double K_XY = KAmp * sin(Theta);
     NewMom[0] = K_XY * cos(Phi);
     NewMom[1] = K_XY * sin(Phi);
-    NewMom[D - 1] = K_XY * cos(Theta);
+    NewMom[D - 1] = KAmp * cos(Theta);
     return 2.0 * dK                    // prop density of KAmp in [Kf-dK, Kf+dK)
            * 2.0 * PI                  // prop density of Phi
            * PI                        // prop density of Theta
@@ -380,9 +382,9 @@ double markov::RemoveOldK(momentum &OldMom) {
 
   //===== The simple way  =======================//
   // for (int i = 0; i < D; i++)
-  //   if(fabs(OldMom[i]>Para.Kf)
-  //        return 0.0;
-  // return 1.0/pow(2.0 * Para.Kf, D);
+  //   if (fabs(OldMom[i] > Para.Kf))
+  //     return 0.0;
+  // return 1.0 / pow(2.0 * Para.Kf, D);
   //============================================//
 }
 
@@ -394,7 +396,7 @@ double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
     int dir = Random.irn(0, D - 1);
     double STEP = Para.Beta > 1.0 ? Para.Kf / Para.Beta * 3.0 : Para.Kf;
     NewMom[dir] += STEP * (Random.urn() - 0.5);
-
+    Prop = 1.0;
   } else if (x < 2.0 / 3) {
     double k = norm2(OldMom);
     if (k < EPS)

@@ -27,7 +27,7 @@ kF=np.sqrt(2.0)/rs #2D
 # Bubble=0.11635  #2D, Beta=0.5, rs=1
 Bubble=0.15916/2.0  #2D, Beta=10, rs=1
 
-ScanOrder=[1,]
+ScanOrder=[1,2,3]
 # ScanOrder=[3]
 Index={}
 Index[1]=[1,]
@@ -48,8 +48,8 @@ for order in ScanOrder:
     Num=0
     data0=None
     for f in files:
-        if re.match("PID1"+str(order)+"_[0-9]+.dat", f):
-            # print f
+        if re.match("Group"+str(order-1)+"_[0-9]+.dat", f):
+            print f
             Num+=1
             d=np.loadtxt(folder+f)
             if data0 is None:
@@ -66,33 +66,33 @@ for order in ScanOrder:
 
     DataAll[order]=np.array(data0)
 
-    Data[order]=[]
-    for i in Index[order]:
-        Num=0
-        data=None
-        # for f in glob.glob("Diag"+str(order)+"_*_"+str(i)+".dat"):
-        for f in files:
-            if re.match("Diag"+str(order)+"_[0-9]+_"+str(i)+".dat", f):
-                # print f
-                Num+=1
-                d=np.loadtxt(folder+f)
-                # print f, d[0,1]
-                if data is None:
-                    data=d
-                else:
-                    data[:,1:]+=d[:,1:]
-        print "Found {0} files.".format(Num)
-        data[:,1:]/=Num
-        # data[:,1]*=(-1)**(order-1)
-        # print data
-        Data[order].append(np.array(data))
+    # Data[order]=[]
+    # for i in Index[order]:
+        # Num=0
+        # data=None
+        # # for f in glob.glob("Diag"+str(order)+"_*_"+str(i)+".dat"):
+        # for f in files:
+            # if re.match("GROUP"+str(order-1)+"DIAG"+str(i)+"_PID[0-9]+.dat", f):
+                # # print f
+                # Num+=1
+                # d=np.loadtxt(folder+f)
+                # # print f, d[0,1]
+                # if data is None:
+                    # data=d
+                # else:
+                    # data[:,1:]+=d[:,1:]
+        # print "Found {0} files.".format(Num)
+        # data[:,1:]/=Num
+        # # data[:,1]*=(-1)**(order-1)
+        # # print data
+        # Data[order].append(np.array(data))
 
-Normalization=Data[1][0][0,1]/Bubble
+Normalization=DataAll[1][0,1]/Bubble
 
 for key in DataAll.keys():
     DataAll[key][:,1]/=Normalization
-    for i in range(len(Data[key])):
-        Data[key][i][:,1]/=Normalization
+    # for i in range(len(Data[key])):
+        # Data[key][i][:,1]/=Normalization
 
 DataOrderByOrder[1]=np.copy(DataAll[1])
 DataOrderByOrder[2]=np.copy(DataAll[2])
@@ -157,7 +157,7 @@ x=np.arange(0,0.2,0.001)
 y=0.5*x**w
 # ax.plot(x,y,'k-', lw=2)
 
-ax.set_xlim([0.0, Data[1][0][-1,0]/kF])
+ax.set_xlim([0.0, DataAll[1][-1,0]/kF])
 # ax.set_xticks([0.0,0.04,0.08,0.12])
 # ax.set_yticks([0.35,0.4,0.45,0.5])
 # ax.set_ylim([-0.02, 0.125])

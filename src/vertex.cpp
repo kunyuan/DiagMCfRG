@@ -4,7 +4,7 @@
 #include <cmath>
 #include <iostream>
 
-using namespace vertex;
+using namespace diag;
 using namespace std;
 
 extern parameter Para;
@@ -18,7 +18,7 @@ double sum2(const momentum &Mom) {
 
 double norm2(const momentum &Mom) { return sqrt(sum2(Mom)); }
 
-double vertex::Interaction(double Tau, const momentum &Mom, int VerType) {
+double diag::Interaction(double Tau, const momentum &Mom, int VerType) {
   if (VerType < 0)
     ABORT("VerType can not be " << VerType);
   double interaction = 8.0 * PI / (sum2(Mom) + Para.Mass2);
@@ -86,7 +86,7 @@ double PhyGreen(double Tau, const momentum &Mom) {
   return green;
 }
 
-double vertex::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
+double diag::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
   double green;
   if (GType == 0) {
     green = PhyGreen(Tau, Mom);
