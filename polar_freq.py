@@ -27,7 +27,7 @@ kF=np.sqrt(2.0)/rs #2D
 # Bubble=0.11635  #2D, Beta=0.5, rs=1
 Bubble=0.15916/2.0  #2D, Beta=10, rs=1
 
-ScanOrder=[1,2, 3]
+ScanOrder=[1,]
 # ScanOrder=[3]
 Index={}
 Index[1]=[1,]
@@ -40,14 +40,15 @@ DataAtOrder={}
 Normalization=1
 
 
-folder="./Beta{0}_rs{1}_lambda{2}_freq/Data/".format(Beta, rs, Lambda) 
+# folder="./".format(Beta, rs, Lambda) 
+folder="./" 
 
 files=os.listdir(folder)
 for order in ScanOrder:
     Num=0
     data0=None
     for f in files:
-        if re.match("Diag"+str(order)+"_[0-9]+.dat", f):
+        if re.match("PID1"+str(order)+"_[0-9]+.dat", f):
             # print f
             Num+=1
             d=np.loadtxt(folder+f)

@@ -2,7 +2,6 @@
 #define markov_H
 
 #include "global.h"
-#include "utility/estimator.h"
 #include "utility/rng.h"
 #include "weight.h"
 #include <string>

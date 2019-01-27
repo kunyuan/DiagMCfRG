@@ -217,9 +217,9 @@ vector<vertex *> _AddAllVerToPool(pool &Pool, vector<int> &Permutation,
     Vertex.LoopBasis[IN].fill(0);
     Vertex.LoopBasis[OUT].fill(0);
     std::copy(LoopBasisVer[Inidx].begin(), LoopBasisVer[Inidx].end(),
-              Vertex.LoopBasis[0].begin());
+              Vertex.LoopBasis[IN].begin());
     std::copy(LoopBasisVer[Outidx].begin(), LoopBasisVer[Outidx].end(),
-              Vertex.LoopBasis[0].begin());
+              Vertex.LoopBasis[OUT].begin());
     VerIndex.push_back(_AddOneVerToPool(Pool, Vertex));
   }
   return VerIndex;

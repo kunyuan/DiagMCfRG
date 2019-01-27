@@ -85,4 +85,6 @@ bool DoesFileExist(const std::string &FileName);
       ABORT(#source << " is nullptr!");                                        \
   }
 
+std::string ProgressBar(double progress);
+
 #endif

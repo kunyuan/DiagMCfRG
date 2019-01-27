@@ -67,6 +67,17 @@ double PhyGreen(double Tau, const momentum &Mom) {
 
   green *= s;
 
+  // if (Debug) { //   cout << "Tau=" << Tau << endl;
+  //   cout << "Counter" << Para.Counter << endl;
+  //   cout << "Tau=" << Tau << endl;
+  //   cout << "Mom=(" << Mom[0] << ", " << Mom[1] << ")" << endl;
+  //   cout << "Mom2=" << Mom[0] * Mom[0] + Mom[1] * Mom[1] << endl;
+  //   cout << "Ek=" << Ek << endl;
+  //   cout << "x=" << x << endl;
+  //   cout << "y=" << y << endl;
+  //   cout << "Green=" << green << endl << endl;
+  // }
+
   // cout << "x: " << x << ", y: " << y << ", G: " << green << endl;
   // cout << "G: " << green << endl;
 
@@ -79,9 +90,6 @@ double vertex::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
   double green;
   if (GType == 0) {
     green = PhyGreen(Tau, Mom);
-    cout << "Tau=" << Tau << endl;
-    cout << "Mom=" << Mom[0] * Mom[0] + Mom[1] * Mom[1] << endl;
-    cout << green << endl;
   } else
     ABORT("GType " << GType << " has not yet been implemented!");
   // return FakeGreen(Tau, Mom);

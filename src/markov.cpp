@@ -16,10 +16,96 @@ using namespace std;
 
 #define NAME(x) #x
 #define COPYFROMTO(x, y)                                                       \
-  for (int i; i < D; i++)                                                      \
+  for (int i = 0; i < D; i++)                                                  \
     y[i] = x[i];
 
 int markov::DynamicTest() { return Weight.DynamicTest(); }
+
+void markov::Hop(int Sweep) {
+  for (int i = 0; i < Sweep; i++) {
+    Para.Counter++;
+    // if (Para.Counter == 9) {
+    //   cout << "Before: " << Para.Counter << endl;
+    //   PrintDeBugMCInfo();
+    // }
+
+    double x = Random.urn();
+    // if (x < 1.0 / MCUpdates)
+    //   IncreaseOrder();
+    // else if (x < 2.0 / MCUpdates)
+    //   DecreaseOrder();
+    // else if (x < 3.0 / MCUpdates)
+    //   ChangeGroup();
+    // else if (x < 4.0 / MCUpdates)
+    //   ChangeMomentum();
+    // // ;
+    // else if (x < 5.0 / MCUpdates)
+    //   ChangeTau();
+    if (x < 0.5)
+      ChangeMomentum();
+    // ;
+    else
+      ChangeTau();
+    // ;
+
+    // if (Para.Counter == 8831001) {
+    //   cout << "After: " << Para.Counter << endl;
+    //   PrintDeBugMCInfo();
+    // }
+
+    //   double Tau = Var.Tau[1] - Var.Tau[0];
+    //   momentum G1, G2;
+    //   for (int i = 0; i < D; i++) {
+    //     G1[i] = Var.LoopMom[0][i] + Var.LoopMom[1][i];
+    //     G2[i] = Var.LoopMom[1][i];
+    //   }
+    //   ASSERT_ALLWAYS(Equal(vertex::Green(Tau, G1, UP, 0),
+    //                        Var.CurrGroup->Diag[0].G[0]->Weight, 1.0e-8),
+    //                  Weight._DebugInfo());
+
+    //   ASSERT_ALLWAYS(Equal(vertex::Green(-Tau, G2, UP, 0),
+    //                        Var.CurrGroup->Diag[0].G[1]->Weight, 1.0e-8),
+    //                  Weight._DebugInfo());
+  }
+}
+
+void markov::PrintDeBugMCInfo() {
+  string msg;
+  msg = string(80, '=') + "\n";
+  msg += "\nMC Counter: " + to_string(Para.Counter) + ":\n";
+  msg += "Current Group Info:\n " + ToString(*Var.CurrGroup);
+
+  msg += string(80, '=') + "\n";
+  msg += "GWeight: \n";
+  for (int i = 0; i < Var.CurrGroup->GNum; i++)
+    msg += ToString(Var.CurrGroup->Diag[0].G[i]->Weight) + "; ";
+  msg += "\n";
+
+  msg += "VerWeight: \n";
+  for (int i = 0; i < Var.CurrGroup->Ver4Num; i++) {
+    msg += ToString(Var.CurrGroup->Diag[0].Ver[i]->Weight[0]) + ", ";
+    msg += ToString(Var.CurrGroup->Diag[0].Ver[i]->Weight[1]) + "; ";
+  }
+  msg += "\n";
+
+  msg += string(80, '=') + "\n";
+  msg += "LoopMom: \n";
+  for (int d = 0; d < D; d++) {
+    for (int i = 0; i < Var.CurrGroup->LoopNum; i++)
+      msg += ToString(Var.LoopMom[i][d]) + ", ";
+    msg += "\n";
+  }
+  msg += "\n";
+
+  msg += string(80, '=') + "\n";
+  msg += "Tau: \n";
+  for (int i = 0; i < Var.CurrGroup->TauNum; i++)
+    msg += ToString(Var.Tau[i]) + ", ";
+
+  msg += "\n";
+
+  LOG_INFO(msg);
+}
 
 void markov::Initialization(string FilePrefix) {
   ///==== initialize Weight ============================//
@@ -53,64 +139,6 @@ void markov::Initialization(string FilePrefix) {
   Weight.DynamicTest();
 }
 
-void markov::Hop(int Sweep) {
-  for (int i = 0; i < Sweep; i++) {
-    Para.Counter++;
-    double x = Random.urn();
-    if (x < 1.0 / MCUpdates)
-      IncreaseOrder();
-    else if (x < 2.0 / MCUpdates)
-      DecreaseOrder();
-    else if (x < 3.0 / MCUpdates)
-      ChangeGroup();
-    else if (x < 4.0 / MCUpdates)
-      ChangeMomentum();
-    else if (x < 5.0 / MCUpdates)
-      ChangeTau();
-    else {
-    }
-  }
-}
-
-std::string markov::_DetailBalanceStr(Updates op) {
-  string Output = UpdatesName[op] + ":\n";
-  char temp[80];
-  double TotalProposed = 0.0, TotalAccepted = 0.0;
-  for (int i = 0; i <= Groups.size(); i++) {
-    if (!Equal(Proposed[op][i], 0.0)) {
-      TotalAccepted += Accepted[op][i];
-      TotalProposed += Proposed[op][i];
-      sprintf(temp, "\t%8s%2i:%15g%15g%15g\n", "Group", i, Proposed[op][i],
-              Accepted[op][i], Accepted[op][i] / Proposed[op][i]);
-      Output += temp;
-    }
-  }
-  if (!Equal(TotalProposed, 0.0)) {
-    sprintf(temp, "\t%10s:%15g%15g%15g\n", "Summation", TotalProposed,
-            TotalAccepted, TotalAccepted / TotalProposed);
-    Output += temp;
-  } else
-    Output += "\tNone\n";
-  return Output;
-}
-
-void markov::PrintMCInfo() {
-  string Output = "";
-  Output = string(60, '=') + "\n";
-  Output += "MC Counter: " + to_string(Para.Counter) + "\n";
-  for (int i = 0; i < MCUpdates; i++)
-    Output += _DetailBalanceStr((Updates)i);
-  Output += string(60, '=') + "\n";
-  LOG_INFO(Output);
-}
-
-void markov::PrintDeBugMCInfo() {
-  string msg;
-  msg = "\nMC Counter: " + to_string(Para.Counter) + ":\n";
-  msg += "Current Group Info:\n " + ToString(*Var.CurrGroup) + "\n";
-  LOG_INFO(msg);
-}
-
 void markov::AdjustGroupReWeight(){};
 
 void markov::Measure() {
@@ -124,7 +152,8 @@ void markov::Measure() {
 void markov::SaveToFile() {
   for (int i = 0; i < Polar.size(); i++) {
     ofstream PolarFile;
-    string FileName = "PID" + to_string(Para.PID) + "_Group" + to_string(i);
+    string FileName =
+        "PID" + ToString(Para.PID) + "_Group" + ToString(i) + ".dat";
     PolarFile.open(FileName, ios::out | ios::trunc);
     if (PolarFile.is_open()) {
       PolarFile << "#PID: " << Para.PID << ",  rs: " << Para.Rs
@@ -165,6 +194,7 @@ void markov::IncreaseOrder() {
   double NewTau;
   double Prop = GetNewTau(NewTau);
   int NewTauIndex = Var.CurrGroup->TauNum;
+  // ASSUME: NewTauIndex will never equal to 0 or 1
   Var.Tau[NewTauIndex] = NewTau;
   Var.Tau[NewTauIndex + 1] = NewTau;
 
@@ -192,7 +222,7 @@ void markov::DecreaseOrder() {
   Proposed[DECREASE_ORDER][Var.CurrGroup->ID] += 1;
 
   // Remove OldTau
-  int TauToRemove = Var.CurrGroup->TauNum - 1;
+  int TauToRemove = Var.CurrGroup->TauNum - 2;
   double Prop = RemoveOldTau(Var.Tau[TauToRemove]);
   // Remove OldMom
   int LoopToRemove = Var.CurrGroup->LoopNum - 1;
@@ -227,13 +257,17 @@ void markov::ChangeTau() {
   Proposed[CHANGE_TAU][Var.CurrGroup->ID]++;
 
   // note if TauIndex==0, then Tau[1]!=Tau[0].
-  // since we only change Tau[1] in this case, it is better set CurrTau=Tau[Odd]
+  // since we only change Tau[1] in this case, it is better set
+  // CurrTau=Tau[Odd]
   double CurrTau = Var.Tau[TauIndex + 1];
   double NewTau;
   double Prop = ShiftTau(CurrTau, NewTau);
   if (TauIndex != 0)
     Var.Tau[TauIndex] = NewTau;
   Var.Tau[TauIndex + 1] = NewTau;
+
+  // if (Var.CurrGroup->ID == 1 && Para.Counter > 100000)
+  //   cout << Var.CurrGroup->ID << endl;
 
   Weight.ChangeTau(*Var.CurrGroup, TauIndex);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
@@ -243,7 +277,7 @@ void markov::ChangeTau() {
     Weight.AcceptChange(*Var.CurrGroup);
   } else {
     // retore the old Tau if the update is rejected
-    if (TauIndex != 1)
+    if (TauIndex != 0)
       Var.Tau[TauIndex] = CurrTau;
     Var.Tau[TauIndex + 1] = CurrTau;
     Weight.RejectChange(*Var.CurrGroup);
@@ -251,22 +285,24 @@ void markov::ChangeTau() {
 };
 
 void markov::ChangeMomentum() {
-  static momentum NewMom, CurrMom;
+  static momentum CurrMom;
   int LoopIndex = Random.irn(0, Var.CurrGroup->LoopNum - 1);
   Proposed[CHANGE_MOM][Var.CurrGroup->ID]++;
 
   COPYFROMTO(Var.LoopMom[LoopIndex], CurrMom);
 
   double Prop;
+  int NewExtMomBin;
   if (LoopIndex == 0) {
-    int NewExtMomBin;
     Prop = ShiftExtK(Var.CurrExtMomBin, NewExtMomBin);
-    COPYFROMTO(Var.ExtMomTable[NewExtMomBin], NewMom);
+    COPYFROMTO(Var.ExtMomTable[NewExtMomBin], Var.LoopMom[LoopIndex]);
   } else {
-    Prop = ShiftK(CurrMom, NewMom);
+    Prop = ShiftK(CurrMom, Var.LoopMom[LoopIndex]);
   }
-  if (LoopIndex == 0 && norm2(NewMom) > Para.MaxExtMom)
+  if (LoopIndex == 0 && norm2(Var.LoopMom[LoopIndex]) > Para.MaxExtMom) {
+    COPYFROMTO(CurrMom, Var.LoopMom[LoopIndex]);
     return;
+  }
 
   Weight.ChangeMom(*Var.CurrGroup, LoopIndex);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
@@ -274,6 +310,8 @@ void markov::ChangeMomentum() {
   if (Random.urn() < R) {
     Accepted[CHANGE_MOM][Var.CurrGroup->ID]++;
     Weight.AcceptChange(*Var.CurrGroup);
+    if (LoopIndex == 0)
+      Var.CurrExtMomBin = NewExtMomBin;
   } else {
     COPYFROMTO(CurrMom, Var.LoopMom[LoopIndex]);
     Weight.RejectChange(*Var.CurrGroup);
@@ -352,9 +390,9 @@ double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
   double x = Random.urn();
   double Prop;
   if (x < 1.0 / 3) {
-    NewMom = OldMom;
+    COPYFROMTO(OldMom, NewMom);
     int dir = Random.irn(0, D - 1);
-    double STEP = Para.Beta > 1 ? Para.Kf / Para.Beta * 3.0 : Para.Kf;
+    double STEP = Para.Beta > 1.0 ? Para.Kf / Para.Beta * 3.0 : Para.Kf;
     NewMom[dir] += STEP * (Random.urn() - 0.5);
 
   } else if (x < 2.0 / 3) {
@@ -381,7 +419,7 @@ double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
 };
 
 double markov::ShiftExtK(const int &OldExtMomBin, int &NewExtMomBin) {
-  NewExtMomBin = Random.irn(0, Para.MaxExtMom - 1);
+  NewExtMomBin = Random.irn(0, ExtMomBinSize - 1);
   return 1.0;
 };
 
@@ -400,4 +438,37 @@ double markov::ShiftTau(const double &OldTau, double &NewTau) {
   if (NewTau > Para.Beta)
     NewTau -= Para.Beta;
   return 1.0;
+}
+
+std::string markov::_DetailBalanceStr(Updates op) {
+  string Output = string(80, '-') + "\n";
+  Output += UpdatesName[op] + ":\n";
+  char temp[80];
+  double TotalProposed = 0.0, TotalAccepted = 0.0;
+  for (int i = 0; i <= Groups.size(); i++) {
+    if (!Equal(Proposed[op][i], 0.0)) {
+      TotalAccepted += Accepted[op][i];
+      TotalProposed += Proposed[op][i];
+      sprintf(temp, "\t%8s%2i:%15g%15g%15g\n", "Group", i, Proposed[op][i],
+              Accepted[op][i], Accepted[op][i] / Proposed[op][i]);
+      Output += temp;
+    }
+  }
+  if (!Equal(TotalProposed, 0.0)) {
+    sprintf(temp, "\t%10s:%15g%15g%15g\n", "Summation", TotalProposed,
+            TotalAccepted, TotalAccepted / TotalProposed);
+    Output += temp;
+  } else
+    Output += "\tNo updates are proposed/accepted!\n";
+  return Output;
+}
+
+void markov::PrintMCInfo() {
+  string Output = "";
+  Output = string(80, '=') + "\n";
+  Output += "MC Counter: " + to_string(Para.Counter) + "\n";
+  for (int i = 0; i < MCUpdates; i++)
+    Output += _DetailBalanceStr((Updates)i);
+  Output += string(80, '=') + "\n";
+  LOG_INFO(Output);
 }

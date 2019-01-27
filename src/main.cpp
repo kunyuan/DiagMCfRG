@@ -20,7 +20,6 @@ using namespace std;
 using namespace mc;
 void InitPara();
 void MonteCarlo(markov &);
-int RunTest(markov &);
 
 parameter Para; // parameters as a global variable
 RandomFactory Random;
@@ -33,7 +32,6 @@ int main(int argc, const char *argv[]) {
   InitPara();
   markov Markov;
   Markov.Initialization("DiagPolar"); // initialize MC
-  RunTest(Markov);
   MonteCarlo(Markov);
   return 0;
 }
@@ -77,18 +75,6 @@ void InitPara() {
   Para.ReweightTimer = 30;
 }
 
-int RunTest(markov &Markov) {
-  // TestTimer();  //Test the timer
-  // TestRNG();
-  // TestArray();
-  //    TEST(mc::TestMarkov);
-  //    TEST(mc::TestDiagCounter);
-
-  //    TEST(TestDictionary);
-
-  return 0;
-}
-
 void MonteCarlo(markov &Markov) {
   InterruptHandler Interrupt;
 
@@ -106,11 +92,14 @@ void MonteCarlo(markov &Markov) {
     for (int i = 0; i < 1000000; i++) {
       Markov.Hop(SWEEP);
       Markov.Measure();
-      Markov.DynamicTest();
 
       if (i % 100 == 0) {
-        Markov.PrintDeBugMCInfo();
+        // Markov.PrintDeBugMCInfo();
+        // Markov.DynamicTest();
         if (PrinterTimer.check(Para.PrinterTimer)) {
+          Markov.DynamicTest();
+          LOG_INFO(ProgressBar((double)Step / Para.TotalStep));
+          Markov.PrintDeBugMCInfo();
           Markov.PrintMCInfo();
         }
 
@@ -124,7 +113,6 @@ void MonteCarlo(markov &Markov) {
           Markov.AdjustGroupReWeight();
           Para.ReweightTimer *= 1.5;
         }
-        // Markov.DynamicTest();
       }
     }
   }
