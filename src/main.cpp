@@ -90,7 +90,44 @@ void MonteCarlo(markov &Markov) {
   while (Step < Para.TotalStep) {
     Step++;
     for (int i = 0; i < 1000000; i++) {
-      Markov.Hop(SWEEP);
+      Para.Counter++;
+      // if (Para.Counter == 9) {
+      //   cout << "Before: " << Para.Counter << endl;
+      //   PrintDeBugMCInfo();
+      // }
+
+      double x = Random.urn();
+      if (x < 1.0 / MCUpdates)
+        Markov.IncreaseOrder();
+      else if (x < 2.0 / MCUpdates)
+        Markov.DecreaseOrder();
+      else if (x < 3.0 / MCUpdates)
+        Markov.ChangeGroup();
+      else if (x < 4.0 / MCUpdates)
+        Markov.ChangeMomentum();
+      // ;
+      else if (x < 5.0 / MCUpdates)
+        Markov.ChangeTau();
+      // ;
+
+      // if (Para.Counter == 8831001) {
+      //   cout << "After: " << Para.Counter << endl;
+      //   PrintDeBugMCInfo();
+      // }
+
+      // double Tau = Var.Tau[1] - Var.Tau[0];
+      // momentum G1, G2;
+      // for (int i = 0; i < D; i++) {
+      //   G1[i] = Var.LoopMom[0][i] + Var.LoopMom[1][i];
+      //   G2[i] = Var.LoopMom[1][i];
+      // }
+      // ASSERT_ALLWAYS(Equal(Green(Tau, G1, UP, 0),
+      //                      Var.CurrGroup->Diag[0].G[0]->Weight, 1.0e-8),
+      //                Weight._DebugInfo());
+
+      // ASSERT_ALLWAYS(Equal(Green(-Tau, G2, UP, 0),
+      //                      Var.CurrGroup->Diag[0].G[1]->Weight, 1.0e-8),
+      //                Weight._DebugInfo());
       Markov.Measure();
 
       if (i % 100 == 0) {
@@ -115,6 +152,7 @@ void MonteCarlo(markov &Markov) {
       }
     }
   }
+
   Markov.PrintMCInfo();
   Interrupt.Delay(); // the process can not be killed in saving
   Markov.SaveToFile();

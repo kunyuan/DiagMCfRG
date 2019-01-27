@@ -5,6 +5,7 @@
 //  Copyright (c) 2019 Kun Chen. All rights reserved.
 //
 #include "markov.h"
+#include "utility/tinyformat.h"
 #include <stdio.h>
 
 extern parameter Para;
@@ -20,55 +21,6 @@ using namespace std;
     y[i] = x[i];
 
 int markov::DynamicTest() { return Weight.DynamicTest(); }
-
-void markov::Hop(int Sweep) {
-  for (int i = 0; i < Sweep; i++) {
-    Para.Counter++;
-    // if (Para.Counter == 9) {
-    //   cout << "Before: " << Para.Counter << endl;
-    //   PrintDeBugMCInfo();
-    // }
-
-    double x = Random.urn();
-    if (x < 1.0 / MCUpdates)
-      IncreaseOrder();
-    else if (x < 2.0 / MCUpdates)
-      DecreaseOrder();
-    else if (x < 3.0 / MCUpdates)
-      ChangeGroup();
-    else if (x < 4.0 / MCUpdates)
-      ChangeMomentum();
-    // ;
-    else if (x < 5.0 / MCUpdates)
-      ChangeTau();
-    // ;
-    // if (x < 0.5)
-    //   ChangeMomentum();
-    // // ;
-    // else
-    //   ChangeTau();
-    // // ;
-
-    // if (Para.Counter == 8831001) {
-    //   cout << "After: " << Para.Counter << endl;
-    //   PrintDeBugMCInfo();
-    // }
-
-    // double Tau = Var.Tau[1] - Var.Tau[0];
-    // momentum G1, G2;
-    // for (int i = 0; i < D; i++) {
-    //   G1[i] = Var.LoopMom[0][i] + Var.LoopMom[1][i];
-    //   G2[i] = Var.LoopMom[1][i];
-    // }
-    // ASSERT_ALLWAYS(Equal(Green(Tau, G1, UP, 0),
-    //                      Var.CurrGroup->Diag[0].G[0]->Weight, 1.0e-8),
-    //                Weight._DebugInfo());
-
-    // ASSERT_ALLWAYS(Equal(Green(-Tau, G2, UP, 0),
-    //                      Var.CurrGroup->Diag[0].G[1]->Weight, 1.0e-8),
-    //                Weight._DebugInfo());
-  }
-}
 
 void markov::PrintDeBugMCInfo() {
   string msg;
@@ -159,15 +111,17 @@ void markov::Measure() {
 void markov::SaveToFile() {
   for (int i = 0; i < Polar.size(); i++) {
     ofstream PolarFile;
-    string FileName = +"Group" + ToString(Weight.Groups[i].ID) + "_" +
-                      ToString(Para.PID) + ".dat";
+    string FileName =
+        tfm::format("group%d_pid%d.dat", Weight.Groups[i].ID, Para.PID);
     PolarFile.open(FileName, ios::out | ios::trunc);
     if (PolarFile.is_open()) {
-      PolarFile << "#PID: " << Para.PID << ",  rs: " << Para.Rs
-                << ",  Beta: " << Para.Beta << ",  Group: " << i << endl;
+      PolarFile << tfm::format(
+          "#PID: %d, rs:%.3f, Beta: %.3f, Group: %d, Step: %d\n", Para.PID,
+          Para.Rs, Para.Beta, Weight.Groups[i].ID, Para.Counter);
+
       for (int j = 0; j < Polar[i].size(); j++)
-        PolarFile << Var.ExtMomTable[j][0] << "     " << Polar[i][j] << endl;
-      PolarFile << endl;
+        PolarFile << tfm::format("%13.6f\t%13.6f\n", Var.ExtMomTable[j][0],
+                                 Polar[i][j]);
       PolarFile.close();
     } else {
       LOG_WARNING("Polarization for PID " << Para.PID << " fails to save!");
@@ -175,14 +129,15 @@ void markov::SaveToFile() {
   }
 
   ofstream StaticPolarFile;
-  string FileName = "output.dat";
-  StaticPolarFile.open(FileName, ios::out | ios::app);
+  string FileName = tfm::format("output%d.dat", Para.PID);
+  StaticPolarFile.open(FileName, ios::out | ios::trunc);
   if (StaticPolarFile.is_open()) {
     for (int i = 0; i < PolarStatic.size(); i++) {
-      StaticPolarFile << "#PID: " << Para.PID << ",  rs: " << Para.Rs
-                      << ",  Beta: " << Para.Beta << endl;
-      StaticPolarFile << i << "     " << PolarStatic[i] << endl;
-      StaticPolarFile << endl;
+      StaticPolarFile << tfm::format(
+          "PID:%-4d  Group:%-4d  rs:%-.3f  "
+          "Beta:%-.3f  Lambda:%-.3f  Polar: % 13.6f\n",
+          Para.PID, Weight.Groups[i].ID, Para.Rs, Para.Beta, Para.Mass2,
+          PolarStatic[i]);
     }
     StaticPolarFile.close();
   } else {

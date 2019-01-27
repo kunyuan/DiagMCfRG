@@ -19,10 +19,16 @@ public:
   long long Counter;
 
   void Initialization(std::string FilePrefix);
-  void Hop(const int);
   void PrintMCInfo();
   void PrintDeBugMCInfo();
   void AdjustGroupReWeight();
+
+  // MC updates
+  void ChangeTau();
+  void ChangeMomentum();
+  void IncreaseOrder();
+  void DecreaseOrder();
+  void ChangeGroup();
 
   void Measure();
   void SaveToFile();
@@ -37,11 +43,6 @@ private:
   vector<double> PolarStatic;
 
   // MC updates
-  void ChangeTau();
-  void ChangeMomentum();
-  void IncreaseOrder();
-  void DecreaseOrder();
-  void ChangeGroup();
 
   double ShiftExtK(const int &, int &);
   double ShiftK(const momentum &, momentum &);
