@@ -65,9 +65,11 @@ private:
     array<double, MaxVer4Num> Weight;
     array<vertex4 *, MaxVer4Num> Index;
   } NewVer4;
-  momentum _Mom(const loop &LoopBasis, const int &LoopNum);
   array<array<double, diag::MaxBranchNum>, MaxVer4Num> _SpinCache;
   string _ErrMsg(string);
+
+  void GetMom(const loop &LoopBasis, const int &LoopNum);
+  momentum _Mom;
 
   // the spin cache to calculate vertex weight
   double _Tree[MaxOrder][MaxBranchNum];

@@ -38,7 +38,7 @@ template <typename T> vector<T> _ExtractOneLine(istream &file) {
   return IntList;
 }
 
-vector<loop> _Transpose(vector<vector<int>> &Basis) {
+vector<loop> _Transpose(vector<vector<double>> &Basis) {
   vector<loop> NewBasis;
   if (Basis.size() == 0)
     return NewBasis;
@@ -89,7 +89,7 @@ green *_AddOneGToPool(pool &Pool, green &Green) {
   // select all green's function with same LoopBasis
   vector<green *> GPool_Basis;
   for (auto g : GPool_Tau)
-    if (Equal<int>(g->LoopBasis.data(), Green.LoopBasis.data(), MaxLoopNum))
+    if (Equal<double>(g->LoopBasis.data(), Green.LoopBasis.data(), MaxLoopNum))
       GPool_Basis.push_back(g);
 
   //   cout << "Basis pool: " << GPool_Basis.size() << "," << MaxLoopNum <<
@@ -125,10 +125,10 @@ vertex *_AddOneVerToPool(pool &Pool, vertex &Vertex) {
 
   vector<vertex *> VerPool_Basis;
   for (auto v : VerPool_Type)
-    if (Equal<int>(v->LoopBasis[0].data(), Vertex.LoopBasis[0].data(),
-                   MaxLoopNum))
-      if (Equal<int>(v->LoopBasis[1].data(), Vertex.LoopBasis[1].data(),
-                     MaxLoopNum))
+    if (Equal<double>(v->LoopBasis[0].data(), Vertex.LoopBasis[0].data(),
+                      MaxLoopNum))
+      if (Equal<double>(v->LoopBasis[1].data(), Vertex.LoopBasis[1].data(),
+                        MaxLoopNum))
         VerPool_Basis.push_back(v);
   // cout << "Basis pool: " << GPool_Basis.size() << "," << MaxLoopNum << endl;
   // if GPool_Filter is not empty, means the green's function already exists
@@ -159,8 +159,8 @@ vertex4 *_AddOneVer4ToPool(pool &Pool, vertex4 &Vertex4) {
   for (auto v : Ver4Pool_Type) {
     bool Flag = true;
     for (int leg = 0; leg < 4; leg++)
-      if (!Equal<int>(v->LoopBasis[leg].data(), Vertex4.LoopBasis[leg].data(),
-                      MaxLoopNum))
+      if (!Equal<double>(v->LoopBasis[leg].data(),
+                         Vertex4.LoopBasis[leg].data(), MaxLoopNum))
         Flag = false;
     if (Flag)
       Ver4Pool_Basis.push_back(v);
@@ -269,9 +269,9 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
 
   /////// Loop Basis  /////////////////////////
   buff = _GetOneLine(DiagFile); // title
-  vector<vector<int>> TransposedLoopBasis;
+  vector<vector<double>> TransposedLoopBasis;
   for (int j = 0; j < LoopNum; j++)
-    TransposedLoopBasis.push_back(_ExtractOneLine<int>(DiagFile));
+    TransposedLoopBasis.push_back(_ExtractOneLine<double>(DiagFile));
   vector<loop> LoopBasis = _Transpose(TransposedLoopBasis);
 
   /////// 4 legs of 4-ver  /////////////////////////
@@ -288,10 +288,10 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
 
   /////// Interaction Loop Basis  ////////////////////
   buff = _GetOneLine(DiagFile); // title
-  vector<vector<int>> TransposedLoopBasisVer;
+  vector<vector<double>> TransposedLoopBasisVer;
   if (Ver4Num > 0)
     for (int j = 0; j < LoopNum; j++)
-      TransposedLoopBasisVer.push_back(_ExtractOneLine<int>(DiagFile));
+      TransposedLoopBasisVer.push_back(_ExtractOneLine<double>(DiagFile));
   vector<loop> LoopBasisVer = _Transpose(TransposedLoopBasisVer);
 
   /////// Spin Factor  ////////////////////
@@ -375,7 +375,8 @@ std::string ToString(const green &G) {
       << "\n Weight=" << G.Weight
       << "\n TauBasis=" << ToString<int>(G.TauBasis.data(), 2)
       << "\n LoopBasis="
-      << ToString<int>(G.LoopBasis.data(), (size_t)G.LoopBasis.size()) << endl;
+      << ToString<double>(G.LoopBasis.data(), (size_t)G.LoopBasis.size())
+      << endl;
   return oss.str();
 };
 std::string ToString(const vertex &);

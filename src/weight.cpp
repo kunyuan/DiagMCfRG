@@ -122,8 +122,8 @@ void weight::ChangeGroup(group &Group, bool Forced) {
       if (Forced || G->Version < Var.CurrVersion) {
         double Tau = Var.Tau[G->TauBasis[OUT]] - Var.Tau[G->TauBasis[IN]];
         G->Excited = true;
-        G->NewWeight =
-            Green(Tau, _Mom(G->LoopBasis, Group.LoopNum), UP, G->Type);
+        GetMom(G->LoopBasis, Group.LoopNum);
+        G->NewWeight = Green(Tau, _Mom, UP, G->Type);
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
@@ -138,14 +138,14 @@ void weight::ChangeGroup(group &Group, bool Forced) {
         if (Forced || Ver->Version < Var.CurrVersion) {
           Ver->Excited = {true, true};
           if (!IsInteractionReducible(Ver->LoopBasis[IN], Group.LoopNum)) {
-            Ver->NewWeight[IN] = Interaction(
-                0.0, _Mom(Ver->LoopBasis[IN], Group.LoopNum), Ver->Type[IN]);
+            GetMom(Ver->LoopBasis[IN], Group.LoopNum);
+            Ver->NewWeight[IN] = Interaction(0.0, _Mom, Ver->Type[IN]);
           } else {
             Ver->NewWeight[IN] = 0.0;
           }
           if (!IsInteractionReducible(Ver->LoopBasis[OUT], Group.LoopNum)) {
-            Ver->NewWeight[OUT] = Interaction(
-                0.0, _Mom(Ver->LoopBasis[OUT], Group.LoopNum), Ver->Type[OUT]);
+            GetMom(Ver->LoopBasis[OUT], Group.LoopNum);
+            Ver->NewWeight[OUT] = Interaction(0.0, _Mom, Ver->Type[OUT]);
           } else {
             Ver->NewWeight[OUT] = 0.0;
           }
@@ -162,8 +162,8 @@ void weight::ChangeMom(group &Group, int MomIndex) {
       if (G->LoopBasis[MomIndex] != 0) {
         double Tau = Var.Tau[G->TauBasis[OUT]] - Var.Tau[G->TauBasis[IN]];
         G->Excited = true;
-        G->NewWeight =
-            Green(Tau, _Mom(G->LoopBasis, Group.LoopNum), UP, G->Type);
+        GetMom(G->LoopBasis, Group.LoopNum);
+        G->NewWeight = Green(Tau, _Mom, UP, G->Type);
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
@@ -174,8 +174,8 @@ void weight::ChangeMom(group &Group, int MomIndex) {
         if (Ver->LoopBasis[IN][MomIndex] != 0) {
           Ver->Excited[IN] = true;
           if (!IsInteractionReducible(Ver->LoopBasis[IN], Group.LoopNum)) {
-            Ver->NewWeight[IN] = Interaction(
-                0.0, _Mom(Ver->LoopBasis[IN], Group.LoopNum), Ver->Type[IN]);
+            GetMom(Ver->LoopBasis[IN], Group.LoopNum);
+            Ver->NewWeight[IN] = Interaction(0.0, _Mom, Ver->Type[IN]);
           } else {
             Ver->NewWeight[IN] = 0.0;
           }
@@ -183,8 +183,8 @@ void weight::ChangeMom(group &Group, int MomIndex) {
         if (Ver->LoopBasis[OUT][MomIndex] != 0) {
           Ver->Excited[OUT] = true;
           if (!IsInteractionReducible(Ver->LoopBasis[OUT], Group.LoopNum)) {
-            Ver->NewWeight[OUT] = Interaction(
-                0.0, _Mom(Ver->LoopBasis[OUT], Group.LoopNum), Ver->Type[OUT]);
+            GetMom(Ver->LoopBasis[OUT], Group.LoopNum);
+            Ver->NewWeight[OUT] = Interaction(0.0, _Mom, Ver->Type[OUT]);
           } else {
             Ver->NewWeight[OUT] = 0.0;
           }
@@ -218,12 +218,8 @@ void weight::ChangeTau(group &Group, int TauIndex) {
         // trigger recalculation
         double Tau = Var.Tau[TauOut] - Var.Tau[TauIn];
         G->Excited = true;
-        momentum Mom;
-        for (int d = 0; d < D; d++)
-          for (int i = 0; i < Group.LoopNum; i++)
-            Mom[d] += Var.LoopMom[i][d] * G->LoopBasis[i];
-        G->NewWeight =
-            Green(Tau, _Mom(G->LoopBasis, Group.LoopNum), UP, G->Type);
+        GetMom(G->LoopBasis, Group.LoopNum);
+        G->NewWeight = Green(Tau, _Mom, UP, G->Type);
       }
     }
   }
@@ -350,26 +346,46 @@ void weight::RejectChange(group &Group) {
   }
 }
 
-momentum weight::_Mom(const loop &LoopBasis, const int &LoopNum) {
+void weight::GetMom(const loop &LoopBasis, const int &LoopNum) {
   // In C++11, because of the move semantics, there is no additional cost by
   // returning an array
-  momentum Mom;
-  for (int d = 0; d < D; d++) {
-    Mom[d] = 0.0;
-    for (int i = 0; i < LoopNum; i++)
-      Mom[d] += Var.LoopMom[i][d] * LoopBasis[i];
+  //   momentum *loopmom = Var.LoopMom.data();
+  //   if (D == 2) {
+  //     _Mom[0] = 0.0;
+  //     _Mom[1] = 0.0;
+  //     for (int i = 0; i < LoopNum; i++) {
+  //       _Mom[0] += loopmom[i][0] * LoopBasis[i];
+  //       _Mom[1] += loopmom[i][1] * LoopBasis[i];
+  //     }
+  //   } else if (D == 3) {
+  //     _Mom[0] = 0.0;
+  //     _Mom[1] = 0.0;
+  //     _Mom[2] = 0.0;
+  //     momentum *loopmom = Var.LoopMom.data();
+  //     for (int i = 0; i < LoopNum; i++) {
+  //       _Mom[0] += loopmom[i][0] * LoopBasis[i];
+  //       _Mom[1] += loopmom[i][1] * LoopBasis[i];
+  //       _Mom[2] += loopmom[i][2] * LoopBasis[i];
+  //     }
+  //   }
+  auto &loopmom = Var.LoopMom;
+  for (int d = 0; d < D; ++d) {
+    _Mom[d] = loopmom[0][d] * LoopBasis[0];
   }
-  return Mom;
+  for (int i = 1; i < LoopNum; ++i)
+    for (int d = 0; d < D; ++d) {
+      _Mom[d] += loopmom[i][d] * LoopBasis[i];
+    }
 }
 
 bool weight::IsInteractionReducible(loop &LoopBasisVer, int LoopNum) {
   // check if an interaction is reducible
-  if (abs(LoopBasisVer[0]) != 1)
+  if ((!Equal(LoopBasisVer[0], 1.0)) && (!Equal(LoopBasisVer[0], -1.0)))
     return false;
 
   bool Flag = true;
   for (int i = 1; i < LoopNum; i++) {
-    if (LoopBasisVer[i] != 0) {
+    if (Equal(LoopBasisVer[i], 0.0)) {
       Flag = false;
       break;
     }

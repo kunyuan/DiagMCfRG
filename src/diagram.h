@@ -15,7 +15,7 @@ const size_t MaxBranchNum = 1 << (MaxOrder - 1); // 2**(MaxOrder-1)
 template <class T, size_t ROW, size_t COL>
 using matrix = std::array<std::array<T, COL>, ROW>;
 
-typedef std::array<int, MaxLoopNum>
+typedef std::array<double, MaxLoopNum>
     loop; // array to store the loop basis for a propagator or interaction line
 typedef std::array<int, 2> tau; // array to store the tau basis (In and Out)
                                 // for a propagator or interaction line
