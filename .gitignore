@@ -46,3 +46,4 @@ Data/
 *.dat
 blitz/
 src/blitz/
+callgrind*
