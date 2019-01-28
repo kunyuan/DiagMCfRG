@@ -365,7 +365,7 @@ bool weight::IsInteractionReducible(loop &LoopBasisVer, int LoopNum) {
 
   bool Flag = true;
   for (int i = 1; i < LoopNum; i++) {
-    if (Equal(LoopBasisVer[i], 0.0)) {
+    if (!Equal(LoopBasisVer[i], 0.0)) {
       Flag = false;
       break;
     }
