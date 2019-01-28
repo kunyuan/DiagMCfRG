@@ -73,6 +73,12 @@ void InitPara() {
   Para.PrinterTimer = 5;
   Para.SaveFileTimer = 30;
   Para.ReweightTimer = 30;
+
+  Para.GroupID = {
+      1,
+      2,
+      3,
+  };
 }
 
 void MonteCarlo(markov &Markov) {

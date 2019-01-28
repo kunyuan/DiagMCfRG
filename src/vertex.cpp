@@ -9,23 +9,23 @@ using namespace std;
 
 extern parameter Para;
 
-double sum2(const momentum &Mom) {
-  double Sum2 = 0.0;
-  for (int i = 0; i < D; i++)
-    Sum2 += Mom[i] * Mom[i];
-  return Sum2;
-}
+// double sum2(const momentum &Mom) {
+//   double Sum2 = 0.0;
+//   for (int i = 0; i < D; i++)
+//     Sum2 += Mom[i] * Mom[i];
+//   return Sum2;
+// }
 
-double norm2(const momentum &Mom) { return sqrt(sum2(Mom)); }
+// double norm2(const momentum &Mom) { return sqrt(sum2(Mom)); }
 
 double diag::Interaction(double Tau, const momentum &Mom, int VerType) {
   if (VerType < 0)
     ABORT("VerType can not be " << VerType);
-  double interaction = 8.0 * PI / (sum2(Mom) + Para.Mass2);
+  double interaction = 8.0 * PI / (Mom.squaredNorm() + Para.Mass2);
 
   if (VerType > 0) {
     // the interaction contains counter-terms
-    interaction *= pow(Para.Mass2 / (sum2(Mom) + Para.Mass2), VerType);
+    interaction *= pow(Para.Mass2 / (Mom.squaredNorm() + Para.Mass2), VerType);
     interaction *= pow(-1, VerType);
   }
   return interaction;
@@ -46,7 +46,7 @@ double PhyGreen(double Tau, const momentum &Mom) {
     Tau -= Para.Beta;
     s = -s;
   }
-  Ek = sum2(Mom); // bare propagator
+  Ek = Mom.squaredNorm(); // bare propagator
 
   // Ek=SelfEnergy(Mom);   //Fock diagram dressed propagator
 

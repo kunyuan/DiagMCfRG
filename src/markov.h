@@ -5,6 +5,7 @@
 #include "utility/rng.h"
 #include "weight.h"
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace mc {
@@ -36,11 +37,11 @@ public:
   int DynamicTest();
 
 private:
-  // Observables
   // polarizatoin for each group
-  vector<polar> Polar;
+  unordered_map<int, polar> Polar;
+
   // polarizatoin for each group at the zero momentumr;
-  vector<double> PolarStatic;
+  unordered_map<int, double> PolarStatic;
 
   // MC updates
 

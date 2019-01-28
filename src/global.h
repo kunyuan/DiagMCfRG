@@ -1,9 +1,9 @@
 #ifndef FeynCalc_global_h
 #define FeynCalc_global_h
 
+#include "utility/vector.h"
 #include <math.h>
-// #include "utility/vector.h"
-#include <array>
+#include <vector>
 
 // turn off all assert
 const bool DEBUGMODE = true;
@@ -30,6 +30,7 @@ struct parameter {
   int SaveFileTimer;     // how many secondes between saving to file
   int MessageTimer;      // how many secondes between two checking for message
   int ReweightTimer;     // how many secondes between two reweighting
+  std::vector<int> GroupID;
 };
 
 ///////////  Global Constants ////////////////////
@@ -79,8 +80,8 @@ const int INL = 0, INR = 1, OUTL = 3, OUTR = 4;
 #define FLIP(x) (1 - x)
 //////////////////////////////////////////////////////
 
-// typedef Vec<double, D> mom;
+typedef Vec<double, D> momentum;
 
-typedef std::array<double, D> momentum;
+// typedef std::array<double, D> momentum;
 
 #endif

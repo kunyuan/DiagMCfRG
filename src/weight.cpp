@@ -14,17 +14,15 @@ void weight::ReadDiagrams(string FilePrefix) {
   Pool.VerPoolSize = 0;
   Pool.Ver4PoolSize = 0;
 
-  int Index = 0;
-  while (true) {
-    Index++;
-    ifstream DiagFile(FilePrefix + to_string(Index) + ".txt");
+  for (int &id : Para.GroupID) {
+    ifstream DiagFile(FilePrefix + to_string(id) + ".txt");
     if (DiagFile) {
       // group Group;
-      LOG_INFO("Find " << FilePrefix + to_string(Index) + ".txt\n");
+      LOG_INFO("Find " << FilePrefix + to_string(id) + ".txt\n");
       // vector<green> GList;
       istream &DiagFileStream = DiagFile;
       Groups.push_back(ReadOneGroup(DiagFileStream, Pool));
-      Groups.back().ID = Index - 1;
+      Groups.back().ID = id;
     } else
       break;
   }
@@ -84,9 +82,10 @@ void weight::Initialization() {
       Var.ExtMomTable[i][j] = 0.0;
   }
   Var.CurrExtMomBin = 0;
-  Var.LoopMom[0].fill(0.0);
-  for (int i = 0; i < D; i++)
-    Var.LoopMom[0][i] = Var.ExtMomTable[Var.CurrExtMomBin][i];
+  // Var.LoopMom[0].fill(0.0);
+  // for (int i = 0; i < D; i++)
+  //   Var.LoopMom[0][i] = Var.ExtMomTable[Var.CurrExtMomBin][i];
+  Var.LoopMom[0] = Var.ExtMomTable[Var.CurrExtMomBin];
 
   // initialize external tau
   Var.Tau[0] = 0.0;
@@ -349,33 +348,14 @@ void weight::RejectChange(group &Group) {
 void weight::GetMom(const loop &LoopBasis, const int &LoopNum) {
   // In C++11, because of the move semantics, there is no additional cost by
   // returning an array
-  //   momentum *loopmom = Var.LoopMom.data();
-  //   if (D == 2) {
-  //     _Mom[0] = 0.0;
-  //     _Mom[1] = 0.0;
-  //     for (int i = 0; i < LoopNum; i++) {
-  //       _Mom[0] += loopmom[i][0] * LoopBasis[i];
-  //       _Mom[1] += loopmom[i][1] * LoopBasis[i];
-  //     }
-  //   } else if (D == 3) {
-  //     _Mom[0] = 0.0;
-  //     _Mom[1] = 0.0;
-  //     _Mom[2] = 0.0;
-  //     momentum *loopmom = Var.LoopMom.data();
-  //     for (int i = 0; i < LoopNum; i++) {
-  //       _Mom[0] += loopmom[i][0] * LoopBasis[i];
-  //       _Mom[1] += loopmom[i][1] * LoopBasis[i];
-  //       _Mom[2] += loopmom[i][2] * LoopBasis[i];
-  //     }
-  //   }
+
   auto &loopmom = Var.LoopMom;
-  for (int d = 0; d < D; ++d) {
+  for (int d = 0; d < D; ++d)
     _Mom[d] = loopmom[0][d] * LoopBasis[0];
-  }
+
   for (int i = 1; i < LoopNum; ++i)
-    for (int d = 0; d < D; ++d) {
+    for (int d = 0; d < D; ++d)
       _Mom[d] += loopmom[i][d] * LoopBasis[i];
-    }
 }
 
 bool weight::IsInteractionReducible(loop &LoopBasisVer, int LoopNum) {

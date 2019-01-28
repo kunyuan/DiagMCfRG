@@ -82,10 +82,8 @@ void markov::Initialization(string FilePrefix) {
 
   ///==== initialize observable =======================//
   for (auto &g : Weight.Groups) {
-    polar p = polar();
-    p.fill(1.0e-10);
-    Polar.push_back(p);
-    PolarStatic.push_back(1.0e-10);
+    Polar[g.ID].fill(1.0e-10);
+    PolarStatic[g.ID] = 1.0e-10;
   }
   ///=== Do all kinds of test  =======================//
   Weight.StaticTest();
@@ -104,24 +102,24 @@ void markov::AdjustGroupReWeight() {
 void markov::Measure() {
   double MCWeight = fabs(Var.CurrGroup->Weight) * Var.CurrGroup->ReWeight;
   double WeightFactor = Var.CurrGroup->Weight / MCWeight;
+
   Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
   PolarStatic[Var.CurrGroup->ID] += WeightFactor;
 };
 
 void markov::SaveToFile() {
-  for (int i = 0; i < Polar.size(); i++) {
+  for (auto &id : Para.GroupID) {
     ofstream PolarFile;
-    string FileName =
-        tfm::format("group%d_pid%d.dat", Weight.Groups[i].ID, Para.PID);
+    string FileName = tfm::format("group%d_pid%d.dat", id, Para.PID);
     PolarFile.open(FileName, ios::out | ios::trunc);
     if (PolarFile.is_open()) {
       PolarFile << tfm::format(
-          "#PID: %d, rs:%.3f, Beta: %.3f, Group: %d, Step: %d\n", Para.PID,
-          Para.Rs, Para.Beta, Weight.Groups[i].ID, Para.Counter);
+          "#PID: %d, Type:%d, rs:%.3f, Beta: %.3f, Group: %d, Step: %d\n",
+          Para.PID, Para.ObsType, Para.Rs, Para.Beta, id, Para.Counter);
 
-      for (int j = 0; j < Polar[i].size(); j++)
+      for (int j = 0; j < Polar[id].size(); j++)
         PolarFile << tfm::format("%13.6f\t%13.6f\n", Var.ExtMomTable[j][0],
-                                 Polar[i][j]);
+                                 Polar[id][j]);
       PolarFile.close();
     } else {
       LOG_WARNING("Polarization for PID " << Para.PID << " fails to save!");
@@ -132,12 +130,12 @@ void markov::SaveToFile() {
   string FileName = tfm::format("output%d.dat", Para.PID);
   StaticPolarFile.open(FileName, ios::out | ios::trunc);
   if (StaticPolarFile.is_open()) {
-    for (int i = 0; i < PolarStatic.size(); i++) {
+    for (auto &id : Para.GroupID) {
       StaticPolarFile << tfm::format(
-          "PID:%-4d  Group:%-4d  rs:%-.3f  "
+          "PID:%-4d  Type:%-2d  Group:%-4d  rs:%-.3f  "
           "Beta:%-.3f  Lambda:%-.3f  Polar: % 13.6f\n",
-          Para.PID, Weight.Groups[i].ID, Para.Rs, Para.Beta, Para.Mass2,
-          PolarStatic[i]);
+          Para.PID, Para.ObsType, id, Para.Rs, Para.Beta, Para.Mass2,
+          PolarStatic[id]);
     }
     StaticPolarFile.close();
   } else {
@@ -233,9 +231,6 @@ void markov::ChangeTau() {
     Var.Tau[TauIndex] = NewTau;
   Var.Tau[TauIndex + 1] = NewTau;
 
-  // if (Var.CurrGroup->ID == 1 && Para.Counter > 100000)
-  //   cout << Var.CurrGroup->ID << endl;
-
   Weight.ChangeTau(*Var.CurrGroup, TauIndex);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
@@ -252,22 +247,26 @@ void markov::ChangeTau() {
 };
 
 void markov::ChangeMomentum() {
-  static momentum CurrMom;
   int LoopIndex = Random.irn(0, Var.CurrGroup->LoopNum - 1);
   Proposed[CHANGE_MOM][Var.CurrGroup->ID]++;
 
-  COPYFROMTO(Var.LoopMom[LoopIndex], CurrMom);
-
   double Prop;
   int NewExtMomBin;
+  static momentum CurrMom;
+
+  // COPYFROMTO(Var.LoopMom[LoopIndex], CurrMom);
+  CurrMom = Var.LoopMom[LoopIndex];
+
   if (LoopIndex == 0) {
     Prop = ShiftExtK(Var.CurrExtMomBin, NewExtMomBin);
-    COPYFROMTO(Var.ExtMomTable[NewExtMomBin], Var.LoopMom[LoopIndex]);
+    // COPYFROMTO(Var.ExtMomTable[NewExtMomBin], Var.LoopMom[LoopIndex]);
+    Var.LoopMom[LoopIndex] = Var.ExtMomTable[NewExtMomBin];
   } else {
     Prop = ShiftK(CurrMom, Var.LoopMom[LoopIndex]);
   }
-  if (LoopIndex == 0 && norm2(Var.LoopMom[LoopIndex]) > Para.MaxExtMom) {
-    COPYFROMTO(CurrMom, Var.LoopMom[LoopIndex]);
+  if (LoopIndex == 0 && Var.LoopMom[LoopIndex].norm() > Para.MaxExtMom) {
+    Var.LoopMom[LoopIndex] = CurrMom;
+    // COPYFROMTO(CurrMom, Var.LoopMom[LoopIndex]);
     return;
   }
 
@@ -280,7 +279,8 @@ void markov::ChangeMomentum() {
     if (LoopIndex == 0)
       Var.CurrExtMomBin = NewExtMomBin;
   } else {
-    COPYFROMTO(CurrMom, Var.LoopMom[LoopIndex]);
+    Var.LoopMom[LoopIndex] = CurrMom;
+    // COPYFROMTO(CurrMom, Var.LoopMom[LoopIndex]);
     Weight.RejectChange(*Var.CurrGroup);
   }
 };
@@ -332,7 +332,7 @@ double markov::RemoveOldK(momentum &OldMom) {
   double dK = Para.Kf / sqrt(Para.Beta) / 4.0;
   if (dK > Para.Kf / 2)
     dK = Para.Kf / 2; // to avoid dK>Kf situation
-  double KAmp = norm2(OldMom);
+  double KAmp = OldMom.norm();
   if (KAmp < Para.Kf - dK || KAmp > Para.Kf + dK)
     // Kf-dK<KAmp<Kf+dK
     return 0.0;
@@ -357,13 +357,14 @@ double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
   double x = Random.urn();
   double Prop;
   if (x < 1.0 / 3) {
-    COPYFROMTO(OldMom, NewMom);
+    // COPYFROMTO(OldMom, NewMom);
+    NewMom = OldMom;
     int dir = Random.irn(0, D - 1);
     double STEP = Para.Beta > 1.0 ? Para.Kf / Para.Beta * 3.0 : Para.Kf;
     NewMom[dir] += STEP * (Random.urn() - 0.5);
     Prop = 1.0;
   } else if (x < 2.0 / 3) {
-    double k = norm2(OldMom);
+    double k = OldMom.norm();
     if (k < EPS)
       Prop = 0.0;
 

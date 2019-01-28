@@ -47,7 +47,7 @@ for order in ScanOrder:
     Num=0
     data0=None
     for f in files:
-        if re.match("group"+str(order-1)+"_pid[0-9]+.dat", f):
+        if re.match("group"+str(order)+"_pid[0-9]+.dat", f):
             print f
             Num+=1
             d=np.loadtxt(folder+f)
