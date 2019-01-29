@@ -208,9 +208,54 @@ void markov::ChangeGroup() {
   group &NewGroup = Groups[Random.irn(0, Groups.size() - 1)];
   if (NewGroup.ID == Var.CurrGroup->ID)
     return;
-  if (NewGroup.Order != Var.CurrGroup->Order)
-    return;
-  Proposed[INCREASE_ORDER][Var.CurrGroup->ID] += 1;
+
+  Updates Name;
+  double Prop = 1.0;
+
+  if (NewGroup.Order == Var.CurrGroup->Order) {
+    // change group with the same order
+    Name = CHANGE_GROUP;
+    Prop = 1.0;
+
+  } else if (NewGroup.Order == Var.CurrGroup->Order + 1) {
+    // change to a new group with one higher order
+    Name = INCREASE_ORDER;
+    static momentum NewMom;
+    double NewTau;
+    // Generate New Tau
+    Prop = GetNewTau(NewTau);
+    int NewTauIndex = Var.CurrGroup->TauNum;
+    // ASSUME: NewTauIndex will never equal to 0 or 1
+    Var.Tau[NewTauIndex] = NewTau;
+    Var.Tau[NewTauIndex + 1] = NewTau;
+    // Generate New Mom
+    Prop *= GetNewK(NewMom);
+    Var.LoopMom[Var.CurrGroup->LoopNum] = NewMom;
+
+  } else if (NewGroup.Order == Var.CurrGroup->Order - 1) {
+    // change to a new group with one lower order
+    Name = DECREASE_ORDER;
+    // Remove OldTau
+    int TauToRemove = Var.CurrGroup->TauNum - 2;
+    Prop = RemoveOldTau(Var.Tau[TauToRemove]);
+    // Remove OldMom
+    int LoopToRemove = Var.CurrGroup->LoopNum - 1;
+    Prop *= RemoveOldK(Var.LoopMom[LoopToRemove]);
+  }
+
+  Proposed[Name][Var.CurrGroup->ID] += 1;
+
+  Weight.ChangeGroup(NewGroup);
+  double NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
+             Var.CurrGroup->ReWeight;
+
+  if (Random.urn() < R) {
+    Accepted[Name][Var.CurrGroup->ID]++;
+    Weight.AcceptChange(NewGroup);
+  } else {
+    Weight.RejectChange(NewGroup);
+  }
   return;
 };
 
@@ -221,7 +266,7 @@ void markov::ChangeTau() {
     return;
   Proposed[CHANGE_TAU][Var.CurrGroup->ID]++;
 
-  // note if TauIndex==0, then Tau[1]!=Tau[0].
+  // note that if TauIndex==0, then Tau[1]!=Tau[0].
   // since we only change Tau[1] in this case, it is better set
   // CurrTau=Tau[Odd]
   double CurrTau = Var.Tau[TauIndex + 1];
