@@ -4,27 +4,29 @@
 #include <array>
 #include <iostream>
 #include <sstream>
+#include <stdio.h>
 #include <string>
 
 using namespace diag;
 using namespace std;
 
-void weight::ReadDiagrams(string FilePrefix) {
+void weight::ReadDiagrams() {
   Pool.GPoolSize = 0;
   Pool.VerPoolSize = 0;
   Pool.Ver4PoolSize = 0;
 
   for (int &id : Para.GroupID) {
-    ifstream DiagFile(FilePrefix + to_string(id) + ".txt");
-    if (DiagFile) {
-      // group Group;
-      LOG_INFO("Find " << FilePrefix + to_string(id) + ".txt\n");
-      // vector<green> GList;
-      istream &DiagFileStream = DiagFile;
-      Groups.push_back(ReadOneGroup(DiagFileStream, Pool));
-      Groups.back().ID = id;
-    } else
-      break;
+    // construct filename based on format string and group id
+    string FileName = Format(Para.DiagFileFormat, id);
+    ifstream DiagFile(FileName);
+    ASSERT_ALLWAYS(DiagFile.is_open(),
+                   "Unable to find the file " << FileName << endl);
+    // group Group;
+    LOG_INFO("Find " << FileName << "\n");
+    // vector<green> GList;
+    istream &DiagFileStream = DiagFile;
+    Groups.push_back(ReadOneGroup(DiagFileStream, Pool));
+    Groups.back().ID = id;
   }
   LOG_INFO("Find " << Pool.GPoolSize << " indepdent green's function.");
   LOG_INFO("Find " << Pool.VerPoolSize << " indepdent interactions.");
@@ -32,6 +34,7 @@ void weight::ReadDiagrams(string FilePrefix) {
 
   // cout << "After read" << endl;
   // cout << ToString(*(GroupList[0].DiagList[0].GIndex[0])) << endl;
+  Initialization();
 }
 
 void weight::Initialization() {

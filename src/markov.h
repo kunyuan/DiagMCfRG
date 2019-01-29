@@ -16,10 +16,9 @@ typedef array<double, ExtMomBinSize> polar;
 
 class markov {
 public:
-  markov() : Var(Weight.Var), Groups(Weight.Groups){};
+  markov();
   long long Counter;
 
-  void Initialization(std::string FilePrefix);
   void PrintMCInfo();
   void PrintDeBugMCInfo();
   void AdjustGroupReWeight();

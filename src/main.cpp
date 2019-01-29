@@ -19,7 +19,7 @@
 using namespace std;
 using namespace mc;
 void InitPara();
-void MonteCarlo(markov &);
+void MonteCarlo();
 
 parameter Para; // parameters as a global variable
 RandomFactory Random;
@@ -29,10 +29,8 @@ int main(int argc, const char *argv[]) {
           "PID\n";
   cin >> Para.Beta >> Para.Rs >> Para.Mass2 >> Para.MaxExtMom >>
       Para.TotalStep >> Para.ObsType >> Para.Seed >> Para.PID;
-  InitPara();
-  markov Markov;
-  Markov.Initialization("DiagPolar"); // initialize MC
-  MonteCarlo(Markov);
+  InitPara(); // initialize global parameters
+  MonteCarlo();
   return 0;
 }
 
@@ -41,7 +39,10 @@ void InitPara() {
   string LogFile = "_" + to_string(Para.PID) + ".log";
   LOGGER_CONF(LogFile, "MC", Logger::file_on | Logger::screen_on, INFO, INFO);
 
-  Random.Reset(Para.Seed);
+  // diagram file path: groups/DiagPolar1.dat
+  Para.DiagFileFormat = "groups/DiagPolar%d.txt";
+  Para.GroupID = {1, 2, 3};
+  Para.ReWeight = {1.0, 1.0, 10.0};
 
   //// initialize the global parameter //////////////////////
   double Kf;
@@ -73,25 +74,25 @@ void InitPara() {
   Para.PrinterTimer = 5;
   Para.SaveFileTimer = 30;
   Para.ReweightTimer = 30;
-
-  Para.GroupID = {1, 2, 3};
-  Para.ReWeight = {1.0, 1.0, 10.0};
 }
 
-void MonteCarlo(markov &Markov) {
+void MonteCarlo() {
+  LOG_INFO("Initializing Markov!");
+  markov Markov;
   InterruptHandler Interrupt;
 
-  LOG_INFO("Markov is started!");
+  Random.Reset(Para.Seed);
+  Para.Counter = 0;
+
   timer ReweightTimer, PrinterTimer, SaveFileTimer, MessageTimer;
   PrinterTimer.start();
   SaveFileTimer.start();
   MessageTimer.start();
   ReweightTimer.start();
 
-  const int SWEEP = 1;
-  int Step = 0;
-  while (Step < Para.TotalStep) {
-    Step++;
+  LOG_INFO("Start simulation ...")
+
+  for (int Block = 0; Block < Para.TotalStep; Block++) {
     for (int i = 0; i < 1000000; i++) {
       Para.Counter++;
       // if (Para.Counter == 9) {
@@ -100,42 +101,31 @@ void MonteCarlo(markov &Markov) {
       // }
 
       double x = Random.urn();
-      if (x < 1.0 / 3.0)
+      if (x < 1.0 / 3.0) {
         Markov.ChangeGroup();
-      else if (x < 2.0 / 3.0)
+        // ;
+      } else if (x < 2.0 / 3.0) {
         Markov.ChangeMomentum();
-      // ;
-      else if (x < 3.0 / 3.0)
+        // ;
+      } else if (x < 3.0 / 3.0) {
         Markov.ChangeTau();
-      // ;
+        // ;
+      }
 
       // if (Para.Counter == 8831001) {
       //   cout << "After: " << Para.Counter << endl;
       //   PrintDeBugMCInfo();
       // }
 
-      // double Tau = Var.Tau[1] - Var.Tau[0];
-      // momentum G1, G2;
-      // for (int i = 0; i < D; i++) {
-      //   G1[i] = Var.LoopMom[0][i] + Var.LoopMom[1][i];
-      //   G2[i] = Var.LoopMom[1][i];
-      // }
-      // ASSERT_ALLWAYS(Equal(Green(Tau, G1, UP, 0),
-      //                      Var.CurrGroup->Diag[0].G[0]->Weight, 1.0e-8),
-      //                Weight._DebugInfo());
-
-      // ASSERT_ALLWAYS(Equal(Green(-Tau, G2, UP, 0),
-      //                      Var.CurrGroup->Diag[0].G[1]->Weight, 1.0e-8),
-      //                Weight._DebugInfo());
       Markov.Measure();
 
-      if (i % 100 == 0) {
+      if (i % 1000 == 0) {
         // Markov.PrintDeBugMCInfo();
         if (PrinterTimer.check(Para.PrinterTimer)) {
           Markov.DynamicTest();
           Markov.PrintDeBugMCInfo();
           Markov.PrintMCInfo();
-          LOG_INFO(ProgressBar((double)Step / Para.TotalStep));
+          LOG_INFO(ProgressBar((double)Block / Para.TotalStep));
         }
 
         if (SaveFileTimer.check(Para.SaveFileTimer)) {
@@ -152,9 +142,10 @@ void MonteCarlo(markov &Markov) {
     }
   }
 
+  LOG_INFO("Simulation is ended!");
   Markov.PrintMCInfo();
   Interrupt.Delay(); // the process can not be killed in saving
   Markov.SaveToFile();
   Interrupt.Resume(); // after this point, the process can be killed
-  LOG_INFO("Markov is ended!");
+  LOG_INFO("Quit Markov.");
 }

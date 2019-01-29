@@ -3,6 +3,7 @@
 
 #include "utility/vector.h"
 #include <math.h>
+#include <string>
 #include <vector>
 
 // turn off all assert
@@ -30,6 +31,7 @@ struct parameter {
   int SaveFileTimer;     // how many secondes between saving to file
   int MessageTimer;      // how many secondes between two checking for message
   int ReweightTimer;     // how many secondes between two reweighting
+  std::string DiagFileFormat;   // the diagram file needs to be loaded
   std::vector<int> GroupID;     // ID for each group
   std::vector<double> ReWeight; // reweight factor for each group
 };

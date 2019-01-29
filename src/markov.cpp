@@ -5,8 +5,7 @@
 //  Copyright (c) 2019 Kun Chen. All rights reserved.
 //
 #include "markov.h"
-#include "utility/tinyformat.h"
-#include <stdio.h>
+#include <iostream>
 
 extern parameter Para;
 extern RandomFactory Random;
@@ -16,9 +15,40 @@ using namespace diag;
 using namespace std;
 
 #define NAME(x) #x
-#define COPYFROMTO(x, y)                                                       \
-  for (int i = 0; i < D; i++)                                                  \
-    y[i] = x[i];
+// #define COPYFROMTO(x, y)                                                       \
+//   for (int i = 0; i < D; i++)                                                  \
+//     y[i] = x[i];
+
+markov::markov() : Var(Weight.Var), Groups(Weight.Groups) {
+  ///==== initialize Weight ============================//
+  Weight.ReadDiagrams();
+
+  //===== initialize updates related variable ==========//
+
+  UpdatesName[INCREASE_ORDER] = NAME(INCREASE_ORDER);
+  UpdatesName[DECREASE_ORDER] = NAME(DECREASE_ORDER);
+  UpdatesName[CHANGE_GROUP] = NAME(CHANGE_GROUP);
+  UpdatesName[CHANGE_MOM] = NAME(CHANGE_MOM);
+  UpdatesName[CHANGE_TAU] = NAME(CHANGE_TAU);
+
+  // for(int i=0;i<MCUpdates;i++)
+  // UpdatesName[(Updates)i]=NAME((Updates))
+
+  InitialArray(&Accepted[0][0], 1.0e-10, MCUpdates * MaxGroupNum);
+  InitialArray(&Proposed[0][0], 1.0e-10, MCUpdates * MaxGroupNum);
+
+  ///==== initialize observable =======================//
+  for (auto &g : Weight.Groups) {
+    Polar[g.ID].fill(1.0e-10);
+    PolarStatic[g.ID] = 1.0e-10;
+  }
+  ///=== Do all kinds of test  =======================//
+  Weight.StaticTest();
+  Weight.DynamicTest();
+
+  ///==== Set Reweighting factor =====================//
+  AdjustGroupReWeight();
+};
 
 int markov::DynamicTest() { return Weight.DynamicTest(); }
 
@@ -60,39 +90,6 @@ void markov::PrintDeBugMCInfo() {
   LOG_INFO(msg);
 }
 
-void markov::Initialization(string FilePrefix) {
-  ///==== initialize Weight ============================//
-  Weight.ReadDiagrams(FilePrefix);
-  Weight.Initialization();
-
-  //===== initialize updates related variable ==========//
-  Para.Counter = 0;
-
-  UpdatesName[INCREASE_ORDER] = NAME(INCREASE_ORDER);
-  UpdatesName[DECREASE_ORDER] = NAME(DECREASE_ORDER);
-  UpdatesName[CHANGE_GROUP] = NAME(CHANGE_GROUP);
-  UpdatesName[CHANGE_MOM] = NAME(CHANGE_MOM);
-  UpdatesName[CHANGE_TAU] = NAME(CHANGE_TAU);
-
-  // for(int i=0;i<MCUpdates;i++)
-  // UpdatesName[(Updates)i]=NAME((Updates))
-
-  InitialArray(&Accepted[0][0], 1.0e-10, MCUpdates * MaxGroupNum);
-  InitialArray(&Proposed[0][0], 1.0e-10, MCUpdates * MaxGroupNum);
-
-  ///==== initialize observable =======================//
-  for (auto &g : Weight.Groups) {
-    Polar[g.ID].fill(1.0e-10);
-    PolarStatic[g.ID] = 1.0e-10;
-  }
-  ///=== Do all kinds of test  =======================//
-  Weight.StaticTest();
-  Weight.DynamicTest();
-
-  ///==== Set Reweighting factor =====================//
-  AdjustGroupReWeight();
-}
-
 void markov::AdjustGroupReWeight() {
   for (int i = 0; i < Weight.Groups.size(); i++)
     Weight.Groups[i].ReWeight = Para.ReWeight[i];
@@ -109,16 +106,16 @@ void markov::Measure() {
 void markov::SaveToFile() {
   for (auto &id : Para.GroupID) {
     ofstream PolarFile;
-    string FileName = tfm::format("group%d_pid%d.dat", id, Para.PID);
+    string FileName = Format("group%d_pid%d.dat", id, Para.PID);
     PolarFile.open(FileName, ios::out | ios::trunc);
     if (PolarFile.is_open()) {
-      PolarFile << tfm::format(
+      PolarFile << Format(
           "#PID: %d, Type:%d, rs:%.3f, Beta: %.3f, Group: %d, Step: %d\n",
           Para.PID, Para.ObsType, Para.Rs, Para.Beta, id, Para.Counter);
 
       for (int j = 0; j < Polar[id].size(); j++)
-        PolarFile << tfm::format("%13.6f\t%13.6f\n", Var.ExtMomTable[j][0],
-                                 Polar[id][j]);
+        PolarFile << Format("%13.6f\t%13.6f\n", Var.ExtMomTable[j][0],
+                            Polar[id][j]);
       PolarFile.close();
     } else {
       LOG_WARNING("Polarization for PID " << Para.PID << " fails to save!");
@@ -126,15 +123,14 @@ void markov::SaveToFile() {
   }
 
   ofstream StaticPolarFile;
-  string FileName = tfm::format("output%d.dat", Para.PID);
+  string FileName = Format("output%d.dat", Para.PID);
   StaticPolarFile.open(FileName, ios::out | ios::trunc);
   if (StaticPolarFile.is_open()) {
     for (auto &id : Para.GroupID) {
-      StaticPolarFile << tfm::format(
-          "PID:%-4d  Type:%-2d  Group:%-4d  rs:%-.3f  "
-          "Beta:%-.3f  Lambda:%-.3f  Polar: % 13.6f\n",
-          Para.PID, Para.ObsType, id, Para.Rs, Para.Beta, Para.Mass2,
-          PolarStatic[id]);
+      StaticPolarFile << Format("PID:%-4d  Type:%-2d  Group:%-4d  rs:%-.3f  "
+                                "Beta:%-.3f  Lambda:%-.3f  Polar: % 13.6f\n",
+                                Para.PID, Para.ObsType, id, Para.Rs, Para.Beta,
+                                Para.Mass2, PolarStatic[id]);
     }
     StaticPolarFile.close();
   } else {
@@ -187,18 +183,10 @@ void markov::ChangeGroup() {
 
   Proposed[Name][Var.CurrGroup->ID] += 1;
 
-  if (Name == CHANGE_GROUP) {
-    cout << Var.CurrGroup->ID << " to " << NewGroup.ID << endl;
-  }
-
   Weight.ChangeGroup(NewGroup);
   double NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
              Var.CurrGroup->ReWeight;
-
-  if (Name == CHANGE_GROUP) {
-    cout << NewWeight << endl;
-  }
 
   if (Random.urn() < R) {
     Accepted[Name][Var.CurrGroup->ID]++;
@@ -406,21 +394,18 @@ double markov::ShiftTau(const double &OldTau, double &NewTau) {
 std::string markov::_DetailBalanceStr(Updates op) {
   string Output = string(80, '-') + "\n";
   Output += UpdatesName[op] + ":\n";
-  char temp[80];
   double TotalProposed = 0.0, TotalAccepted = 0.0;
   for (int i = 0; i <= Groups.size(); i++) {
     if (!Equal(Proposed[op][i], 0.0)) {
       TotalAccepted += Accepted[op][i];
       TotalProposed += Proposed[op][i];
-      sprintf(temp, "\t%8s%2i:%15g%15g%15g\n", "Group", i, Proposed[op][i],
-              Accepted[op][i], Accepted[op][i] / Proposed[op][i]);
-      Output += temp;
+      Output += Format("\t%8s%2i:%15g%15g%15g\n", "Group", i, Proposed[op][i],
+                       Accepted[op][i], Accepted[op][i] / Proposed[op][i]);
     }
   }
   if (!Equal(TotalProposed, 0.0)) {
-    sprintf(temp, "\t%10s:%15g%15g%15g\n", "Summation", TotalProposed,
-            TotalAccepted, TotalAccepted / TotalProposed);
-    Output += temp;
+    Output += Format("\t%10s:%15g%15g%15g\n", "Summation", TotalProposed,
+                     TotalAccepted, TotalAccepted / TotalProposed);
   } else
     Output += "\tNo updates are proposed/accepted!\n";
   return Output;

@@ -26,8 +26,7 @@ public:
   variable Var; // The variable of the integral
 
   // initialization, read diagrams, then initialize variables
-  void ReadDiagrams(std::string FilePrefix);
-  void Initialization();
+  void ReadDiagrams();
 
   // MC updates related operations
   // double ChangeTemperature(double NewBeta);
@@ -67,6 +66,8 @@ private:
   } NewVer4;
   array<array<double, diag::MaxBranchNum>, MaxVer4Num> _SpinCache;
   string _ErrMsg(string);
+
+  void Initialization();
 
   void GetMom(const loop &LoopBasis, const int &LoopNum);
   momentum _Mom;

@@ -2,9 +2,9 @@
 #compiler=clang++
 compiler=icpc
 #compiler=g++
-#type=Debug
+type=Debug
 type=Release
-mkdir build
+#mkdir build
 cd build
 if [ -n "$1" ]
   then
