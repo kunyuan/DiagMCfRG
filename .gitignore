@@ -47,3 +47,4 @@ Data/
 blitz/
 src/blitz/
 callgrind*
+*.pyc
