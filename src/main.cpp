@@ -74,11 +74,8 @@ void InitPara() {
   Para.SaveFileTimer = 30;
   Para.ReweightTimer = 30;
 
-  Para.GroupID = {
-      1,
-      2,
-      3,
-  };
+  Para.GroupID = {1, 2, 3};
+  Para.ReWeight = {1.0, 1.0, 10.0};
 }
 
 void MonteCarlo(markov &Markov) {
@@ -103,16 +100,12 @@ void MonteCarlo(markov &Markov) {
       // }
 
       double x = Random.urn();
-      if (x < 1.0 / MCUpdates)
-        Markov.IncreaseOrder();
-      else if (x < 2.0 / MCUpdates)
-        Markov.DecreaseOrder();
-      else if (x < 3.0 / MCUpdates)
+      if (x < 1.0 / 3.0)
         Markov.ChangeGroup();
-      else if (x < 4.0 / MCUpdates)
+      else if (x < 2.0 / 3.0)
         Markov.ChangeMomentum();
       // ;
-      else if (x < 5.0 / MCUpdates)
+      else if (x < 3.0 / 3.0)
         Markov.ChangeTau();
       // ;
 

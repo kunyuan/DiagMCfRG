@@ -33,6 +33,8 @@ Index={}
 Index[1]=[1,]
 Index[2]=[1,]
 Index[3]=[1,2,3]
+# Index[4]=[1,]
+# Index[5]=[1,]
 DataAll={}
 Data={}
 DataOrderByOrder={}
@@ -96,6 +98,8 @@ for key in DataAll.keys():
 DataOrderByOrder[1]=np.copy(DataAll[1])
 DataOrderByOrder[2]=np.copy(DataAll[2])
 DataOrderByOrder[3]=np.copy(DataAll[3])
+# DataOrderByOrder[4]=np.copy(DataAll[4])
+# DataOrderByOrder[5]=np.copy(DataAll[5])
 
 DataOrderByOrder[2][:,1]*=-1.0
 

@@ -94,9 +94,8 @@ void markov::Initialization(string FilePrefix) {
 }
 
 void markov::AdjustGroupReWeight() {
-  double factor[3] = {1.0, 1.0, 10.0};
   for (int i = 0; i < Weight.Groups.size(); i++)
-    Weight.Groups[i].ReWeight = factor[i];
+    Weight.Groups[i].ReWeight = Para.ReWeight[i];
 };
 
 void markov::Measure() {
@@ -144,66 +143,6 @@ void markov::SaveToFile() {
   }
 };
 
-void markov::IncreaseOrder() {
-  static momentum NewMom;
-
-  group &NewGroup = Groups[Random.irn(0, Groups.size() - 1)];
-  if (NewGroup.Order != Var.CurrGroup->Order + 1)
-    return;
-  Proposed[INCREASE_ORDER][Var.CurrGroup->ID] += 1;
-
-  // Generate New Tau
-  double NewTau;
-  double Prop = GetNewTau(NewTau);
-  int NewTauIndex = Var.CurrGroup->TauNum;
-  // ASSUME: NewTauIndex will never equal to 0 or 1
-  Var.Tau[NewTauIndex] = NewTau;
-  Var.Tau[NewTauIndex + 1] = NewTau;
-
-  // Generate New Mom
-  Prop *= GetNewK(NewMom);
-  int NewLoopIndex = Var.CurrGroup->LoopNum;
-  COPYFROMTO(NewMom, Var.LoopMom[NewLoopIndex]);
-
-  Weight.ChangeGroup(NewGroup);
-  double NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
-  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
-             Var.CurrGroup->ReWeight;
-
-  if (Random.urn() < R) {
-    Accepted[INCREASE_ORDER][Var.CurrGroup->ID]++;
-    Weight.AcceptChange(NewGroup);
-  } else {
-    Weight.RejectChange(NewGroup);
-  }
-};
-
-void markov::DecreaseOrder() {
-  group &NewGroup = Groups[Random.irn(0, Groups.size() - 1)];
-  if (NewGroup.Order != Var.CurrGroup->Order - 1)
-    return;
-  Proposed[DECREASE_ORDER][Var.CurrGroup->ID] += 1;
-
-  // Remove OldTau
-  int TauToRemove = Var.CurrGroup->TauNum - 2;
-  double Prop = RemoveOldTau(Var.Tau[TauToRemove]);
-  // Remove OldMom
-  int LoopToRemove = Var.CurrGroup->LoopNum - 1;
-  Prop *= RemoveOldK(Var.LoopMom[LoopToRemove]);
-
-  Weight.ChangeGroup(NewGroup);
-  double NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
-  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
-             Var.CurrGroup->ReWeight;
-
-  if (Random.urn() < R) {
-    Accepted[DECREASE_ORDER][Var.CurrGroup->ID]++;
-    Weight.AcceptChange(NewGroup);
-  } else {
-    Weight.RejectChange(NewGroup);
-  }
-};
-
 void markov::ChangeGroup() {
   group &NewGroup = Groups[Random.irn(0, Groups.size() - 1)];
   if (NewGroup.ID == Var.CurrGroup->ID)
@@ -241,14 +180,25 @@ void markov::ChangeGroup() {
     // Remove OldMom
     int LoopToRemove = Var.CurrGroup->LoopNum - 1;
     Prop *= RemoveOldK(Var.LoopMom[LoopToRemove]);
+
+  } else {
+    return;
   }
 
   Proposed[Name][Var.CurrGroup->ID] += 1;
+
+  if (Name == CHANGE_GROUP) {
+    cout << Var.CurrGroup->ID << " to " << NewGroup.ID << endl;
+  }
 
   Weight.ChangeGroup(NewGroup);
   double NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
              Var.CurrGroup->ReWeight;
+
+  if (Name == CHANGE_GROUP) {
+    cout << NewWeight << endl;
+  }
 
   if (Random.urn() < R) {
     Accepted[Name][Var.CurrGroup->ID]++;
