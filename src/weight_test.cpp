@@ -1,3 +1,6 @@
+#define FMT_HEADER_ONLY
+#include "utility/fmt/format.h"
+#include "utility/utility.h"
 #include "weight.h"
 
 using namespace diag;
@@ -6,8 +9,9 @@ using namespace std;
 string weight::_DebugInfo() {
   string msg;
   msg = string(80, '=') + "\n";
-  msg += "\nMC Counter: " + to_string(Para.Counter) + ":\n";
-  msg += "Current Group Info:\n " + ToString(*Var.CurrGroup);
+  msg += fmt::format("\nMC Counter: {} \n", Para.Counter);
+  msg += "Current Group Info:\n ";
+  msg += ToString(*Var.CurrGroup);
 
   msg += string(80, '=') + "\n";
   msg += "GWeight: \n";
@@ -82,68 +86,69 @@ string weight::_ErrMsg(string message) {
   return msg;
 }
 
+template <typename... TS>
+std::string weight::ERR(std::string format, TS... args) {
+  string msg = fmt::format(format, args...);
+  msg += fmt::format("\nProblem occurs at MC Counter {}\n", Para.Counter);
+  msg += _DebugInfo();
+  return msg;
+}
+
 int weight::DynamicTest() {
   LOG_INFO("Start Dynamic Test...");
   LOG_INFO(_DebugInfo());
   //=================== Tau variable check ===================================//
   for (int i = 1; i < Var.CurrGroup->TauNum / 2; i++)
     ASSERT_ALLWAYS(Equal(Var.Tau[2 * i], Var.Tau[2 * i + 1], 1.e-10),
-                   "Odd and Even are not the same! " << Var.Tau[2 * i] << " vs "
-                                                     << Var.Tau[2 * i + 1]);
+                   ERR("Odd and Even are not the same! {0} vs {1}",
+                       Var.Tau[2 * i], Var.Tau[2 * i + 1]));
   //================== External Variable
   //=========================================//
-  ASSERT_ALLWAYS(Equal(Var.Tau[0], 0.0, 1.0e-10),
-                 _ErrMsg("Tau 0 is not zero!"));
-  ASSERT_ALLWAYS(
-      Equal(Var.ExtMomTable[Var.CurrExtMomBin].data(), Var.LoopMom[0].data(), D,
-            1.0e-8),
-      _ErrMsg("ExtMom is inconsistent! Bin: " + ToString(Var.CurrExtMomBin) +
-              "\n" + ToString(Var.ExtMomTable[Var.CurrExtMomBin][0]) + " vs " +
-              ToString(Var.LoopMom[0][0])));
+  ASSERT_ALLWAYS(Equal(Var.Tau[0], 0.0, 1.0e-10), ERR("Tau 0 is not zero!"));
+  ASSERT_ALLWAYS(Equal(Var.ExtMomTable[Var.CurrExtMomBin].data(),
+                       Var.LoopMom[0].data(), D, 1.0e-8),
+                 ERR("ExtMom is inconsistent! Bin: {0}; Mom: {1} vs {2}\n",
+                     Var.CurrExtMomBin, Var.ExtMomTable[Var.CurrExtMomBin][0],
+                     Var.LoopMom[0][0]));
 
   //=================== check NaN and Excited in weight ======================//
   for (auto &group : Groups) {
     for (auto &diag : group.Diag) {
       for (auto i = 0; i < group.GNum; i++) {
-        ASSERT_ALLWAYS(
-            !isnan(diag.G[i]->Weight),
-            _ErrMsg("One G weight is a NaN!\n Diag: " + ToString(diag) +
-                    "\n Group: " + ToString(group)));
+        ASSERT_ALLWAYS(!isnan(diag.G[i]->Weight),
+                       ERR("G weight is a NaN!\n Diag: {0} in Group: {1}\n",
+                           diag.ID, group.ID));
         ASSERT_ALLWAYS(diag.G[i]->Excited == false,
-                       _ErrMsg("One G is Excited!\n Diag: " + ToString(diag) +
-                               "\n Group: " + ToString(group)));
+                       ERR("One G is Excited!\n Diag: {0} in Group: {1}\n",
+                           diag.ID, group.ID));
       }
       for (auto i = 0; i < group.Ver4Num; i++) {
         if (UseVertex4) {
-          ASSERT_ALLWAYS(
-              !isnan(diag.Ver4[i]->Weight),
-              _ErrMsg("One 4-Ver weight is a NaN!\n Diag: " + ToString(diag) +
-                      "\n Group: " + ToString(group)));
+          ASSERT_ALLWAYS(!isnan(diag.Ver4[i]->Weight),
+                         ERR("One 4-Ver is NaN!\n Diag: {0} in Group: {1}\n",
+                             diag.ID, group.ID));
           ASSERT_ALLWAYS(
               diag.Ver4[i]->Excited == false,
-              _ErrMsg("One Ver4 is Excited!\n Diag: " + ToString(diag) +
-                      "\n Group: " + ToString(group)));
+              ERR("One 4-Ver is Excited!\n Diag: {0} in Group: {1}\n", diag.ID,
+                  group.ID));
         } else {
           ASSERT_ALLWAYS(
               !isnan(diag.Ver[i]->Weight[0] || diag.Ver[i]->Weight[1]),
-              _ErrMsg("One Ver weight is a NaN!\n Diag: " + ToString(diag) +
-                      "\n Group: " + ToString(group)));
-          ASSERT_ALLWAYS(
-              diag.Ver[i]->Excited[0] == false ||
-                  diag.Ver[i]->Excited[1] == false,
-              _ErrMsg("One Ver is Excited!\n Diag: " + ToString(diag) +
-                      "\n Group: " + ToString(group)));
+              ERR("One Ver is NaN!\n Diag: {0} in Group: {1}", diag.ID,
+                  group.ID));
+          ASSERT_ALLWAYS(diag.Ver[i]->Excited[0] == false ||
+                             diag.Ver[i]->Excited[1] == false,
+                         ERR("One Ver is Excited!\n Diag: {0} in Group: {1}\n",
+                             diag.ID, group.ID));
         }
       }
       // check diagram weight
-      ASSERT_ALLWAYS(
-          !isnan(diag.Weight),
-          _ErrMsg("Diag weight is a NaN!\n Diag: " + ToString(diag)));
+      ASSERT_ALLWAYS(!isnan(diag.Weight),
+                     ERR("Diag {} weight is a NaN!\n", diag.ID));
     }
     // check group weight
-    ASSERT_ALLWAYS(
-        !isnan(group.Weight),
-        _ErrMsg("Group weight is a NaN!\n Diag: " + ToString(group)));
+    ASSERT_ALLWAYS(!isnan(group.Weight),
+                   ERR("Group {} weight is a NaN!\n", group.ID));
   }
 
   //===============  Test if the weight is reproducible ============//
@@ -153,37 +158,33 @@ int weight::DynamicTest() {
   for (auto &diag : Var.CurrGroup->Diag) {
     for (auto i = 0; i < Var.CurrGroup->GNum; i++) {
       if (!Equal(diag.G[i]->NewWeight, diag.G[i]->Weight, 1.e-8)) {
-        ASSERT_ALLWAYS(
-            Equal(diag.G[i]->NewWeight, diag.G[i]->Weight, 1.e-8),
-            _ErrMsg("G Weight is different: " + ToString(diag.G[i]->NewWeight) +
-                    " vs " + ToString(diag.G[i]->Weight)));
+        ASSERT_ALLWAYS(Equal(diag.G[i]->NewWeight, diag.G[i]->Weight, 1.e-8),
+                       ERR("G Weight is different: {0} vs {1}\n",
+                           diag.G[i]->NewWeight, diag.G[i]->Weight));
       }
       for (auto i = 0; i < Var.CurrGroup->Ver4Num; i++) {
         if (UseVertex4) {
           ASSERT_ALLWAYS(
               Equal(diag.Ver4[i]->NewWeight, diag.Ver4[i]->Weight, 1.e-8),
-              _ErrMsg("Ver4 Weight is different: " +
-                      ToString(diag.Ver4[i]->NewWeight) + " vs " +
-                      ToString(diag.Ver4[i]->Weight)));
+              ERR("Ver4 Weight is different: {0} vs {1}\n",
+                  diag.Ver4[i]->NewWeight, diag.Ver4[i]->Weight));
         } else {
           ASSERT_ALLWAYS(
               Equal(diag.Ver[i]->NewWeight[0], diag.Ver[i]->Weight[0], 1.e-8),
-              _ErrMsg("Ver Weight is different: " +
-                      ToString(diag.Ver[i]->NewWeight[0]) + " vs " +
-                      ToString(diag.Ver[i]->Weight[0])));
+              ERR("Ver Weight is different: {0} vs {1}\n",
+                  diag.Ver[i]->NewWeight[0], diag.Ver[i]->Weight[0]));
           ASSERT_ALLWAYS(
               Equal(diag.Ver[i]->NewWeight[1], diag.Ver[i]->Weight[1], 1.e-8),
-              _ErrMsg("Ver Weight is different: " +
-                      ToString(diag.Ver[i]->NewWeight[1]) + " vs " +
-                      ToString(diag.Ver[i]->Weight[1])));
+              ERR("Ver Weight is different: {0} vs {1}\n",
+                  diag.Ver[i]->NewWeight[1], diag.Ver[i]->Weight[1]));
         }
       }
     }
   }
 
-  ASSERT_ALLWAYS(Equal(Weight, Var.CurrGroup->Weight, 1.e-8),
-                 _ErrMsg("Weight is different: " + ToString(Weight) + " vs " +
-                         ToString(Var.CurrGroup->Weight)));
+  ASSERT_ALLWAYS(
+      Equal(Weight, Var.CurrGroup->Weight, 1.e-8),
+      ERR("Weight is different: {0} vs {1}\n", Weight, Var.CurrGroup->Weight));
   // don't forget apply changes so that all Excited set to false
   RejectChange(*Var.CurrGroup);
 
@@ -191,18 +192,17 @@ int weight::DynamicTest() {
   for (auto &diag : Var.CurrGroup->Diag) {
     for (int i = 0; i < Var.CurrGroup->Ver4Num; i++) {
       vertex &Ver = *(diag.Ver[i]);
-      if (IsInteractionReducible(Ver.LoopBasis[0], Var.CurrGroup->LoopNum)) {
-        ASSERT_ALLWAYS(Equal(Ver.Weight[0], 0.0, 1.0e-10),
-                       _ErrMsg("Ver " + ToString(i) +
-                               " is reducible but with finite Weight=" +
-                               ToString(Ver.Weight[0])));
-      }
-      if (IsInteractionReducible(Ver.LoopBasis[1], Var.CurrGroup->LoopNum)) {
-        ASSERT_ALLWAYS(Equal(Ver.Weight[1], 0.0, 1.0e-10),
-                       _ErrMsg("Ver " + ToString(i) +
-                               " is reducible but with finite Weight=" +
-                               ToString(Ver.Weight[1])));
-      }
+      if (IsInteractionReducible(Ver.LoopBasis[0], Var.CurrGroup->LoopNum))
+        ASSERT_ALLWAYS(
+            Equal(Ver.Weight[0], 0.0, 1.0e-10),
+            ERR("Ver {0} is reducible but with finite Weight = {1}\n", i,
+                Ver.Weight[0]));
+
+      if (IsInteractionReducible(Ver.LoopBasis[1], Var.CurrGroup->LoopNum))
+        ASSERT_ALLWAYS(
+            Equal(Ver.Weight[1], 0.0, 1.0e-10),
+            ERR("Ver {0} is reducible but with finite Weight = {1}\n", i,
+                Ver.Weight[1]));
     }
   }
 
@@ -223,13 +223,16 @@ int weight::StaticTest() {
   for (auto &group : Groups) {
     for (auto &dig : group.Diag) {
       for (auto i = 0; i < group.GNum; i++)
-        ASSERT_ALLWAYS(dig.G[i] != nullptr,
-                       "G " << i << " in Group " << group.ID << " is null!");
+        ASSERT_ALLWAYS(
+            dig.G[i] != nullptr,
+            fmt::format("G {0} in Group {1} is null!\n", i, group.ID));
       for (auto i = 0; i < group.Ver4Num; i++) {
-        ASSERT_ALLWAYS(dig.Ver[i] != nullptr,
-                       "Ver " << i << " in Group " << group.ID << " is null!");
-        ASSERT_ALLWAYS(dig.Ver4[i] != nullptr,
-                       "Ver4 " << i << " in Group " << group.ID << " is null!");
+        ASSERT_ALLWAYS(
+            dig.Ver[i] != nullptr,
+            fmt::format("Ver {0} in Group {1} is null!\n", i, group.ID));
+        ASSERT_ALLWAYS(
+            dig.Ver4[i] != nullptr,
+            fmt::format("Ver4 {0} in Group {1} is null!\n", i, group.ID));
       }
     }
   }
@@ -252,16 +255,17 @@ int weight::StaticTest() {
     for (auto &dig : group.Diag) {
       for (auto i = 0; i < group.GNum; i++)
         ASSERT_ALLWAYS(IsInPool(dig.G[i], Pool.GPool.data(), group.GNum),
-                       "G " << i << " in Group " << group.ID
-                            << " is not in the GPool!");
+                       fmt::format("G {0} in Group {1} is not in the GPool\n!",
+                                   i, group.ID));
       for (auto i = 0; i < group.Ver4Num; i++) {
-        ASSERT_ALLWAYS(IsInPool(dig.Ver[i], Pool.VerPool.data(), group.Ver4Num),
-                       "Ver " << i << " in Group " << group.ID
-                              << " is not in the VerPool!");
+        ASSERT_ALLWAYS(
+            IsInPool(dig.Ver[i], Pool.VerPool.data(), group.Ver4Num),
+            fmt::format("Ver {0} in Group {1} is not in the VerPool\n!", i,
+                        group.ID));
         ASSERT_ALLWAYS(
             IsInPool(dig.Ver4[i], Pool.Ver4Pool.data(), group.Ver4Num),
-            "Ver4 " << i << " in Group " << group.ID
-                    << " is not in the Ver4Pool!");
+            fmt::format("Ver4 {0} in Group {1} is not in the Ver4Pool\n!", i,
+                        group.ID));
       }
     }
   }

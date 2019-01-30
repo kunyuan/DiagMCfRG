@@ -75,6 +75,8 @@ private:
   // the spin cache to calculate vertex weight
   double _Tree[MaxOrder][MaxBranchNum];
   bool IsInteractionReducible(loop &, int);
+
+  template <typename... TS> std::string ERR(std::string format, TS... args);
 };
 
 }; // namespace diag

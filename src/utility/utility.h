@@ -88,13 +88,12 @@ bool DoesFileExist(const std::string &FileName);
 
 std::string ProgressBar(double progress);
 
-// std::string Format(std::string, )
-template <typename... TS>
-static std::string Format(std::string format, TS... args) {
-  char format_buffer[512];
-  int length = sprintf(format_buffer, format.c_str(), args...);
-  ASSERT_ALLWAYS(length > 0, "Failed to construct the string!");
-  return std::string(format_buffer, length);
-}
+// template <typename... TS>
+// static std::string Format(std::string format, TS... args) {
+//   char format_buffer[512];
+//   int length = sprintf(format_buffer, format.c_str(), args...);
+//   ASSERT_ALLWAYS(length > 0, "Failed to construct the string!");
+//   return std::string(format_buffer, length);
+// }
 
 #endif

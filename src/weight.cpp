@@ -1,10 +1,9 @@
 #include "weight.h"
 #include "utility/abort.h"
+#include "utility/fmt/printf.h"
 #include "utility/vector.h"
 #include <array>
 #include <iostream>
-#include <sstream>
-#include <stdio.h>
 #include <string>
 
 using namespace diag;
@@ -17,7 +16,7 @@ void weight::ReadDiagrams() {
 
   for (int &id : Para.GroupID) {
     // construct filename based on format string and group id
-    string FileName = Format(Para.DiagFileFormat, id);
+    string FileName = fmt::sprintf(Para.DiagFileFormat, id);
     ifstream DiagFile(FileName);
     ASSERT_ALLWAYS(DiagFile.is_open(),
                    "Unable to find the file " << FileName << endl);

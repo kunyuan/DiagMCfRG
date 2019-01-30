@@ -87,4 +87,6 @@ typedef Vec<double, D> momentum;
 
 // typedef std::array<double, D> momentum;
 
+#define FMT_HEADER_ONLY
+
 #endif

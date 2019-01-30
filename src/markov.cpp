@@ -5,6 +5,7 @@
 //  Copyright (c) 2019 Kun Chen. All rights reserved.
 //
 #include "markov.h"
+#include "utility/fmt/printf.h"
 #include <iostream>
 
 extern parameter Para;
@@ -106,16 +107,16 @@ void markov::Measure() {
 void markov::SaveToFile() {
   for (auto &id : Para.GroupID) {
     ofstream PolarFile;
-    string FileName = Format("group%d_pid%d.dat", id, Para.PID);
+    string FileName = fmt::sprintf("group%d_pid%d.dat", id, Para.PID);
     PolarFile.open(FileName, ios::out | ios::trunc);
     if (PolarFile.is_open()) {
-      PolarFile << Format(
+      PolarFile << fmt::sprintf(
           "#PID: %d, Type:%d, rs:%.3f, Beta: %.3f, Group: %d, Step: %d\n",
           Para.PID, Para.ObsType, Para.Rs, Para.Beta, id, Para.Counter);
 
       for (int j = 0; j < Polar[id].size(); j++)
-        PolarFile << Format("%13.6f\t%13.6f\n", Var.ExtMomTable[j][0],
-                            Polar[id][j]);
+        PolarFile << fmt::sprintf("%13.6f\t%13.6f\n", Var.ExtMomTable[j][0],
+                                  Polar[id][j]);
       PolarFile.close();
     } else {
       LOG_WARNING("Polarization for PID " << Para.PID << " fails to save!");
@@ -123,14 +124,15 @@ void markov::SaveToFile() {
   }
 
   ofstream StaticPolarFile;
-  string FileName = Format("output%d.dat", Para.PID);
+  string FileName = fmt::sprintf("output%d.dat", Para.PID);
   StaticPolarFile.open(FileName, ios::out | ios::trunc);
   if (StaticPolarFile.is_open()) {
     for (auto &id : Para.GroupID) {
-      StaticPolarFile << Format("PID:%-4d  Type:%-2d  Group:%-4d  rs:%-.3f  "
-                                "Beta:%-.3f  Lambda:%-.3f  Polar: % 13.6f\n",
-                                Para.PID, Para.ObsType, id, Para.Rs, Para.Beta,
-                                Para.Mass2, PolarStatic[id]);
+      StaticPolarFile << fmt::sprintf(
+          "PID:%-4d  Type:%-2d  Group:%-4d  rs:%-.3f  "
+          "Beta:%-.3f  Lambda:%-.3f  Polar: % 13.6f\n",
+          Para.PID, Para.ObsType, id, Para.Rs, Para.Beta, Para.Mass2,
+          PolarStatic[id]);
     }
     StaticPolarFile.close();
   } else {
@@ -399,13 +401,14 @@ std::string markov::_DetailBalanceStr(Updates op) {
     if (!Equal(Proposed[op][i], 0.0)) {
       TotalAccepted += Accepted[op][i];
       TotalProposed += Proposed[op][i];
-      Output += Format("\t%8s%2i:%15g%15g%15g\n", "Group", i, Proposed[op][i],
+      Output +=
+          fmt::sprintf("\t%8s%2i:%15g%15g%15g\n", "Group", i, Proposed[op][i],
                        Accepted[op][i], Accepted[op][i] / Proposed[op][i]);
     }
   }
   if (!Equal(TotalProposed, 0.0)) {
-    Output += Format("\t%10s:%15g%15g%15g\n", "Summation", TotalProposed,
-                     TotalAccepted, TotalAccepted / TotalProposed);
+    Output += fmt::sprintf("\t%10s:%15g%15g%15g\n", "Summation", TotalProposed,
+                           TotalAccepted, TotalAccepted / TotalProposed);
   } else
     Output += "\tNo updates are proposed/accepted!\n";
   return Output;
