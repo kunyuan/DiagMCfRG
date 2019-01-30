@@ -43,6 +43,7 @@ Normalization=1
 
 
 folder="./Beta{0}_rs{1}_lambda{2}_freq/".format(Beta, rs, Lambda) 
+# folder="./Beta{0}_rs{1}_lambda{2}_eqTime/".format(Beta, rs, Lambda) 
 
 files=os.listdir(folder)
 for order in ScanOrder:
