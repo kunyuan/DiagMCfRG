@@ -42,7 +42,7 @@ void InitPara() {
   // diagram file path: groups/DiagPolar1.dat
   Para.DiagFileFormat = "groups/DiagPolar%d.txt";
   Para.GroupID = {1, 2, 3, 4};
-  Para.ReWeight = {1.0, 1.0, 10.0, 50.0};
+  Para.ReWeight = {1.0, 1.0, 5.0, 10.0};
 
   //// initialize the global parameter //////////////////////
   double Kf;

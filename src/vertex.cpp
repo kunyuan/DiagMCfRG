@@ -31,8 +31,7 @@ double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
   return interaction;
 }
 
-double fermi::FockKinetic(const momentum &Mom) {
-  double k = Mom.norm(); // bare propagator
+double fermi::Fock(double k) {
   double l = sqrt(Para.Mass2);
   double kF = Para.Kf;
   double fock = 1.0 + l / kF * atan((k - kF) / l);
@@ -46,6 +45,21 @@ double fermi::FockKinetic(const momentum &Mom) {
   shift *= (-2.0 * kF) / PI;
 
   return k * k + fock - shift;
+}
+
+double fermi::GetSigma(double k) { return 0.0; }
+
+double fermi::BuildFockSigma() {
+  for (int i = 0; i < MAXSIGMABIN; ++i) {
+  }
+};
+
+double fermi::FockSigma(const momentum &Mom) {
+  double k = Mom.norm(); // bare propagator
+  if (k > UpBound * Para.Ef)
+    return Fock(k);
+  else
+    GetSigma(k);
 }
 
 double fermi::PhyGreen(double Tau, const momentum &Mom) {
@@ -63,9 +77,9 @@ double fermi::PhyGreen(double Tau, const momentum &Mom) {
     Tau -= Para.Beta;
     s = -s;
   }
-  // Ek = Mom.squaredNorm(); // bare propagator
+  Ek = Mom.squaredNorm(); // bare propagator
 
-  Ek = FockKinetic(Mom); // Fock diagram dressed propagator
+  // Ek = FockKinetic(Mom); // Fock diagram dressed propagator
 
   //// enforce an UV cutoff for the Green's function ////////
   // if(Ek>8.0*EF) then
