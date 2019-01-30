@@ -5,6 +5,7 @@
 //  Copyright (c) 2019 Kun Chen. All rights reserved.
 //
 #include "markov.h"
+#include "utility/fmt/format.h"
 #include "utility/fmt/printf.h"
 #include <iostream>
 
@@ -39,7 +40,7 @@ markov::markov() : Var(Weight.Var), Groups(Weight.Groups) {
   InitialArray(&Proposed[0][0], 1.0e-10, MCUpdates * MaxGroupNum);
 
   ///==== initialize observable =======================//
-  for (auto &g : Weight.Groups) {
+  for (auto &g : Groups) {
     Polar[g.ID].fill(1.0e-10);
     PolarStatic[g.ID] = 1.0e-10;
   }
@@ -105,18 +106,18 @@ void markov::Measure() {
 };
 
 void markov::SaveToFile() {
-  for (auto &id : Para.GroupID) {
+  for (auto &group : Groups) {
     ofstream PolarFile;
-    string FileName = fmt::sprintf("group%d_pid%d.dat", id, Para.PID);
+    string FileName = fmt::format("group{0}_pid{1}.dat", group.Name, Para.PID);
     PolarFile.open(FileName, ios::out | ios::trunc);
     if (PolarFile.is_open()) {
       PolarFile << fmt::sprintf(
-          "#PID: %d, Type:%d, rs:%.3f, Beta: %.3f, Group: %d, Step: %d\n",
-          Para.PID, Para.ObsType, Para.Rs, Para.Beta, id, Para.Counter);
+          "#PID:%d, Type:%d, rs:%.3f, Beta: %.3f, Group: %s, Step: %d\n",
+          Para.PID, Para.ObsType, Para.Rs, Para.Beta, group.Name, Para.Counter);
 
-      for (int j = 0; j < Polar[id].size(); j++)
+      for (int j = 0; j < Polar[group.ID].size(); j++)
         PolarFile << fmt::sprintf("%13.6f\t%13.6f\n", Var.ExtMomTable[j][0],
-                                  Polar[id][j]);
+                                  Polar[group.ID][j]);
       PolarFile.close();
     } else {
       LOG_WARNING("Polarization for PID " << Para.PID << " fails to save!");
@@ -127,12 +128,12 @@ void markov::SaveToFile() {
   string FileName = fmt::sprintf("output%d.dat", Para.PID);
   StaticPolarFile.open(FileName, ios::out | ios::trunc);
   if (StaticPolarFile.is_open()) {
-    for (auto &id : Para.GroupID) {
+    for (auto &group : Groups) {
       StaticPolarFile << fmt::sprintf(
-          "PID:%-4d  Type:%-2d  Group:%-4d  rs:%-.3f  "
+          "PID:%-4d  Type:%-2d  Group:%-4s  rs:%-.3f  "
           "Beta:%-.3f  Lambda:%-.3f  Polar: % 13.6f\n",
-          Para.PID, Para.ObsType, id, Para.Rs, Para.Beta, Para.Mass2,
-          PolarStatic[id]);
+          Para.PID, Para.ObsType, group.Name, Para.Rs, Para.Beta, Para.Mass2,
+          PolarStatic[group.ID]);
     }
     StaticPolarFile.close();
   } else {
@@ -402,8 +403,12 @@ std::string markov::_DetailBalanceStr(Updates op) {
       TotalAccepted += Accepted[op][i];
       TotalProposed += Proposed[op][i];
       Output +=
-          fmt::sprintf("\t%8s%2i:%15g%15g%15g\n", "Group", i, Proposed[op][i],
-                       Accepted[op][i], Accepted[op][i] / Proposed[op][i]);
+          // fmt::sprintf("\t%8s%2i:%15g%15g%15g\n", "Group", Groups[i].ID,
+          // Proposed[op][i],
+          //              Accepted[op][i], Accepted[op][i] / Proposed[op][i]);
+          fmt::format("\t%8s%4s:%15g%15g%15g\n", "Group", Groups[i].Name,
+                      Proposed[op][i], Accepted[op][i],
+                      Accepted[op][i] / Proposed[op][i]);
     }
   }
   if (!Equal(TotalProposed, 0.0)) {

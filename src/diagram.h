@@ -83,6 +83,7 @@ struct diagram {
 // or diagrams with same order but have little sign cancellation
 // store G and Ver indexes pointing to the corresponding pool
 struct group {
+  std::string Name;
   int ID;
   int HugenNum;        // Number of Hugenholz diagrams in each group
   int Order;           // diagram order of the group

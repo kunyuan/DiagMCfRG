@@ -1,6 +1,6 @@
 #include "weight.h"
 #include "utility/abort.h"
-#include "utility/fmt/printf.h"
+#include "utility/fmt/format.h"
 #include "utility/vector.h"
 #include <array>
 #include <iostream>
@@ -14,9 +14,10 @@ void weight::ReadDiagrams() {
   Pool.VerPoolSize = 0;
   Pool.Ver4PoolSize = 0;
 
-  for (int &id : Para.GroupID) {
+  int ID = 0;
+  for (auto &name : Para.GroupName) {
     // construct filename based on format string and group id
-    string FileName = fmt::sprintf(Para.DiagFileFormat, id);
+    string FileName = fmt::format(Para.DiagFileFormat, name);
     ifstream DiagFile(FileName);
     ASSERT_ALLWAYS(DiagFile.is_open(),
                    "Unable to find the file " << FileName << endl);
@@ -25,7 +26,9 @@ void weight::ReadDiagrams() {
     // vector<green> GList;
     istream &DiagFileStream = DiagFile;
     Groups.push_back(ReadOneGroup(DiagFileStream, Pool));
-    Groups.back().ID = id;
+    Groups.back().Name = name;
+    Groups.back().ID = ID;
+    ID++;
   }
   LOG_INFO("Find " << Pool.GPoolSize << " indepdent green's function.");
   LOG_INFO("Find " << Pool.VerPoolSize << " indepdent interactions.");

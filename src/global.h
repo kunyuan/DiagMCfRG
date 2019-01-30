@@ -31,9 +31,9 @@ struct parameter {
   int SaveFileTimer;     // how many secondes between saving to file
   int MessageTimer;      // how many secondes between two checking for message
   int ReweightTimer;     // how many secondes between two reweighting
-  std::string DiagFileFormat;   // the diagram file needs to be loaded
-  std::vector<int> GroupID;     // ID for each group
-  std::vector<double> ReWeight; // reweight factor for each group
+  std::string DiagFileFormat;         // the diagram file needs to be loaded
+  std::vector<std::string> GroupName; // ID for each group
+  std::vector<double> ReWeight;       // reweight factor for each group
 };
 
 ///////////  Global Constants ////////////////////
