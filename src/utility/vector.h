@@ -174,7 +174,7 @@ template <typename T, int D> std::string ToString(Vec<T, D> value) {
   std::ostringstream oss;
   oss << "(";
   for (int i = 0; i < D; i++) {
-    oss << i << ", ";
+    oss << value[i] << ", ";
   }
   oss << ")";
   return oss.str();

@@ -1,6 +1,8 @@
 #include "vertex.h"
 #include "global.h"
 #include "utility/abort.h"
+#include "utility/fmt/format.h"
+#include "utility/utility.h"
 #include <cmath>
 #include <iostream>
 
@@ -31,7 +33,14 @@ double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
   return interaction;
 }
 
+fermi::fermi() {
+  UpBound = 5.0 * Para.Ef;
+  DeltaK = UpBound / MAXSIGMABIN;
+  BuildFockSigma();
+}
+
 double fermi::Fock(double k) {
+  // warning: this function only works for T=0!!!!
   double l = sqrt(Para.Mass2);
   double kF = Para.Kf;
   double fock = 1.0 + l / kF * atan((k - kF) / l);
@@ -44,22 +53,36 @@ double fermi::Fock(double k) {
   shift -= l * l / 4.0 / kF / kF * log(l * l / (l * l + 4.0 * kF * kF));
   shift *= (-2.0 * kF) / PI;
 
-  return k * k + fock - shift;
+  return fock - shift;
 }
 
-double fermi::GetSigma(double k) { return 0.0; }
-
 double fermi::BuildFockSigma() {
+  ASSERT_ALLWAYS(D == 3, "The Fock self energy is for 3D!");
+  double fock, k;
   for (int i = 0; i < MAXSIGMABIN; ++i) {
+    // k: (0^+, UpBound^-)
+    // i=0 ==> k==0.5*DeltaK
+    // i=MAXSIGMABIN-1 ==> k==(MAXSIGMABIN-0.5)*DeltaK
+    k = (i + 0.5) * DeltaK;
+    Sigma[i] = Fock(k);
+    if (i > 0) {
+      ASSERT_ALLWAYS(
+          Equal(Sigma[i - 1], Sigma[i], 5.0e-5),
+          fmt::format("Fock are not accurate enough! At k={0}: {1} vs {2}\n", k,
+                      Sigma[i - 1], Sigma[i]));
+    }
+    // cout << k << " : " << Sigma[i] << " vs " << Fock(k) << endl;
   }
 };
 
 double fermi::FockSigma(const momentum &Mom) {
   double k = Mom.norm(); // bare propagator
-  if (k > UpBound * Para.Ef)
+  if (k >= UpBound)
     return Fock(k);
-  else
-    GetSigma(k);
+  else {
+    int i = k / DeltaK;
+    return Sigma[i] + k * k;
+  }
 }
 
 double fermi::PhyGreen(double Tau, const momentum &Mom) {
@@ -77,9 +100,9 @@ double fermi::PhyGreen(double Tau, const momentum &Mom) {
     Tau -= Para.Beta;
     s = -s;
   }
-  Ek = Mom.squaredNorm(); // bare propagator
+  // Ek = Mom.squaredNorm(); // bare propagator
 
-  // Ek = FockKinetic(Mom); // Fock diagram dressed propagator
+  Ek = FockSigma(Mom); // Fock diagram dressed propagator
 
   //// enforce an UV cutoff for the Green's function ////////
   // if(Ek>8.0*EF) then

@@ -37,7 +37,7 @@ struct parameter {
 };
 
 ///////////  Global Constants ////////////////////
-const int D = 2;               // D=2 or D=3
+const int D = 3;               // D=2 or D=3
 const int ExtMomBinSize = 64;  // number of q bins of the external momentum
 const bool UseVertex4 = false; // Use 4-vertex or interaction line
 const int InInAngleBinSize =
