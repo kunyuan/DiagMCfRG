@@ -34,8 +34,12 @@ double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
 }
 
 fermi::fermi() {
-  UpBound = 5.0 * Para.Ef;
-  DeltaK = UpBound / MAXSIGMABIN;
+  UpperBound = 5.0 * Para.Ef;
+  LowerBound = 0.0;
+  DeltaK = UpperBound / MAXSIGMABIN;
+  UpperBound2 = 1.2 * Para.Ef;
+  LowerBound2 = 0.8 * Para.Ef;
+  DeltaK2 = UpperBound2 / MAXSIGMABIN;
   BuildFockSigma();
 }
 
@@ -63,9 +67,9 @@ double fermi::BuildFockSigma() {
     // k: (0^+, UpBound^-)
     // i=0 ==> k==0.5*DeltaK
     // i=MAXSIGMABIN-1 ==> k==(MAXSIGMABIN-0.5)*DeltaK
-    k = (i + 0.5) * DeltaK;
+    k = (i + 0.5) * DeltaK + LowerBound;
     Sigma[i] = Fock(k);
-    if (i > 0) {
+    if (i > 0 && k <= LowerBound2 && k >= UpperBound2) {
       ASSERT_ALLWAYS(
           Equal(Sigma[i - 1], Sigma[i], 5.0e-5),
           fmt::format("Fock are not accurate enough! At k={0}: {1} vs {2}\n", k,
@@ -73,16 +77,44 @@ double fermi::BuildFockSigma() {
     }
     // cout << k << " : " << Sigma[i] << " vs " << Fock(k) << endl;
   }
+
+  for (int i = 0; i < MAXSIGMABIN; ++i) {
+    // k: (0^+, UpBound^-)
+    // i=0 ==> k==0.5*DeltaK
+    // i=MAXSIGMABIN-1 ==> k==(MAXSIGMABIN-0.5)*DeltaK
+    k = (i + 0.5) * DeltaK2 + LowerBound2;
+    Sigma2[i] = Fock(k);
+    if (i > 0) {
+      ASSERT_ALLWAYS(Equal(Sigma2[i - 1], Sigma2[i], 5.0e-5),
+                     fmt::format("The 2rd level Fock are not accurate enough!"
+                                 "level! At k={0}: {1} vs {2}\n",
+                                 k, Sigma2[i - 1], Sigma2[i]));
+    }
+    // cout << k << " : " << Sigma[i] << " vs " << Fock(k) << endl;
+  }
 };
 
 double fermi::FockSigma(const momentum &Mom) {
   double k = Mom.norm(); // bare propagator
-  if (k >= UpBound)
-    return Fock(k);
-  else {
-    int i = k / DeltaK;
-    return Sigma[i] + k * k;
+  double fock;
+  if (k >= UpperBound || k < LowerBound) {
+    fock = Fock(k);
+    // cout << "beyond" << endl;
+  } else if ((k < UpperBound && k >= UpperBound2) ||
+             (k >= LowerBound && k < LowerBound2)) {
+    int i = (k - LowerBound) / DeltaK;
+    fock = Sigma[i];
+    // cout << "level1" << endl;
+  } else {
+    int i = (k - LowerBound2) / DeltaK2;
+    fock = Sigma2[i];
+    // cout << "level2" << endl;
   }
+  // ASSERT_ALLWAYS(
+  //     Equal(fock, Fock(k), 5.0e-5),
+  //     fmt::format("Fock are not accurate enough! At k={0}: {1} vs {2}\n", k,
+  //                 fock, Fock(k)));
+  return fock + k * k;
 }
 
 double fermi::PhyGreen(double Tau, const momentum &Mom) {

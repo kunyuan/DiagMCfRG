@@ -17,9 +17,9 @@ public:
 
 private:
   // beyond which the expense sigma function will be called
-  double UpBound;
+  double UpperBound, LowerBound;
   double DeltaK;
-  double UpBound2; // lower upbound for better sigma
+  double UpperBound2, LowerBound2; // lower upbound for better sigma
   double DeltaK2;
   double PhyGreen(double Tau, const momentum &Mom);
   double FockSigma(const momentum &Mom);
