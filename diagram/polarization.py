@@ -188,12 +188,6 @@ def HasFock(permutation, reference):
     return False
 
 
-def swap(array, i, j):
-    array = list(array)
-    array[i], array[j] = array[j], array[i]
-    return tuple(array)
-
-
 def swap_interaction(permutation, m, n, k, l):
     permutation = list(permutation)
     mp, np, kp, lp = (permutation.index(e) for e in (m, n, k, l))
@@ -658,7 +652,6 @@ def SaveToFile(UniqueDiagrams, Name):
                 f.write("\n")
 
             print "all diagram to print for ", diag
-            # print all_diag
 
             ###### Generate all Mom ################
             # WMom=[]
@@ -749,7 +742,7 @@ def SaveToFile(UniqueDiagrams, Name):
 
 
 if __name__ == "__main__":
-    Order = 4
+    Order = 3
 
     Order -= 1
     Reference = GetReference(Order)
