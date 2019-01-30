@@ -31,6 +31,23 @@ double diag::Interaction(double Tau, const momentum &Mom, int VerType) {
   return interaction;
 }
 
+double FockKinetic(const momentum &Mom) {
+  double k = Mom.norm(); // bare propagator
+  double l = sqrt(Para.Mass2);
+  double kF = Para.Kf;
+  double fock = 1.0 + l / kF * atan((k - kF) / l);
+  fock -= l / kF * atan((k + kF) / l);
+  fock -= (l * l - k * k + kF * kF) / 4.0 / k / kF *
+          log((l * l + (k - kF) * (k - kF)) / (l * l + (k + kF) * (k + kF)));
+  fock *= (-2.0 * kF) / PI;
+
+  double shift = 1.0 - l / kF * atan(2.0 * kF / l);
+  shift -= l * l / 4.0 / kF / kF * log(l * l / (l * l + 4.0 * kF * kF));
+  shift *= (-2.0 * kF) / PI;
+
+  return k * k + fock - shift;
+}
+
 double PhyGreen(double Tau, const momentum &Mom) {
   // if tau is exactly zero, set tau=0^-
   double green, Ek;
@@ -46,9 +63,9 @@ double PhyGreen(double Tau, const momentum &Mom) {
     Tau -= Para.Beta;
     s = -s;
   }
-  Ek = Mom.squaredNorm(); // bare propagator
+  // Ek = Mom.squaredNorm(); // bare propagator
 
-  // Ek=SelfEnergy(Mom);   //Fock diagram dressed propagator
+  Ek = FockKinetic(Mom); // Fock diagram dressed propagator
 
   //// enforce an UV cutoff for the Green's function ////////
   // if(Ek>8.0*EF) then
