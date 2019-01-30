@@ -64,7 +64,7 @@ private:
     array<double, MaxVer4Num> Weight;
     array<vertex4 *, MaxVer4Num> Index;
   } NewVer4;
-  array<array<double, diag::MaxBranchNum>, MaxVer4Num> _SpinCache;
+  array<array<double, MaxBranchNum>, MaxVer4Num> _SpinCache;
   string _ErrMsg(string);
 
   void Initialization();
@@ -76,7 +76,10 @@ private:
   double _Tree[MaxOrder][MaxBranchNum];
   bool IsInteractionReducible(loop &, int);
 
-  template <typename... TS> std::string ERR(std::string format, TS... args);
+  template <typename... TS> string ERR(string format, TS... args);
+
+  fermi Fermi;
+  bose Bose;
 };
 
 }; // namespace diag

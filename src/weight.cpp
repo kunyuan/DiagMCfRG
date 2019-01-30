@@ -124,7 +124,7 @@ void weight::ChangeGroup(group &Group, bool Forced) {
         double Tau = Var.Tau[G->TauBasis[OUT]] - Var.Tau[G->TauBasis[IN]];
         G->Excited = true;
         GetMom(G->LoopBasis, Group.LoopNum);
-        G->NewWeight = Green(Tau, _Mom, UP, G->Type);
+        G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type);
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
@@ -140,13 +140,13 @@ void weight::ChangeGroup(group &Group, bool Forced) {
           Ver->Excited = {true, true};
           if (!IsInteractionReducible(Ver->LoopBasis[IN], Group.LoopNum)) {
             GetMom(Ver->LoopBasis[IN], Group.LoopNum);
-            Ver->NewWeight[IN] = Interaction(0.0, _Mom, Ver->Type[IN]);
+            Ver->NewWeight[IN] = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
           } else {
             Ver->NewWeight[IN] = 0.0;
           }
           if (!IsInteractionReducible(Ver->LoopBasis[OUT], Group.LoopNum)) {
             GetMom(Ver->LoopBasis[OUT], Group.LoopNum);
-            Ver->NewWeight[OUT] = Interaction(0.0, _Mom, Ver->Type[OUT]);
+            Ver->NewWeight[OUT] = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
           } else {
             Ver->NewWeight[OUT] = 0.0;
           }
@@ -164,7 +164,7 @@ void weight::ChangeMom(group &Group, int MomIndex) {
         double Tau = Var.Tau[G->TauBasis[OUT]] - Var.Tau[G->TauBasis[IN]];
         G->Excited = true;
         GetMom(G->LoopBasis, Group.LoopNum);
-        G->NewWeight = Green(Tau, _Mom, UP, G->Type);
+        G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type);
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
@@ -176,7 +176,7 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           Ver->Excited[IN] = true;
           if (!IsInteractionReducible(Ver->LoopBasis[IN], Group.LoopNum)) {
             GetMom(Ver->LoopBasis[IN], Group.LoopNum);
-            Ver->NewWeight[IN] = Interaction(0.0, _Mom, Ver->Type[IN]);
+            Ver->NewWeight[IN] = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
           } else {
             Ver->NewWeight[IN] = 0.0;
           }
@@ -185,7 +185,7 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           Ver->Excited[OUT] = true;
           if (!IsInteractionReducible(Ver->LoopBasis[OUT], Group.LoopNum)) {
             GetMom(Ver->LoopBasis[OUT], Group.LoopNum);
-            Ver->NewWeight[OUT] = Interaction(0.0, _Mom, Ver->Type[OUT]);
+            Ver->NewWeight[OUT] = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
           } else {
             Ver->NewWeight[OUT] = 0.0;
           }
@@ -220,7 +220,7 @@ void weight::ChangeTau(group &Group, int TauIndex) {
         double Tau = Var.Tau[TauOut] - Var.Tau[TauIn];
         G->Excited = true;
         GetMom(G->LoopBasis, Group.LoopNum);
-        G->NewWeight = Green(Tau, _Mom, UP, G->Type);
+        G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type);
       }
     }
   }

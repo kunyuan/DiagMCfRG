@@ -3,7 +3,7 @@
 compiler=icpc
 #compiler=g++
 type=Debug
-type=Release
+#type=Release
 #mkdir build
 cd build
 if [ -n "$1" ]

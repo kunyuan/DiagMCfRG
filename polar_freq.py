@@ -27,7 +27,7 @@ kF=np.sqrt(2.0)/rs #2D
 # Bubble=0.11635  #2D, Beta=0.5, rs=1
 Bubble=0.15916  #2D, Beta=10, rs=1
 
-ScanOrder=[1,2,3]
+ScanOrder=[1,2,3,4]
 # ScanOrder=[3]
 Index={}
 Index[1]=[1,]
@@ -98,7 +98,7 @@ for key in DataAll.keys():
 DataOrderByOrder[1]=np.copy(DataAll[1])
 DataOrderByOrder[2]=np.copy(DataAll[2])
 DataOrderByOrder[3]=np.copy(DataAll[3])
-# DataOrderByOrder[4]=np.copy(DataAll[4])
+DataOrderByOrder[4]=np.copy(DataAll[4])
 # DataOrderByOrder[5]=np.copy(DataAll[5])
 
 DataOrderByOrder[2][:,1]*=-1.0

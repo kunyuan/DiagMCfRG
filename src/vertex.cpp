@@ -18,7 +18,7 @@ extern parameter Para;
 
 // double norm2(const momentum &Mom) { return sqrt(sum2(Mom)); }
 
-double diag::Interaction(double Tau, const momentum &Mom, int VerType) {
+double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
   if (VerType < 0)
     ABORT("VerType can not be " << VerType);
   double interaction = 8.0 * PI / (Mom.squaredNorm() + Para.Mass2);
@@ -31,7 +31,7 @@ double diag::Interaction(double Tau, const momentum &Mom, int VerType) {
   return interaction;
 }
 
-double FockKinetic(const momentum &Mom) {
+double fermi::FockKinetic(const momentum &Mom) {
   double k = Mom.norm(); // bare propagator
   double l = sqrt(Para.Mass2);
   double kF = Para.Kf;
@@ -48,7 +48,7 @@ double FockKinetic(const momentum &Mom) {
   return k * k + fock - shift;
 }
 
-double PhyGreen(double Tau, const momentum &Mom) {
+double fermi::PhyGreen(double Tau, const momentum &Mom) {
   // if tau is exactly zero, set tau=0^-
   double green, Ek;
   if (Tau == 0.0) {
@@ -103,7 +103,7 @@ double PhyGreen(double Tau, const momentum &Mom) {
   return green;
 }
 
-double diag::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
+double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
   double green;
   if (GType == 0) {
     green = PhyGreen(Tau, Mom);
