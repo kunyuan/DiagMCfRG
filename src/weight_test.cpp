@@ -2,6 +2,7 @@
 #include "utility/fmt/format.h"
 #include "utility/utility.h"
 #include "weight.h"
+#include <cmath>
 
 using namespace diag;
 using namespace std;
@@ -116,7 +117,7 @@ int weight::DynamicTest() {
   for (auto &group : Groups) {
     for (auto &diag : group.Diag) {
       for (auto i = 0; i < group.GNum; i++) {
-        ASSERT_ALLWAYS(!isnan(diag.G[i]->Weight),
+        ASSERT_ALLWAYS(!std::isnan(diag.G[i]->Weight),
                        ERR("G weight is a NaN!\n Diag: {0} in Group: {1}\n",
                            diag.ID, group.ID));
         ASSERT_ALLWAYS(diag.G[i]->Excited == false,
@@ -125,7 +126,7 @@ int weight::DynamicTest() {
       }
       for (auto i = 0; i < group.Ver4Num; i++) {
         if (UseVertex4) {
-          ASSERT_ALLWAYS(!isnan(diag.Ver4[i]->Weight),
+          ASSERT_ALLWAYS(!std::isnan(diag.Ver4[i]->Weight),
                          ERR("One 4-Ver is NaN!\n Diag: {0} in Group: {1}\n",
                              diag.ID, group.ID));
           ASSERT_ALLWAYS(
@@ -134,7 +135,7 @@ int weight::DynamicTest() {
                   group.ID));
         } else {
           ASSERT_ALLWAYS(
-              !isnan(diag.Ver[i]->Weight[0] || diag.Ver[i]->Weight[1]),
+              !std::isnan(diag.Ver[i]->Weight[0] || diag.Ver[i]->Weight[1]),
               ERR("One Ver is NaN!\n Diag: {0} in Group: {1}", diag.ID,
                   group.ID));
           ASSERT_ALLWAYS(diag.Ver[i]->Excited[0] == false ||
@@ -144,11 +145,11 @@ int weight::DynamicTest() {
         }
       }
       // check diagram weight
-      ASSERT_ALLWAYS(!isnan(diag.Weight),
+      ASSERT_ALLWAYS(!std::isnan(diag.Weight),
                      ERR("Diag {} weight is a NaN!\n", diag.ID));
     }
     // check group weight
-    ASSERT_ALLWAYS(!isnan(group.Weight),
+    ASSERT_ALLWAYS(!std::isnan(group.Weight),
                    ERR("Group {} weight is a NaN!\n", group.ID));
   }
 
