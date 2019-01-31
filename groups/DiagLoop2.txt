@@ -1,5 +1,5 @@
 # DiagNum
-1
+2
 
 # Topology
  3  2  1  0 

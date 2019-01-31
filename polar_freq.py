@@ -19,7 +19,7 @@ kF=(9.0*np.pi/4.0)**(1.0/3.0)/rs #3D
 # Bubble=0.0971613  #3D, T=0.04Ef, rs=1
 # Bubble= 0.097226 # 3D, zero temperature, rs=1
 ###### Fock dressed Green's function ###################
-Bubble, Density=0.088883, 0.2387 #3D, Beta=0.1, rs=1, Lambda=1.0
+Bubble, Density=0.088883/Beta*kF*kF, 0.2387 #3D, Beta=0.1, rs=1, Lambda=1.0
 
 ##############   2D    ##################################
 ###### Bare Green's function    #########################
@@ -28,7 +28,7 @@ Bubble, Density=0.088883, 0.2387 #3D, Beta=0.1, rs=1, Lambda=1.0
 # Bubble=0.15916  #2D, Beta=10, rs=1
 
 ScanOrder=[1,2,3,4]
-Name=["1","2","3","1_1"]
+Name=["1","2","3","3_1_0"]
 # ScanOrder=[3]
 Index={}
 Index[1]=[1,]
@@ -106,7 +106,7 @@ for i in ScanOrder:
 # DataOrderByOrder[5]=np.copy(DataAll[5])
 
 DataOrderByOrder[2][:,1]*=-1.0
-DataOrderByOrder[4][:,1]*=-1.0
+DataOrderByOrder[4][:,1]*=1.0/Density
 
 DataAtOrder[1]=np.copy(DataOrderByOrder[1])
 DataAtOrder[2]=np.copy(DataOrderByOrder[1])

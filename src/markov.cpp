@@ -188,6 +188,7 @@ void markov::ChangeGroup() {
 
   // if (NewGroup.ID == 3) {
   //   cout << fmt::format("group 3\n");
+  //   cout << Weight.DebugInfo(NewGroup);
   // }
 
   Weight.ChangeGroup(NewGroup);
@@ -197,6 +198,7 @@ void markov::ChangeGroup() {
 
   // if (NewGroup.ID == 3) {
   //   cout << fmt::format("weight {0}, prop {1}\n", NewWeight, Prop);
+  //   cout << Weight.DebugInfo(NewGroup);
   // }
 
   if (Random.urn() < R) {
@@ -248,19 +250,16 @@ void markov::ChangeMomentum() {
   int NewExtMomBin;
   static momentum CurrMom;
 
-  // COPYFROMTO(Var.LoopMom[LoopIndex], CurrMom);
   CurrMom = Var.LoopMom[LoopIndex];
 
   if (LoopIndex == 0) {
     Prop = ShiftExtK(Var.CurrExtMomBin, NewExtMomBin);
-    // COPYFROMTO(Var.ExtMomTable[NewExtMomBin], Var.LoopMom[LoopIndex]);
     Var.LoopMom[LoopIndex] = Var.ExtMomTable[NewExtMomBin];
   } else {
     Prop = ShiftK(CurrMom, Var.LoopMom[LoopIndex]);
   }
   if (LoopIndex == 0 && Var.LoopMom[LoopIndex].norm() > Para.MaxExtMom) {
     Var.LoopMom[LoopIndex] = CurrMom;
-    // COPYFROMTO(CurrMom, Var.LoopMom[LoopIndex]);
     return;
   }
 
@@ -274,7 +273,6 @@ void markov::ChangeMomentum() {
       Var.CurrExtMomBin = NewExtMomBin;
   } else {
     Var.LoopMom[LoopIndex] = CurrMom;
-    // COPYFROMTO(CurrMom, Var.LoopMom[LoopIndex]);
     Weight.RejectChange(*Var.CurrGroup);
   }
 };

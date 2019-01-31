@@ -12,8 +12,11 @@ const bool DEBUGMODE = true;
 //#define NDEBUG
 // define NDEBUG will turn off debug checking, including the boundary check in
 // array.h
+
+enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
 /////////// Global Parameter ////////////////////
 struct parameter {
+  // physical parameters
   double Rs, Ef, Kf,
       Mu;            // r_s, fermi energy, fermi momentum, chemical potential
   double Beta;       // inverse temperature
@@ -21,31 +24,39 @@ struct parameter {
   double UVCoupling; // the coupling constant at the UV scale
   double Mass2;      // screening length^2
   double MaxExtMom;  // the maximum external momentum
-  int TotalStep;     // total steps of the Monte Carlo
-  int ObsType;       // 0: static polarization, 1: equal-time polarization
-  int Seed;          // rng seed
-  int PID;           // ID of the job
+  selfenergy SelfEnergyType;
+
+  // MC inputs
+  int TotalStep;         // total steps of the Monte Carlo
+  int ObsType;           // 0: static polarization, 1: equal-time polarization
+  int Seed;              // rng seed
+  int PID;               // ID of the job
   long long int Counter; // counter to save the current MC step
   int Sweep;             // how many MC steps between two measuring
-  int PrinterTimer;      // how many seconds between to printing to screen
-  int SaveFileTimer;     // how many secondes between saving to file
-  int MessageTimer;      // how many secondes between two checking for message
-  int ReweightTimer;     // how many secondes between two reweighting
-  std::string DiagFileFormat;         // the diagram file needs to be loaded
   std::vector<std::string> GroupName; // ID for each group
   std::vector<double> ReWeight;       // reweight factor for each group
+
+  // others
+  int PrinterTimer;  // how many seconds between to printing to screen
+  int SaveFileTimer; // how many secondes between saving to file
+  int MessageTimer;  // how many secondes between two checking for message
+  int ReweightTimer; // how many secondes between two reweighting
+  std::string DiagFileFormat; // the diagram file needs to be loaded
 };
 
 ///////////  Global Constants ////////////////////
-const int D = 3;               // D=2 or D=3
-const int ExtMomBinSize = 64;  // number of q bins of the external momentum
-const bool UseVertex4 = false; // Use 4-vertex or interaction line
-const int InInAngleBinSize =
-    32; // number of bins for the angle between InL and InR legs
-const int InOutAngleBinSize =
-    32; // number of bins for the angle between InL and OutL legs
-const int ScaleBinSize =
-    32; // number of energy scales, only useful in RG approach
+// D=2 or D=3
+const int D = 3;
+// number of q bins of the external momentum
+const int ExtMomBinSize = 64;
+// Use 4-vertex or interaction line
+const bool UseVertex4 = false;
+// number of bins for the angle between InL and InR legs
+const int InInAngleBinSize = 32;
+// number of bins for the angle between InL and OutL legs
+const int InOutAngleBinSize = 32;
+// number of energy scales, only useful in RG approach
+const int ScaleBinSize = 32;
 
 //////////   Diagram  ////////////////////////////
 const int MaxOrder = 8;        // Max diagram order
