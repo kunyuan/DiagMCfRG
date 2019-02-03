@@ -877,39 +877,13 @@ if __name__ == "__main__":
                 TempDiagList.append(e)
                 NumList.append(len(g))
 
-        coeffMatrix = np.zeros([len(TempDiagList), len(TempDiagList)])
-        coeffMatrixN = np.zeros([len(TempDiagList), len(TempDiagList)])
-        coeffdict = {}
-        for i in range(len(TempDiagList)):
-            for j in range(len(TempDiagList)):
-                # if i==j:
-                    # continue
-                di = tuple(TempDiagList[i])
-                dj = tuple(TempDiagList[j])
-                si = LessPolarDict[di][1]
-                sj = LessPolarDict[dj][1]
-                val = sum(LessPolarDict[di][-1]*LessPolarDict[dj]
-                          [-1]/float(si)/float(sj))/DUPLICATE
-                coeffMatrix[i][j] = val
-                coeffMatrixN[i][j] = val*NumList[i]*NumList[j]
-        # print "Coeff Matrix:\n", coeffMatrixN
-        # print "Sum: ", np.sum(coeffMatrix)
-        # Maximum=10000.0
-        # Best=None
-        # for m in itertools.product(*indexList):
-            # val=np.sum(np.sum(coeffMatrixN[np.ix_(m,m)]))
-            # if val<Maximum:
-                # Best=m
-                # Maximum=val
-        # print "Best: ", m, Maximum
-
         UniqueDiagrams = []
         IrreducibleDiagrams = []
 
         index = 0
         for g in UnlabeledDiagramList:
             for e in g:
-                print "{0}: {0}".format(e, coeffMatrixN[index, :])
+                # print "{0}: {0}".format(e, coeffMatrixN[index, :])
                 index += 1
                 # UniqueDiagrams.append(e)
             print "Total {0} with symmetry factor {1}\n".format(

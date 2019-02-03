@@ -4,8 +4,8 @@ import os, sys
 
 ##### Modify parameters here  ###############
 # Cluster="PBS"
-# Cluster="local"
-Cluster="condor"
+Cluster="local"
+# Cluster="condor"
 
 ############################################
 

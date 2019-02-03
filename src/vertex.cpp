@@ -1,6 +1,8 @@
 #include "vertex.h"
 #include "global.h"
 #include "utility/abort.h"
+#include "utility/fmt/format.h"
+#include "utility/utility.h"
 #include <cmath>
 #include <iostream>
 
@@ -19,19 +21,35 @@ extern parameter Para;
 // double norm2(const momentum &Mom) { return sqrt(sum2(Mom)); }
 
 double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
-  if (VerType < 0)
+  if (VerType >= 0) {
+    double interaction = 8.0 * PI / (Mom.squaredNorm() + Para.Mass2);
+    if (VerType > 0) {
+      // the interaction contains counter-terms
+      interaction *=
+          pow(Para.Mass2 / (Mom.squaredNorm() + Para.Mass2), VerType);
+      interaction *= pow(-1, VerType);
+    }
+    return interaction;
+  } else if (VerType == -1) {
+    return 1.0;
+  } else {
     ABORT("VerType can not be " << VerType);
-  double interaction = 8.0 * PI / (Mom.squaredNorm() + Para.Mass2);
-
-  if (VerType > 0) {
-    // the interaction contains counter-terms
-    interaction *= pow(Para.Mass2 / (Mom.squaredNorm() + Para.Mass2), VerType);
-    interaction *= pow(-1, VerType);
   }
-  return interaction;
+}
+
+fermi::fermi() {
+  UpperBound = 5.0 * Para.Ef;
+  LowerBound = 0.0;
+  DeltaK = UpperBound / MAXSIGMABIN;
+  UpperBound2 = 1.2 * Para.Ef;
+  LowerBound2 = 0.8 * Para.Ef;
+  DeltaK2 = UpperBound2 / MAXSIGMABIN;
+  if (Para.SelfEnergyType == FOCK)
+    BuildFockSigma();
 }
 
 double fermi::Fock(double k) {
+  // warning: this function only works for T=0!!!!
   double l = sqrt(Para.Mass2);
   double kF = Para.Kf;
   double fock = 1.0 + l / kF * atan((k - kF) / l);
@@ -44,22 +62,62 @@ double fermi::Fock(double k) {
   shift -= l * l / 4.0 / kF / kF * log(l * l / (l * l + 4.0 * kF * kF));
   shift *= (-2.0 * kF) / PI;
 
-  return k * k + fock - shift;
+  return fock - shift;
 }
 
-double fermi::GetSigma(double k) { return 0.0; }
-
 double fermi::BuildFockSigma() {
+  ASSERT_ALLWAYS(D == 3, "The Fock self energy is for 3D!");
+  double fock, k;
   for (int i = 0; i < MAXSIGMABIN; ++i) {
+    // k: (0^+, UpBound^-)
+    // i=0 ==> k==0.5*DeltaK
+    // i=MAXSIGMABIN-1 ==> k==(MAXSIGMABIN-0.5)*DeltaK
+    k = (i + 0.5) * DeltaK + LowerBound;
+    Sigma[i] = Fock(k);
+    if (i > 0 && k <= LowerBound2 && k >= UpperBound2) {
+      ASSERT_ALLWAYS(
+          Equal(Sigma[i - 1], Sigma[i], 5.0e-5),
+          fmt::format("Fock are not accurate enough! At k={0}: {1} vs {2}\n", k,
+                      Sigma[i - 1], Sigma[i]));
+    }
+    // cout << k << " : " << Sigma[i] << " vs " << Fock(k) << endl;
+  }
+
+  for (int i = 0; i < MAXSIGMABIN; ++i) {
+    // k: (0^+, UpBound^-)
+    // i=0 ==> k==0.5*DeltaK
+    // i=MAXSIGMABIN-1 ==> k==(MAXSIGMABIN-0.5)*DeltaK
+    k = (i + 0.5) * DeltaK2 + LowerBound2;
+    Sigma2[i] = Fock(k);
+    if (i > 0) {
+      ASSERT_ALLWAYS(Equal(Sigma2[i - 1], Sigma2[i], 5.0e-5),
+                     fmt::format("The 2rd level Fock are not accurate enough!"
+                                 "level! At k={0}: {1} vs {2}\n",
+                                 k, Sigma2[i - 1], Sigma2[i]));
+    }
+    // cout << k << " : " << Sigma[i] << " vs " << Fock(k) << endl;
   }
 };
 
 double fermi::FockSigma(const momentum &Mom) {
   double k = Mom.norm(); // bare propagator
-  if (k > UpBound * Para.Ef)
-    return Fock(k);
-  else
-    GetSigma(k);
+  double fock;
+  if (k >= LowerBound2 && k < UpperBound2) {
+    int i = (k - LowerBound2) / DeltaK2;
+    fock = Sigma2[i];
+  } else if ((k >= LowerBound && k < LowerBound2) ||
+             (k >= UpperBound2 && k < UpperBound)) {
+    int i = (k - LowerBound) / DeltaK;
+    fock = Sigma[i];
+  } else {
+    fock = Fock(k);
+  }
+  // ASSERT_ALLWAYS(
+  //     Equal(fock, Fock(k), 5.0e-5),
+  //     fmt::format("Fock are not accurate enough! At k={0}: {1} vs {2}\n",
+  //     k,
+  //                 fock, Fock(k)));
+  return fock + k * k;
 }
 
 double fermi::PhyGreen(double Tau, const momentum &Mom) {
@@ -77,9 +135,13 @@ double fermi::PhyGreen(double Tau, const momentum &Mom) {
     Tau -= Para.Beta;
     s = -s;
   }
-  Ek = Mom.squaredNorm(); // bare propagator
 
-  // Ek = FockKinetic(Mom); // Fock diagram dressed propagator
+  if (Para.SelfEnergyType == BARE)
+    Ek = Mom.squaredNorm(); // bare propagator
+  else if (Para.SelfEnergyType == FOCK)
+    Ek = FockSigma(Mom); // Fock diagram dressed propagator
+  else
+    ABORT("Green function is not implemented!");
 
   //// enforce an UV cutoff for the Green's function ////////
   // if(Ek>8.0*EF) then
@@ -121,6 +183,9 @@ double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
   double green;
   if (GType == 0) {
     green = PhyGreen(Tau, Mom);
+  } else if (GType == 1) {
+    // equal time green's function
+    green = PhyGreen(-1.0e-10, Mom);
   } else
     ABORT("GType " << GType << " has not yet been implemented!");
   // return FakeGreen(Tau, Mom);

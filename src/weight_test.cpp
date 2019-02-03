@@ -2,26 +2,27 @@
 #include "utility/fmt/format.h"
 #include "utility/utility.h"
 #include "weight.h"
+#include <cmath>
 
 using namespace diag;
 using namespace std;
 
-string weight::_DebugInfo() {
+string weight::DebugInfo(group &Group) {
   string msg;
   msg = string(80, '=') + "\n";
   msg += fmt::format("\nMC Counter: {} \n", Para.Counter);
   msg += "Current Group Info:\n ";
-  msg += ToString(*Var.CurrGroup);
+  msg += ToString(Group);
 
   msg += string(80, '=') + "\n";
   msg += "GWeight: \n";
-  for (int i = 0; i < Var.CurrGroup->GNum; i++)
-    msg += ToString(Var.CurrGroup->Diag[0].G[i]->Weight) + "; ";
+  for (int i = 0; i < Group.GNum; i++)
+    msg += ToString(Group.Diag[0].G[i]->Weight) + "; ";
   msg += "\n";
 
   msg += "NewGWeight: \n";
-  for (int i = 0; i < Var.CurrGroup->GNum; i++)
-    msg += ToString(Var.CurrGroup->Diag[0].G[i]->NewWeight) + "; ";
+  for (int i = 0; i < Group.GNum; i++)
+    msg += ToString(Group.Diag[0].G[i]->NewWeight) + "; ";
   msg += "\n";
 
   // msg += "TauBasis: \n";
@@ -55,24 +56,25 @@ string weight::_DebugInfo() {
   // msg += "\n";
 
   msg += "VerWeight: \n";
-  for (int i = 0; i < Var.CurrGroup->Ver4Num; i++) {
-    msg += ToString(Var.CurrGroup->Diag[0].Ver[i]->Weight[0]) + ", ";
-    msg += ToString(Var.CurrGroup->Diag[0].Ver[i]->Weight[1]) + "; ";
-  }
+  for (int i = 0; i < Group.Ver4Num; i++)
+    msg += fmt::format("{:.3f}, {:.3f}", Group.Diag[0].Ver[i]->Weight[0],
+                       Group.Diag[0].Ver[i]->Weight[1]);
+  msg += "\n";
+
+  msg += "NewVerWeight: \n";
+  for (int i = 0; i < Group.Ver4Num; i++)
+    msg += fmt::format("{:.3f}, {:.3f}", Group.Diag[0].Ver[i]->NewWeight[0],
+                       Group.Diag[0].Ver[i]->NewWeight[1]);
   msg += "\n";
 
   msg += string(80, '=') + "\n";
   msg += "LoopMom: \n";
-  for (int d = 0; d < D; d++) {
-    for (int i = 0; i < Var.CurrGroup->LoopNum; i++)
-      msg += ToString(Var.LoopMom[i][d]) + ", ";
-    msg += "\n";
-  }
-  msg += "\n";
+  for (int i = 0; i < Group.LoopNum; i++)
+    msg += ToString(Var.LoopMom[i]) + "\n";
 
   msg += string(80, '=') + "\n";
   msg += "Tau: \n";
-  for (int i = 0; i < Var.CurrGroup->TauNum; i++)
+  for (int i = 0; i < Group.TauNum; i++)
     msg += ToString(Var.Tau[i]) + ", ";
 
   msg += "\n";
@@ -82,7 +84,7 @@ string weight::_DebugInfo() {
 string weight::_ErrMsg(string message) {
   string msg = message;
   msg += "\nProblem occurs at MC Counter " + to_string(Para.Counter) + ":\n";
-  msg += _DebugInfo();
+  msg += DebugInfo(*Var.CurrGroup);
   return msg;
 }
 
@@ -90,13 +92,13 @@ template <typename... TS>
 std::string weight::ERR(std::string format, TS... args) {
   string msg = fmt::format(format, args...);
   msg += fmt::format("\nProblem occurs at MC Counter {}\n", Para.Counter);
-  msg += _DebugInfo();
+  msg += DebugInfo(*Var.CurrGroup);
   return msg;
 }
 
 int weight::DynamicTest() {
   LOG_INFO("Start Dynamic Test...");
-  LOG_INFO(_DebugInfo());
+  LOG_INFO(DebugInfo(*Var.CurrGroup));
   //=================== Tau variable check ===================================//
   for (int i = 1; i < Var.CurrGroup->TauNum / 2; i++)
     ASSERT_ALLWAYS(Equal(Var.Tau[2 * i], Var.Tau[2 * i + 1], 1.e-10),

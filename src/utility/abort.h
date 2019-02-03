@@ -10,64 +10,60 @@
 #define __FeynCalc__error_handler__
 
 #include "logger.h"
-#include <stdexcept>
+#include <cstdlib>
+// #include <stdexcept>
 
-#define EXCEPTION(name)                                        \
-    class name : public std::runtime_error                     \
-    {                                                          \
-      public:                                                  \
-        name(const std::string &msg) : std::runtime_error(msg) \
-        {                                                      \
-        }                                                      \
-    };
+// #define EXCEPTION(name)                                                        \
+//   class name : public std::runtime_error {                                     \
+//   public:                                                                      \
+//     name(const std::string &msg) : std::runtime_error(msg) {}                  \
+//   };
 
-EXCEPTION(NOTIMPLEMENTED);
-EXCEPTION(IOInvalid);
-EXCEPTION(TypeInvalid);
-EXCEPTION(KeyInvalid);
-EXCEPTION(ValueInvalid);
-EXCEPTION(IndexInvalid);
-EXCEPTION(MemoryException);
-EXCEPTION(RunTimeException);
+// EXCEPTION(NOTIMPLEMENTED);
+// EXCEPTION(IOInvalid);
+// EXCEPTION(TypeInvalid);
+// EXCEPTION(KeyInvalid);
+// EXCEPTION(ValueInvalid);
+// EXCEPTION(IndexInvalid);
+// EXCEPTION(MemoryException);
+// EXCEPTION(RunTimeException);
 
-#define THROW(exception, msg, priority)                                             \
-    do                                                                              \
-    {                                                                               \
-        std::ostringstream ss;                                                      \
-        ss << msg;                                                                  \
-        LOGGER(priority, "Exception throwed: " << ss.str());                        \
-        std::ostringstream __stream_more__;                                         \
-        __stream_more__ << "@[" << __FILE__ << ":" << __LINE__ << "] " << ss.str(); \
-        throw exception(__stream_more__.str());                                     \
-    } while (0)
+// std::ostringstream __stream_more__;                                        \
+    // __stream_more__ << "@[" << __FILE__ << ":" << __LINE__ << "] "             \
+    //                 << ss.str();                                               \
+    // throw exception(__stream_more__.str());                                    \
 
-#define THROW_ERROR(exception, msg) \
-    THROW(exception, msg, ERROR)
+// #define THROW_ERROR(exception, msg) THROW(exception, msg, ERROR)
 
-#define ABORT(msg) \
-    THROW(RunTimeException, msg, ERROR)
+#define THROW(msg, priority)                                                   \
+  do {                                                                         \
+    LOGGER(priority, "Exception throwed: " << msg << "\n@[" << __FILE__ << ":" \
+                                           << __LINE__ << "] ");               \
+    std::abort();                                                              \
+  } while (0)
 
-#define ASSERT_ALLWAYS(expression, msg)                   \
-    do                                                    \
-    {                                                     \
-        if ((expression) == false)                        \
-            ABORT(#expression " does not hold! " << msg); \
-    } while (0)
+#define ABORT(msg) THROW(msg, ERROR)
 
-class InterruptHandler
-{
-  public:
-    InterruptHandler();
-    ~InterruptHandler();
-    void Delay();
-    void Resume();
-    bool IsDelaying() { return __IsDelaying; }
+#define ASSERT_ALLWAYS(expression, msg)                                        \
+  do {                                                                         \
+    if ((expression) == false)                                                 \
+      ABORT(#expression " does not hold! " << msg);                            \
+  } while (0)
 
-  private:
-    static void __SignalHandler(int signum);        //signal handler for normal state
-    static void __DelayedSignalHandler(int signum); //signal handler after Delay() is called
-    bool __IsDelaying;
-    static int __Signal;
+class InterruptHandler {
+public:
+  InterruptHandler();
+  ~InterruptHandler();
+  void Delay();
+  void Resume();
+  bool IsDelaying() { return __IsDelaying; }
+
+private:
+  static void __SignalHandler(int signum); // signal handler for normal state
+  static void
+  __DelayedSignalHandler(int signum); // signal handler after Delay() is called
+  bool __IsDelaying;
+  static int __Signal;
 };
 
 #endif /* defined(__Fermion_Simulator__error_handler__) */

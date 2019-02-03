@@ -48,3 +48,5 @@ blitz/
 src/blitz/
 callgrind*
 *.pyc
+in00
+inlist

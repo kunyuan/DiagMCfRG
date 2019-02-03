@@ -45,7 +45,7 @@ public:
   // Test before MC
   int StaticTest();
 
-  string _DebugInfo();
+  string DebugInfo(group &);
 
 private:
   pool Pool; // Pool to store indepdent G, Vertex, and 4-Vertex
