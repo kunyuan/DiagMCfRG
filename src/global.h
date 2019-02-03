@@ -46,7 +46,7 @@ struct parameter {
 
 ///////////  Global Constants ////////////////////
 // D=2 or D=3
-const int D = 3;
+const int D = 2;
 // number of q bins of the external momentum
 const int ExtMomBinSize = 64;
 // Use 4-vertex or interaction line

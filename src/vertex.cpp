@@ -44,7 +44,8 @@ fermi::fermi() {
   UpperBound2 = 1.2 * Para.Ef;
   LowerBound2 = 0.8 * Para.Ef;
   DeltaK2 = UpperBound2 / MAXSIGMABIN;
-  BuildFockSigma();
+  if (Para.SelfEnergyType == FOCK)
+    BuildFockSigma();
 }
 
 double fermi::Fock(double k) {
