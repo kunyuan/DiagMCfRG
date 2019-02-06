@@ -235,3 +235,22 @@ def IsConnected(Permutation, Reference, InteractionPairs):
         if edge[0] != edge[1] and not diagram_union.is_connected(edge[0], edge[1]):
             diagram_union.union(edge[0], edge[1])
     return diagram_union.get_n_circles() == 1
+
+
+def FindAllLoops(permutation):
+    order = len(permutation)/2
+    Visited = set()
+    path = []
+    for e in permutation:
+        newloop = []
+        vertex = e
+        while vertex not in Visited:
+            newloop.append(vertex)
+            Visited.add(vertex)
+            vertex = permutation[vertex]
+        if len(newloop) > 0:
+            path.append(newloop)
+    if sum([len(l) for l in path]) != 2*order:
+        print "length of all loops should be 2*order"
+        sys.exit(0)
+    return path
