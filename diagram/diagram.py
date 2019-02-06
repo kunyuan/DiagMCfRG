@@ -8,60 +8,105 @@ import numpy as np
 class diagram:
     """a feynman diagram class"""
 
-    def __init__(self, order, permutation=[], legs=[], loop=[], externloop=[], sym=None):
-        self.Permutation = permutation
-        self.Legs = legs
-        self.ExternLoop = externloop
-        self.LoopBasis = loop
+    def __init__(self, order, typ):
         self.Order = order
-        self.GNum = len(permutation)
-        self.Ver4Num = len(permutation)/2
-        self.SymFactor = sym
+        self.Type = typ
 
+        # additional
+        self.Permutation = ()  # diagram topology
+        self.GNum = 0
+        self.ExtLegNum = 0
+        self.ExtLeg = []  # vertex indexes of the external legs
+
+        self.Ver4Num = 0
+        self.VerNum = 0
+        self.VerBasis = []  # all r/tau basis for each vertex
+
+        self.LoopNum = 0
+        self.LoopBasis = None  # all momentum/freq basis
+        self.ExtLoopNum = 0
+        self.ExtLoop = []  # loop indexes of the external momentum/frequency
+
+        self.SymFactor = None
+        self.SpinFactor = []
+        self.FermiSign = 1
+
+        self.__Initialize()
+
+    def __Initialize(self):
+        if self.Type == "FreeEnergy":
+            self.GNum = 2*self.Order
+
+            self.Ver4Num = self.Order
+            self.ExtLegNum = 0
+            self.ExtLeg = []
+
+            self.LoopNum = self.Order+1
+            self.ExtLoopNum = 0
+            self.ExtLoop = []
+
+        elif self.Type == "Polar":
+            self.GNum = 2*self.Order
+            self.Ver4Num = self.Order-1
+            self.ExtLegNum = 2
+            self.ExtLoopNum = 1
+
+            self.LoopNum = self.Order+self.ExtLoopNum
+
+        elif self.Type == "Ver4":
+            # 4-vertex
+            self.GNum = 2*self.Order
+            self.Ver4Num = 2*self.Order
+            self.ExtLegNum = 4
+            self.ExtLoopNum = 3
+
+            self.LoopNum = self.Order+self.ExtLoopNum
+
+        else:
+            Abort("Diagram Type {0} is not implemented!".format(self.Type))
+
+        self.VerNum = self.Ver4Num*2
         # reference permutation [0,1,2,3,4,...]
         self.Reference = self.GetReference()
-        self.InteractionPairs = self.GetInteractionPairs()
+        self.InteractionPairs = self.GetSimpleInteractionPairs()
 
-    def IsConnected(self, InteractionPairs):
-        diagram = set(self.GetInteractionPairs)
-        for i in range(len(self.Permutation)):
-            diagram.add((self.Reference[i], self.Permutation[i]))
+    def GetPermu(self):
+        return tuple(self.Permutation)
 
-        n_node = len(InteractionPairs)*2
-        diagram_union = unionfind.UnionFind(n_node)
-
-        for edge in diagram:
-            if edge[0] != edge[1] and not diagram_union.is_connected(edge[0], edge[1]):
-                diagram_union.union(edge[0], edge[1])
-        return diagram_union.get_n_circles() == 1
-
-    def GetInteractionPairs(self):
-        return [(2*i, 2*i+1) for i in range(self.Ver4Num)]
+    def GetSimpleInteractionPairs(self):
+        if self.Type == "FreeEnergy" or self.Type == "Ver4":
+            return [(2*i, 2*i+1) for i in range(self.Ver4Num)]
+        elif self.Type == "Polar":
+            return [(2*i, 2*i+1) for i in range(1, self.Ver4Num)]
 
     def GetReference(self):
         return range(self.GNum)
 
-    def HasTadpole(self):
-        for i in range(len(self.Permutation)):
-            if self.Reference[i] == self.Permutation[i]:
-                return True
-        return False
+    def FindTadpole(self):
+        # return a list of interaction line index, which is in a tadpole diagram
+        tadpole = []
+        for i in range(self.Ver4Num):
+            if (2*i, 2*i+1) in self.InteractionPairs:
+                if 2*i == self.Permutation[2*i] or 2*i+1 == self.Permutation[2*i+1]:
+                    tadpole.append(i)
+        return tadpole
 
-    def HasFock(self):
-        for i in range(len(self.Reference)):
-            # end=reference[i]
-            end = self.Permutation[i]
-            if i == 0 or i == 1:
-                continue
-            if abs(i-end) == 1 and min(i, end) % 2 == 0:
-                return True
-        return False
+    def FindFock(self):
+        # return a list of interaction line index, which is in a fock sub-diagram
+        fock = []
+        for i in range(self.Ver4Num):
+            if (2*i, 2*i+1) in self.InteractionPairs:
+                if self.Permutation[2*i] == 2*i+1 or self.Permutation[2*i+1] == 2*i:
+                    fock.append(i)
+        return fock
 
-    def swap_LR(self, i, j):
-        ip, jp = self.Permutation.index(i), self.Permutation.index(j)
-        self.Permutation[ip] = j
-        self.Permutation[jp] = i
-        self.Permutation[i], self.Permutation[j] = self.Permutation[j], self.Permutation[i]
+    # def SwapInteractionLR(self, i, j):
+    #     ip, jp = self.Permutation.index(i), self.Permutation.index(j)
+    #     self.Permutation[ip] = j
+    #     self.Permutation[jp] = i
+    #     self.Permutation[i], self.Permutation[j] = self.Permutation[j], self.Permutation[i]
+
+    # def Direct2Exchange(self, )
 
     # def swap_LR_Hugen(permutation, i, j):
     #     permutation = list(permutation)
@@ -74,20 +119,6 @@ class diagram:
     #     permutation[i], permutation[j] = permutation[j], permutation[i]
     #     return permutation
     #     # return tuple(permutation)
-
-    def StartPoint(self):
-        self.Permutation = range(self.GNum)
-        Momentum = np.zeros([self.GNum/2+1, 2*self.GNum], dtype=int)
-        Momentum[0, 0] = 1
-        Momentum[-1, -1] = 1
-        for i in range(1, self.GNum/2):
-            self.Permutation[i*2-1], self.Permutation[i *
-                                                      2] = self.Permutation[i*2], self.Permutation[i*2-1]
-            Momentum[i, i*2-1] = 1
-            Momentum[i, i*2] = 1
-        # n+1 loop  contributes (-1)^(n+1) and order n contributes (-1)^n
-        FermiSign = -1
-        return tuple(StartPoint), Momentum, FermiSign
 
     def FindAllLoops(self):
         Visited = set()
@@ -104,3 +135,103 @@ class diagram:
         Assert(sum([len(l) for l in path]) == self.GNum,
                "length of all loops should be 2*order")
         return path
+
+    def Test(self):
+        Assert(self.LoopBasis.shape[0] == self.GNum,
+               "each Green's function must have a loop basis!")
+
+        Assert(self.LoopBasis.shape[1] == self.LoopNum,
+               "Diagram Type {0} require {1} loop basis!".format(self.Type, self.LoopNum))
+
+        Assert(self.VerNum == self.Ver4Num*2,
+               "4-vertex number X 2 should be equal to vertex number!")
+
+        Assert(matrix_rank(self.LoopBasis) == self.LoopNum,
+               "loop basis rank is wrong with permutation {0}\n{1}".format(
+            self.Permutation, self.LoopBasis))
+
+        # self.__TestConservation()
+
+    # def __TestConservation(self):
+    #     Momentum = np.zeros(self.GNum)
+    #     for i in range(Order):
+    #         Momentum += random.random()*MomentumBases[i, :]
+    #     # print len(Momentum)
+    #     for i in range(Order):
+    #         In1, In2 = 2*i, 2*i+1
+    #         Out1 = permutation.index(2*i)
+    #         Out2 = permutation.index(2*i+1)
+    #         TotalMom = Momentum[In1]+Momentum[In2] - \
+    #             Momentum[Out1]-Momentum[Out2]
+    #         if abs(TotalMom) > 1e-10:
+    #             print "Vertex {0} breaks the conservation laws. Bases: \n{1}".format(
+    #                 i, Momentum)
+    #             print In1, In2, Out1, Out2
+    #             print permutation
+    #             print MomentumBases
+    #             return False
+    #     if self.Type == "Polar":
+    #         # the first loop basis has to be the external momentum
+    #         Ext = np.zeros(Order+1, dtype=int)
+    #         Ext[0] = 1
+    #         if not np.all(MomentumBases[:, 0]-MomentumBases[:, permutation.index(0)]-Ext == 0):
+    #             print "The first loop basis is not the external momentum"
+    #             print permutation, MomentumBases
+    #             sys.exit(0)
+    #         if not np.all(MomentumBases[:, 1]-MomentumBases[:, permutation.index(1)]+Ext == 0):
+    #             print "The first loop basis is not the external momentum"
+    #             print permutation, MomentumBases
+    #             sys.exit(0)
+    #     return True
+
+
+def SwapTwoInteraction(permutation, m, n, k, l):
+    """swap the interaction (m-n) and (k-l)"""
+    permutation = list(permutation)
+    mp, np, kp, lp = (permutation.index(e) for e in (m, n, k, l))
+    permutation[mp] = k
+    permutation[kp] = m
+    permutation[np] = l
+    permutation[lp] = n
+    permutation[m], permutation[k] = permutation[k], permutation[m]
+    permutation[n], permutation[l] = permutation[l], permutation[n]
+    return permutation
+
+
+def SwapTwoVertex(permutation, i, j):
+    # print permutation, i, j
+    permutation = list(permutation)
+    ip, jp = permutation.index(i), permutation.index(j)
+    permutation[ip] = j
+    permutation[jp] = i
+    permutation[i], permutation[j] = permutation[j], permutation[i]
+    # print "after", permutation
+    return permutation
+
+
+def Direct2Exchange(permutation, i, j):
+    """change a direction interaction (i-j) to exchange interaction, or the reversed"""
+    permutation = list(permutation)
+    permutation[i], permutation[j] = permutation[j], permutation[i]
+    return permutation
+    # return tuple(permutation)
+
+
+def Swap(permutation, i, j):
+    permutation = list(permutation)
+    permutation[i], permutation[j] = permutation[j], permutation[i]
+    return permutation
+
+
+def IsConnected(Permutation, Reference, InteractionPairs):
+    diagram = set(InteractionPairs)
+    for i in range(len(Permutation)):
+        diagram.add((Reference[i], Permutation[i]))
+
+    n_node = len(InteractionPairs)*2
+    diagram_union = unionfind.UnionFind(n_node)
+
+    for edge in diagram:
+        if edge[0] != edge[1] and not diagram_union.is_connected(edge[0], edge[1]):
+            diagram_union.union(edge[0], edge[1])
+    return diagram_union.get_n_circles() == 1

@@ -742,7 +742,7 @@ def SaveToFile(UniqueDiagrams, Name):
 
 
 if __name__ == "__main__":
-    Order = 3
+    Order = 4
 
     Order -= 1
     Reference = GetReference(Order)
