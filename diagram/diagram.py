@@ -3,14 +3,15 @@ from logger import *
 from nullspace import rank, nullspace
 from numpy.linalg import matrix_rank
 import numpy as np
+import random
 
 
 class diagram:
     """a feynman diagram class"""
 
-    def __init__(self, order, typ):
+    def __init__(self, order):
         self.Order = order
-        self.Type = typ
+        self.Type = None
 
         # additional
         self.Permutation = ()  # diagram topology
@@ -29,46 +30,45 @@ class diagram:
 
         self.SymFactor = None
         self.SpinFactor = []
-        self.FermiSign = 1
 
-        self.__Initialize()
+        # self.__Initialize()
 
-    def __Initialize(self):
-        if self.Type == "FreeEnergy":
-            self.GNum = 2*self.Order
+    # def __Initialize(self):
+    #     if self.Type == "FreeEnergy":
+    #         self.GNum = 2*self.Order
 
-            self.Ver4Num = self.Order
-            self.ExtLegNum = 0
-            self.ExtLeg = []
+    #         self.Ver4Num = self.Order
+    #         self.ExtLegNum = 0
+    #         self.ExtLeg = []
 
-            self.LoopNum = self.Order+1
-            self.ExtLoopNum = 0
-            self.ExtLoop = []
+    #         self.LoopNum = self.Order+1
+    #         self.ExtLoopNum = 0
+    #         self.ExtLoop = []
 
-        elif self.Type == "Polar":
-            self.GNum = 2*self.Order
-            self.Ver4Num = self.Order-1
-            self.ExtLegNum = 2
-            self.ExtLoopNum = 1
+    #     elif self.Type == "Polar":
+    #         self.GNum = 2*self.Order
+    #         self.Ver4Num = self.Order-1
+    #         self.ExtLegNum = 2
+    #         self.ExtLoopNum = 1
 
-            self.LoopNum = self.Order+self.ExtLoopNum
+    #         self.LoopNum = self.Order+self.ExtLoopNum
 
-        elif self.Type == "Ver4":
-            # 4-vertex
-            self.GNum = 2*self.Order
-            self.Ver4Num = 2*self.Order
-            self.ExtLegNum = 4
-            self.ExtLoopNum = 3
+    #     elif self.Type == "Ver4":
+    #         # 4-vertex
+    #         self.GNum = 2*self.Order
+    #         self.Ver4Num = 2*self.Order
+    #         self.ExtLegNum = 4
+    #         self.ExtLoopNum = 3
 
-            self.LoopNum = self.Order+self.ExtLoopNum
+    #         self.LoopNum = self.Order+self.ExtLoopNum
 
-        else:
-            Abort("Diagram Type {0} is not implemented!".format(self.Type))
+    #     else:
+    #         Abort("Diagram Type {0} is not implemented!".format(self.Type))
 
-        self.VerNum = self.Ver4Num*2
+    #     self.VerNum = self.Ver4Num*2
         # reference permutation [0,1,2,3,4,...]
-        self.Reference = self.GetReference()
-        self.InteractionPairs = self.GetSimpleInteractionPairs()
+        # self.Reference = self.GetReference()
+        # self.InteractionPairs = self.GetSimpleInteractionPairs()
 
     def GetPermu(self):
         return tuple(self.Permutation)
@@ -80,13 +80,13 @@ class diagram:
             return [(2*i, 2*i+1) for i in range(1, self.Ver4Num)]
 
     def GetReference(self):
-        return range(self.GNum)
+        return tuple(range(self.GNum))
 
     def FindTadpole(self):
         # return a list of interaction line index, which is in a tadpole diagram
         tadpole = []
         for i in range(self.Ver4Num):
-            if (2*i, 2*i+1) in self.InteractionPairs:
+            if (2*i, 2*i+1) in self.GetSimpleInteractionPairs():
                 if 2*i == self.Permutation[2*i] or 2*i+1 == self.Permutation[2*i+1]:
                     tadpole.append(i)
         return tadpole
@@ -95,7 +95,7 @@ class diagram:
         # return a list of interaction line index, which is in a fock sub-diagram
         fock = []
         for i in range(self.Ver4Num):
-            if (2*i, 2*i+1) in self.InteractionPairs:
+            if (2*i, 2*i+1) in self.GetSimpleInteractionPairs():
                 if self.Permutation[2*i] == 2*i+1 or self.Permutation[2*i+1] == 2*i:
                     fock.append(i)
         return fock
@@ -223,6 +223,13 @@ def Swap(permutation, i, j):
     return permutation
 
 
+def Mirror(Index):
+    if Index % 2 == 0:
+        return Index+1
+    else:
+        return Index-1
+
+
 def IsConnected(Permutation, Reference, InteractionPairs):
     diagram = set(InteractionPairs)
     for i in range(len(Permutation)):
@@ -254,3 +261,32 @@ def FindAllLoops(permutation):
         print "length of all loops should be 2*order"
         sys.exit(0)
     return path
+
+
+def CheckConservation(permutation, MomentumBases, InteractionPairs, LoopNum=None):
+    if LoopNum == None:
+        LoopNum = MomentumBases.shape[0]
+
+    rank = matrix_rank(MomentumBases)
+    if rank != LoopNum:
+        print "rank is wrong with permutation {0}: {2} vs {3}\n{1}".format(
+            permutation, MomentumBases, rank, LoopNum)
+        return False
+
+    GNum = len(permutation)
+    Momentum = np.zeros(GNum)
+    for i in range(LoopNum):
+        Momentum += random.random()*MomentumBases[i, :]
+    # print len(Momentum)
+    for In1, In2 in InteractionPairs:
+        Out1 = permutation.index(In1)
+        Out2 = permutation.index(In2)
+        TotalMom = Momentum[In1]+Momentum[In2]-Momentum[Out1]-Momentum[Out2]
+        if abs(TotalMom) > 1e-10:
+            print "Vertex ({0},{1}) breaks the conservation laws. Bases: \n{2}".format(
+                In1, In2, Momentum)
+            print In1, In2, Out1, Out2
+            print permutation
+            print MomentumBases
+            return False
+    return True

@@ -1,13 +1,20 @@
 from free_energy import *
+from polar import *
 
 if __name__ == "__main__":
 
-    Order = 3
+    Order = 4
 
-    DiagFile = "./Diagram/HugenDiag{0}.txt".format(Order)
-    LnZ = free_energy(Order)
+    LnZOrder = Order-1
+    DiagFile = "./Diagram/HugenDiag{0}.txt".format(LnZOrder)
+    LnZ = free_energy(LnZOrder)
     # Load pre-generated lnZ diagrams
     # build labeled Feynman diagram to unlabled Hugenholtz diagram mapping
-    LnZ.BuildDiagrams(DiagFile)
+    LnZ.LoadDiagrams(DiagFile)
 
-    LnZ.BuildLoopBasis()
+    OptLnZHugenDiagList = LnZ.OptimizeLoopBasis()
+
+    Polar = polar(Order)
+
+    OptPolarHugenDiagList = [Polar.AttachExtVer(
+        d) for d in OptLnZHugenDiagList]

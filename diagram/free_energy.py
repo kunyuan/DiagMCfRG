@@ -6,14 +6,34 @@ from logger import *
 class free_energy:
     def __init__(self, Order):
         self.Order = Order
+        self.GNum = 2*self.Order
+        self.Ver4Num = self.Order
+        self.VerNum = 2*self.Ver4Num
+        self.LoopNum = self.Order+1
+
         # labeled Feyn diagram to unlabeled Hugen diagram mapping
         self.Permu2HugenDiag = {}
 
         # unlabeled hugen diag informations
         self.HugenPermu2Diag = {}
-        pass
 
-    def BuildDiagrams(self, FileName):
+        # set of original hugen diagrams permutations
+        self.__OrigHugenPermuSet = set()
+
+    def BuildADiagram(self):
+        d = diag.diagram(self.Order)
+        d.Type = "FreeEnergy"
+        d.GNum = self.GNum
+        d.Ver4Num = self.Ver4Num
+        d.VerNum = self.VerNum
+        d.LoopNum = self.LoopNum
+        d.ExtLeg = []
+        d.ExtLegNum = 0
+        d.ExtLoop = []
+        d.ExtLoopNum = 0
+        return d
+
+    def LoadDiagrams(self, FileName):
         """build labeled Feynman diagram to unlabled Hugenholtz diagram mapping"""
         with open(FileName) as f:
             d = f.read()
@@ -25,7 +45,7 @@ class free_energy:
 
             TotalSym = 0.0
             for index in range(len(DiagList)):
-                d = diag.diagram(self.Order, "FreeEnergy")
+                d = self.BuildADiagram()
                 d.Permutation = DiagList[index]
                 d.SymFactor = 1.0/Sym[index]
                 # self.HugenPermu2Diag[d.GetPermu()] = d
@@ -34,7 +54,9 @@ class free_energy:
                 Deformation = self.__GetEqDiags(d.Permutation)
                 for permu in set(Deformation):
                     self.Permu2HugenDiag[permu] = d
-                TotalSym += float(len(Deformation))/abs(d.SymFactor)
+                TotalSym += float(len(Deformation))*abs(d.SymFactor)
+
+                self.__OrigHugenPermuSet.add(d.GetPermu())
 
                 print "{0} with SymFactor: {1}, and Number: {2} with duplicate {3}".format(
                     d.Permutation, d.SymFactor, len(Deformation), len(Deformation)/len(set(Deformation)))
@@ -42,23 +64,26 @@ class free_energy:
         print "Total Free energy diagrams: {0}, TotalSym: {1}".format(
             len(self.Permu2HugenDiag.keys()), TotalSym)
 
+        Assert(abs(len(self.Permu2HugenDiag.keys())-TotalSym) < 1.e-10,
+               "Total symmetry must be equal to the number of diagrams!")
+
     def GetHugen(self, Permutation):
         return self.Permu2HugenDiag[Permutation]
 
-    def BuildLoopBasis(self):
+    def OptimizeLoopBasis(self):
         """ 
         output:
             Diagrams: a dictionary contains a map from the original diagram to the diagram with optimized bases
             OptDiagrams: a dictionary contains a map from the optimized diagram to a list (original diagram, momentum bases for the optimized diagram, the symmetry factor for the optimized diagram)
         """
 
-        Start = self.__ChainDiag()
-        PermuList = [Start.GetPermu()]
-        MomList = [Start.Momentum]
-        SignList = [Start.SymFactor]
+        p, mom, sign = self.__ChainDiag()
+        PermuList = [p, ]
+        MomList = [mom, ]
+        SignList = [sign, ]
 
-        reference = Start.GetReference()
-        InteractionPairs = Start.GetSimpleInteractionPairs()
+        reference = self.__GetReference()
+        InteractionPairs = self.__GetInteractionPairs()
 
         idx = 0
         while idx < 2*self.Order:
@@ -88,21 +113,27 @@ class free_energy:
                             # sys.exit(0)
             idx += 1
 
-        # OptDiagrams = {}
-        # for k in Diagrams.keys():
-        #     print "Diagram {0}: {1} with SymFactor {3}\n {2}".format(
-        #         k, Diagrams[k][0], Diagrams[k][1], Diagrams[k][2])
-        #     p, Mom, Sym = Diagrams[k]
-        #     OptDiagrams[p] = (k, Mom, Sym)
+        # list of optimized hugen diagrams
+        OptHugenDiagList = list()
 
-        # print "Total Diagram {0} vs {1}".format(
-        #     len(Diagrams.keys()), len(DiagDict.keys()))
+        for i in range(len(PermuList)):
+            p = PermuList[i]
+            OrigHugen = self.Permu2HugenDiag[p]
+            if OrigHugen.GetPermu() in self.__OrigHugenPermuSet:
+                # delete this diagram in the list to avoid double counting
+                self.__OrigHugenPermuSet.remove(OrigHugen.GetPermu())
 
-        # for k in DiagDict.keys():
-        #     if Diagrams.has_key(k) is False:
-        #         print k
+                d = self.BuildADiagram()
+                d.Permutation = p
+                d.LoopBasis = MomList[i]
+                d.VerBasis = (d.GetReference(), d.GetPermu())
+                d.SymFactor = abs(OrigHugen.SymFactor)*SignList[i]
+                OptHugenDiagList.append(d)
 
-        # return Diagrams, OptDiagrams
+                print "Optimal lnZ diagram {0} with SymFactor {1}".format(
+                    p, d.SymFactor)
+
+        return OptHugenDiagList
 
     def __GenerateMomentum(self, permutation, OldMomentum, i, j):
         if i/2 == j/2:
@@ -125,10 +156,9 @@ class free_energy:
                 # print "Connect jp to ip", i, j, ip, jp, permutation[ip], permutation[jp]
             else:
                 return -1
-        # if not CheckConservation(permutation, Momentum):
-        #     print "Conservation or Rank Check fails."
-        #     sys.exit(0)
-        #     return None
+
+        Assert(diag.CheckConservation(permutation, Momentum, self.__GetInteractionPairs()),
+               "Free energy diagram loop basis does not obey Momentu conservation!")
         return Momentum
 
     def __GetEqDiags(self, UnlabeledDiagram):
@@ -165,24 +195,25 @@ class free_energy:
         return DiagList
 
     def __ChainDiag(self):
-        Start = diag.diagram(self.Order, "FreeEnergy")
-        GNum = Start.GNum
+        GNum = self.GNum
         Permutation = range(GNum)
-        Momentum = np.zeros([GNum/2+1, 2*GNum], dtype=int)
+        Momentum = np.zeros([self.LoopNum, GNum], dtype=int)
         Momentum[0, 0] = 1
         Momentum[-1, -1] = 1
-        for i in range(1, GNum/2):
+        for i in range(1, self.Order):
             Permutation[i*2-1], Permutation[i *
                                             2] = Permutation[i*2], Permutation[i*2-1]
             Momentum[i, i*2-1] = 1
             Momentum[i, i*2] = 1
 
-        Start.Permutation = Permutation
-        Start.Momentum = Momentum
-
-        SymFactor = self.Permu2HugenDiag[Start.GetPermu()].SymFactor
+        # SymFactor = self.Permu2HugenDiag[Start.GetPermu()].SymFactor
         LoopNum = len(diag.FindAllLoops(Permutation))
         FermiSign = (-1)**self.Order * (-1)**LoopNum
         # n+1 loop  contributes (-1)^(n+1) and order n contributes (-1)^n
-        Start.SymFactor = FermiSign*abs(SymFactor)
-        return Start
+        return tuple(Permutation), Momentum, FermiSign
+
+    def __GetInteractionPairs(self):
+        return tuple([(2*i, 2*i+1) for i in range(self.Ver4Num)])
+
+    def __GetReference(self):
+        return tuple(range(self.GNum))
