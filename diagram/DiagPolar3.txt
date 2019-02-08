@@ -8,7 +8,7 @@
  0  0  0  0  0  0 
 #Symmetry Factor
 -1.0
-# Loop Bases
+# Loop Basis
  1  0  1  0  1  0 
  0  1  1  0  0  0 
  0  0  0  1  1  0 
@@ -17,7 +17,7 @@
 1 2 4 3 3 4 0 5 
 # Interaction Type
  0  0  0  0 
-#Ver Loop Bases
+#Ver Loop Basis
 -1  0 -1  0 
  0  1  0  0 
  0 -1  0  1 
@@ -31,7 +31,7 @@
  0  0  0  0  0  0 
 #Symmetry Factor
 1.0
-# Loop Bases
+# Loop Basis
  1  0  0  0  0  1 
  0  1  0  0 -1  1 
  0  0  0  1  1  0 
@@ -40,7 +40,7 @@
 1 2 4 3 3 4 0 5 
 # Interaction Type
  0  0  0  0 
-#Ver Loop Bases
+#Ver Loop Basis
  0  0  0 -1 
  1  1  1 -1 
  0 -1  0  1 
@@ -54,7 +54,7 @@
  0  0  0  0  0  0 
 #Symmetry Factor
 0.5
-# Loop Bases
+# Loop Basis
  1  0  0  1  0  1 
  1  1  0  0 -1  1 
  0  0  0  1  1  0 
@@ -63,7 +63,7 @@
 0 2 4 3 3 4 2 5 
 # Interaction Type
  0  0  0  0 
-#Ver Loop Bases
+#Ver Loop Basis
  1  0  1  0 
  1  1  1 -1 
  0 -1  0  1 
@@ -77,7 +77,7 @@
  0  0  0  0  0  0 
 #Symmetry Factor
 0.5
-# Loop Bases
+# Loop Basis
  1  0  0  1  1  0 
  0  0  0  0 -1  1 
  0  1  0  1  1  0 
@@ -86,7 +86,7 @@
 5 2 4 3 1 4 0 5 
 # Interaction Type
  0  0  0  0 
-#Ver Loop Bases
+#Ver Loop Basis
  0 -1 -1  0 
  1  1  1 -1 
  0 -1  0  1 
@@ -100,7 +100,7 @@
  0  0  0  0  0  0 
 #Symmetry Factor
 0.5
-# Loop Bases
+# Loop Basis
  1  0  0  0  0  0 
  0  0  0  0 -1  1 
  1  1  0  1  1  0 
@@ -109,7 +109,7 @@
 5 2 4 3 1 4 2 5 
 # Interaction Type
  0  0  0  0 
-#Ver Loop Bases
+#Ver Loop Basis
  0  0  0  0 
  1  1  1 -1 
  0 -1  0  1 
