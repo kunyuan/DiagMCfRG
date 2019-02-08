@@ -73,32 +73,32 @@ class diagram:
     def GetPermu(self):
         return tuple(self.Permutation)
 
-    def GetSimpleInteractionPairs(self):
-        if self.Type == "FreeEnergy" or self.Type == "Ver4":
-            return [(2*i, 2*i+1) for i in range(self.Ver4Num)]
-        elif self.Type == "Polar":
-            return [(2*i, 2*i+1) for i in range(1, self.Ver4Num)]
+    # def GetSimpleInteractionPairs(self):
+    #     if self.Type == "FreeEnergy" or self.Type == "Ver4":
+    #         return [(2*i, 2*i+1) for i in range(self.Ver4Num)]
+    #     elif self.Type == "Polar":
+    #         return [(2*i, 2*i+1) for i in range(1, self.Ver4Num)]
 
-    def GetReference(self):
-        return tuple(range(self.GNum))
+    # def GetReference(self):
+    #     return tuple(range(self.GNum))
 
-    def FindTadpole(self):
-        # return a list of interaction line index, which is in a tadpole diagram
-        tadpole = []
-        for i in range(self.Ver4Num):
-            if (2*i, 2*i+1) in self.GetSimpleInteractionPairs():
-                if 2*i == self.Permutation[2*i] or 2*i+1 == self.Permutation[2*i+1]:
-                    tadpole.append(i)
-        return tadpole
+    # def FindTadpole(self):
+    #     # return a list of interaction line index, which is in a tadpole diagram
+    #     tadpole = []
+    #     for i in range(self.Ver4Num):
+    #         if (2*i, 2*i+1) in self.GetSimpleInteractionPairs():
+    #             if 2*i == self.Permutation[2*i] or 2*i+1 == self.Permutation[2*i+1]:
+    #                 tadpole.append(i)
+    #     return tadpole
 
-    def FindFock(self):
-        # return a list of interaction line index, which is in a fock sub-diagram
-        fock = []
-        for i in range(self.Ver4Num):
-            if (2*i, 2*i+1) in self.GetSimpleInteractionPairs():
-                if self.Permutation[2*i] == 2*i+1 or self.Permutation[2*i+1] == 2*i:
-                    fock.append(i)
-        return fock
+    # def FindFock(self):
+    #     # return a list of interaction line index, which is in a fock sub-diagram
+    #     fock = []
+    #     for i in range(self.Ver4Num):
+    #         if (2*i, 2*i+1) in self.GetSimpleInteractionPairs():
+    #             if self.Permutation[2*i] == 2*i+1 or self.Permutation[2*i+1] == 2*i:
+    #                 fock.append(i)
+    #     return fock
 
     # def SwapInteractionLR(self, i, j):
     #     ip, jp = self.Permutation.index(i), self.Permutation.index(j)
@@ -120,35 +120,35 @@ class diagram:
     #     return permutation
     #     # return tuple(permutation)
 
-    def FindAllLoops(self):
-        Visited = set()
-        path = []
-        for e in self.Permutation:
-            newloop = []
-            vertex = e
-            while vertex not in Visited:
-                newloop.append(vertex)
-                Visited.add(vertex)
-                vertex = self.Permutation[vertex]
-            if len(newloop) > 0:
-                path.append(newloop)
-        Assert(sum([len(l) for l in path]) == self.GNum,
-               "length of all loops should be 2*order")
-        return path
+    # def FindAllLoops(self):
+    #     Visited = set()
+    #     path = []
+    #     for e in self.Permutation:
+    #         newloop = []
+    #         vertex = e
+    #         while vertex not in Visited:
+    #             newloop.append(vertex)
+    #             Visited.add(vertex)
+    #             vertex = self.Permutation[vertex]
+    #         if len(newloop) > 0:
+    #             path.append(newloop)
+    #     Assert(sum([len(l) for l in path]) == self.GNum,
+    #            "length of all loops should be 2*order")
+    #     return path
 
-    def Test(self):
-        Assert(self.LoopBasis.shape[0] == self.GNum,
-               "each Green's function must have a loop basis!")
+    # def Test(self):
+    #     Assert(self.LoopBasis.shape[0] == self.GNum,
+    #            "each Green's function must have a loop basis!")
 
-        Assert(self.LoopBasis.shape[1] == self.LoopNum,
-               "Diagram Type {0} require {1} loop basis!".format(self.Type, self.LoopNum))
+    #     Assert(self.LoopBasis.shape[1] == self.LoopNum,
+    #            "Diagram Type {0} require {1} loop basis!".format(self.Type, self.LoopNum))
 
-        Assert(self.VerNum == self.Ver4Num*2,
-               "4-vertex number X 2 should be equal to vertex number!")
+    #     Assert(self.VerNum == self.Ver4Num*2,
+    #            "4-vertex number X 2 should be equal to vertex number!")
 
-        Assert(matrix_rank(self.LoopBasis) == self.LoopNum,
-               "loop basis rank is wrong with permutation {0}\n{1}".format(
-            self.Permutation, self.LoopBasis))
+    #     Assert(matrix_rank(self.LoopBasis) == self.LoopNum,
+    #            "loop basis rank is wrong with permutation {0}\n{1}".format(
+    #         self.Permutation, self.LoopBasis))
 
         # self.__TestConservation()
 
@@ -195,7 +195,7 @@ def SwapTwoInteraction(permutation, m, n, k, l):
     permutation[lp] = n
     permutation[m], permutation[k] = permutation[k], permutation[m]
     permutation[n], permutation[l] = permutation[l], permutation[n]
-    return permutation
+    return tuple(permutation)
 
 
 def SwapTwoVertex(permutation, i, j):
@@ -206,21 +206,21 @@ def SwapTwoVertex(permutation, i, j):
     permutation[jp] = i
     permutation[i], permutation[j] = permutation[j], permutation[i]
     # print "after", permutation
-    return permutation
+    return tuple(permutation)
 
 
 def Direct2Exchange(permutation, i, j):
     """change a direction interaction (i-j) to exchange interaction, or the reversed"""
     permutation = list(permutation)
     permutation[i], permutation[j] = permutation[j], permutation[i]
-    return permutation
+    return tuple(permutation)
     # return tuple(permutation)
 
 
 def Swap(permutation, i, j):
     permutation = list(permutation)
     permutation[i], permutation[j] = permutation[j], permutation[i]
-    return permutation
+    return tuple(permutation)
 
 
 def Mirror(Index):
@@ -290,3 +290,24 @@ def CheckConservation(permutation, MomentumBases, InteractionPairs, LoopNum=None
             print MomentumBases
             return False
     return True
+
+
+def HasTadpole(permutation, reference):
+    # print permutation, reference
+    for i in range(len(permutation)):
+        if reference[i] == permutation[i]:
+            # print "return true", i, reference[i], permutation[i]
+            return True
+    # print "return false"
+    return False
+
+
+def HasFock(permutation, reference):
+    for i in range(len(reference)):
+        # end=reference[i]
+        end = permutation[i]
+        if i == 0 or i == 1:
+            continue
+        if abs(i-end) == 1 and min(i, end) % 2 == 0:
+            return True
+    return False

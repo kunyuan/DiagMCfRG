@@ -20,6 +20,12 @@ class free_energy:
         # set of original hugen diagrams permutations
         self.__OrigHugenPermuSet = set()
 
+    def GetInteractionPairs(self):
+        return tuple([(2*i, 2*i+1) for i in range(self.Ver4Num)])
+
+    def GetReference(self):
+        return tuple(range(self.GNum))
+
     def BuildADiagram(self):
         d = diag.diagram(self.Order)
         d.Type = "FreeEnergy"
@@ -35,6 +41,7 @@ class free_energy:
 
     def LoadDiagrams(self, FileName):
         """build labeled Feynman diagram to unlabled Hugenholtz diagram mapping"""
+        print "Loading LnZ diagrams..."
         with open(FileName) as f:
             d = f.read()
             exec(d)  # get Diag and Sym from the diagram file
@@ -46,7 +53,7 @@ class free_energy:
             TotalSym = 0.0
             for index in range(len(DiagList)):
                 d = self.BuildADiagram()
-                d.Permutation = DiagList[index]
+                d.Permutation = tuple(DiagList[index])
                 d.SymFactor = 1.0/Sym[index]
                 # self.HugenPermu2Diag[d.GetPermu()] = d
 
@@ -58,14 +65,16 @@ class free_energy:
 
                 self.__OrigHugenPermuSet.add(d.GetPermu())
 
-                print "{0} with SymFactor: {1}, and Number: {2} with duplicate {3}".format(
-                    d.Permutation, d.SymFactor, len(Deformation), len(Deformation)/len(set(Deformation)))
+                print yellow("{0} with SymFactor: {1:+.3f}, and labled diagram Number: {2:.4g} with {3:.4g} duplication".format(
+                    d.Permutation, d.SymFactor, len(Deformation), len(Deformation)/len(set(Deformation))))
 
-        print "Total Free energy diagrams: {0}, TotalSym: {1}".format(
-            len(self.Permu2HugenDiag.keys()), TotalSym)
+        print green("Total Free energy diagrams: {0}, TotalSym: {1}".format(
+            len(self.__OrigHugenPermuSet), TotalSym))
 
         Assert(abs(len(self.Permu2HugenDiag.keys())-TotalSym) < 1.e-10,
                "Total symmetry must be equal to the number of diagrams!")
+
+        return self.__OrigHugenPermuSet
 
     def GetHugen(self, Permutation):
         return self.Permu2HugenDiag[Permutation]
@@ -82,12 +91,12 @@ class free_energy:
         MomList = [mom, ]
         SignList = [sign, ]
 
-        reference = self.__GetReference()
-        InteractionPairs = self.__GetInteractionPairs()
+        reference = self.GetReference()
+        InteractionPairs = self.GetInteractionPairs()
 
         idx = 0
         while idx < 2*self.Order:
-            print "Index {0}".format(idx)
+            # print "Index {0}".format(idx)
             for i in range(len(PermuList)):
                 for j in range(idx):
                     newpermutation = tuple(diag.Swap(PermuList[i], idx, j))
@@ -126,12 +135,12 @@ class free_energy:
                 d = self.BuildADiagram()
                 d.Permutation = p
                 d.LoopBasis = MomList[i]
-                d.VerBasis = (d.GetReference(), d.GetPermu())
+                d.VerBasis = (self.GetReference(), d.GetPermu())
                 d.SymFactor = abs(OrigHugen.SymFactor)*SignList[i]
                 OptHugenDiagList.append(d)
 
-                print "Optimal lnZ diagram {0} with SymFactor {1}".format(
-                    p, d.SymFactor)
+                print red("Optimal lnZ diagram {0} with SymFactor {1}".format(
+                    p, d.SymFactor))
 
         return OptHugenDiagList
 
@@ -157,7 +166,7 @@ class free_energy:
             else:
                 return -1
 
-        Assert(diag.CheckConservation(permutation, Momentum, self.__GetInteractionPairs()),
+        Assert(diag.CheckConservation(permutation, Momentum, self.GetInteractionPairs()),
                "Free energy diagram loop basis does not obey Momentu conservation!")
         return Momentum
 
@@ -211,9 +220,3 @@ class free_energy:
         FermiSign = (-1)**self.Order * (-1)**LoopNum
         # n+1 loop  contributes (-1)^(n+1) and order n contributes (-1)^n
         return tuple(Permutation), Momentum, FermiSign
-
-    def __GetInteractionPairs(self):
-        return tuple([(2*i, 2*i+1) for i in range(self.Ver4Num)])
-
-    def __GetReference(self):
-        return tuple(range(self.GNum))

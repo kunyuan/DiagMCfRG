@@ -128,6 +128,8 @@ def AttachExternalVertex(Diag, ZMomentum, Sym):
                 StartMom.append(Mom)
                 StartMom.append(Mom)
         # print len(Visited)
+    print "Find polar", len(PolarDict.keys())
+    
     return PolarDict
 
 
@@ -742,7 +744,7 @@ def SaveToFile(UniqueDiagrams, Name):
 
 
 if __name__ == "__main__":
-    Order = 4
+    Order = 3
 
     Order -= 1
     Reference = GetReference(Order)
@@ -839,6 +841,8 @@ if __name__ == "__main__":
         print "Total Unique Diagrams for Polar:  {0}\n".format(
             len(UnlabeledDiagramList))
         print UnlabeledDiagramList
+
+        continue
         # print "Total Unique Buble Diagrams for Polar: {0}\n".format(len(UnlabeledBubleDiagramList))
 
         # NewUnlabeledDiagram=[]
@@ -859,32 +863,32 @@ if __name__ == "__main__":
         # NewUnlabeledDiagram.append(diagrams)
         # UnlabeledDiagramList=NewUnlabeledDiagram
 
-        TempDiagList = []
-        NumList = []
-        indexList = []
-        index = 0
-        for g in UnlabeledDiagramList:
-            indexList.append(range(index, index+len(g)))
-            index += len(g)
-            for e in g:
-                TempDiagList.append(e)
-                NumList.append(len(g))
+        # TempDiagList = []
+        # NumList = []
+        # indexList = []
+        # index = 0
+        # for g in UnlabeledDiagramList:
+        #     indexList.append(range(index, index+len(g)))
+        #     index += len(g)
+        #     for e in g:
+        #         TempDiagList.append(e)
+        #         NumList.append(len(g))
 
-        coeffMatrix = np.zeros([len(TempDiagList), len(TempDiagList)])
-        coeffMatrixN = np.zeros([len(TempDiagList), len(TempDiagList)])
-        coeffdict = {}
-        for i in range(len(TempDiagList)):
-            for j in range(len(TempDiagList)):
-                # if i==j:
-                    # continue
-                di = tuple(TempDiagList[i])
-                dj = tuple(TempDiagList[j])
-                si = LessPolarDict[di][1]
-                sj = LessPolarDict[dj][1]
-                val = sum(LessPolarDict[di][-1]*LessPolarDict[dj]
-                          [-1]/float(si)/float(sj))/DUPLICATE
-                coeffMatrix[i][j] = val
-                coeffMatrixN[i][j] = val*NumList[i]*NumList[j]
+        # coeffMatrix = np.zeros([len(TempDiagList), len(TempDiagList)])
+        # coeffMatrixN = np.zeros([len(TempDiagList), len(TempDiagList)])
+        # coeffdict = {}
+        # for i in range(len(TempDiagList)):
+        #     for j in range(len(TempDiagList)):
+        #         # if i==j:
+        #             # continue
+        #         di = tuple(TempDiagList[i])
+        #         dj = tuple(TempDiagList[j])
+        #         si = LessPolarDict[di][1]
+        #         sj = LessPolarDict[dj][1]
+        #         val = sum(LessPolarDict[di][-1]*LessPolarDict[dj]
+        #                   [-1]/float(si)/float(sj))/DUPLICATE
+        #         coeffMatrix[i][j] = val
+        #         coeffMatrixN[i][j] = val*NumList[i]*NumList[j]
         # print "Coeff Matrix:\n", coeffMatrixN
         # print "Sum: ", np.sum(coeffMatrix)
         # Maximum=10000.0
@@ -902,7 +906,7 @@ if __name__ == "__main__":
         index = 0
         for g in UnlabeledDiagramList:
             for e in g:
-                print "{0}: {0}".format(e, coeffMatrixN[index, :])
+                # print "{0}: {0}".format(e, coeffMatrixN[index, :])
                 index += 1
                 # UniqueDiagrams.append(e)
             print "Total {0} with symmetry factor {1}\n".format(

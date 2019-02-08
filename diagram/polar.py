@@ -15,10 +15,10 @@ class polar():
 
         self.LoopNum = self.Order+self.ExtLoopNum
 
-    def __GetInteractionPairs(self):
+    def GetInteractionPairs(self):
         return tuple([(2*i, 2*i+1) for i in range(1, self.Ver4Num)])
 
-    def __GetReference(self):
+    def GetReference(self):
         return tuple(range(self.GNum))
 
     def BuildADiagram(self):
@@ -41,7 +41,10 @@ class polar():
                "Polarization and Free energy order should match! {0} vs {1}".format(self.Order, FreeEnergyDiag.Order))
 
         Diag = FreeEnergyDiag.GetPermu()
-        ZMomentum = FreeEnergyDiag.Momentum
+        # shift all vertex index with 2
+        Diag = [e+SHIFT for e in Diag]
+
+        ZMomentum = FreeEnergyDiag.LoopBasis
         Sym = FreeEnergyDiag.SymFactor
 
         for i in range(2, len(Diag)+2):
@@ -58,8 +61,8 @@ class polar():
             Momentum[1:, 1] = ZMomentum[:, i-SHIFT]
             Momentum[0, 0] = 1
 
-            Assert(diag.CheckConservation(d, Momentum, self.__GetInteractionPairs(
-            )), "Momentum does not conserve or rank is wrong!")
+            Assert(diag.CheckConservation(d, Momentum, self.GetInteractionPairs(
+            )), "For the first diagram, Momentum does not conserve or rank is wrong!")
 
             # print "Start with: ", d
             PolarDict[tuple(d)] = [Momentum, Sym]
@@ -75,7 +78,7 @@ class polar():
                 if Index in Visited:
                     continue
 
-                if Permutation[1] != Index and Permutation[1] != d.Mirror(Index):
+                if Permutation[1] != Index and Permutation[1] != diag.Mirror(Index):
                     print "wrong!", Permutation, Index
                     sys.exit()
                 # NextVertex<==1<===PreVertex, Target<======Index
@@ -91,23 +94,23 @@ class polar():
                 Mom[:, 1] = Mom[:, Index]
                 Mom[:, Index] += deltaMom
 
-            Assert(diag.CheckConservation(Permutation, Mom, self.__GetInteractionPairs(
-            )), "Momentum does not conserve or rank is wrong!")
+                Assert(diag.CheckConservation(Permutation, Mom, self.GetInteractionPairs(
+                )), "Momentum does not conserve or rank is wrong!")
 
-            PolarDict[tuple(Permutation)] = [Mom, Sym]
+                PolarDict[tuple(Permutation)] = [Mom, Sym]
 
-            Visited.append(Index)
+                Visited.append(Index)
 
-            if Target not in Visited:
-                ToVisit.append(Target)
-                ToVisit.append(diag.Mirror(Target))
-                StartPermu.append(tuple(Permutation))
-                StartPermu.append(tuple(Permutation))
-                StartMom.append(Mom)
-                StartMom.append(Mom)
-            # print len(Visited)
+                if Target not in Visited:
+                    ToVisit.append(Target)
+                    ToVisit.append(diag.Mirror(Target))
+                    StartPermu.append(tuple(Permutation))
+                    StartPermu.append(tuple(Permutation))
+                    StartMom.append(Mom)
+                    StartMom.append(Mom)
+                # print len(Visited)
 
-        OptPolarDiagList = []
+        OptPolarDiagDict = {}
 
         for p in PolarDict.keys():
             d = self.BuildADiagram()
@@ -115,24 +118,28 @@ class polar():
             d.Permutation = p
             d.LoopBasis = PolarDict[p][0]
             d.SymFactor = PolarDict[p][1]
-            d.VerBasis = [self.__GetReference(), d.GetPermu()]
+            d.VerBasis = [self.GetReference(), d.GetPermu()]
 
-            OptPolarDiagList.append(d)
+            OptPolarDiagDict[d.GetPermu()] = d
+
+        # print "Find polar", len(PolarDict.keys())
+        return OptPolarDiagDict
 
     def Group(self, PermutationDict, TimeRotation=True):
         """find the topogically same diagrams in the dictionary"""
+        PermutationDict = dict(PermutationDict)
         UnlabeledDiagramList = []
         # for permutation in PermutationList[0:1]:
         while len(PermutationDict) > 0:
             print "Remaining diagram {0}".format(len(PermutationDict))
             permutation = PermutationDict.keys()[0]
-            Deformation = self.check_Unique_Permutation(
+            Deformation = self.__check_Unique_Permutation(
                 permutation, PermutationDict, TimeRotation)
             # if len(Deformation)>0:
             UnlabeledDiagramList.append(Deformation)
         return UnlabeledDiagramList
 
-    def check_Unique_Permutation(self, permutation, PermutationDict, TimeRotation):
+    def __check_Unique_Permutation(self, permutation, PermutationDict, TimeRotation):
         Order = self.Order
         Deformation = [permutation]
 
@@ -161,8 +168,8 @@ class polar():
                 del PermutationDict[p]
                 DeformationFinal.append(p)
 
-        print "remaining length of permutation dictionary:", len(
-            PermutationDict)
+        # print "remaining length of permutation dictionary:", len(
+        #     PermutationDict)
         return list(DeformationFinal)
 
     def get_Unique_Permutation(self, permutationList, TimeRotation=True):
