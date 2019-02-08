@@ -198,7 +198,7 @@ class polar():
 
             Body += "#Symmetry Factor\n{0}\n".format(Diag.SymFactor)
 
-            Body += "# Loop Bases\n"
+            Body += "# Loop Basis\n"
             for i in range(self.LoopNum):
                 for j in range(self.GNum):
                     Body += "{0:2d} ".format(Diag.LoopBasis[i, j])
@@ -217,7 +217,7 @@ class polar():
                 Body += "{0:2d} ".format(0)
             Body += "\n"
 
-            Body += "#Ver Loop Bases\n"
+            Body += "#Ver Loop Basis\n"
             InteractionMom = []
             for j in range(1, self.Order):
                 end1, end2 = 2*j, 2*j+1
@@ -236,22 +236,24 @@ class polar():
                 Path = diag.FindAllLoops(FeynPermu)
                 nloop = len(Path)
 
-                ########### for spin susceptibility   #####################
-                # print "path", Path
-                Flag = False
-                for p in Path:
-                    if 0 in p and 1 in p:
-                        Flag = True
+                Sign = (-1)**nloop*(-1)**(self.Order-1) / \
+                    (Diag.SymFactor/abs(Diag.SymFactor))
+                # make sure the sign of the Spin factor of the first diagram is positive
 
-                if Flag == False:
-                    # print "false", d, path
-                    Body += "{0:2d} ".format(0)
-                else:
-                    Body += "{0:2d} ".format(-(-2)**nloop)
+                ########### for spin susceptibility   #####################
+                # Flag = False
+                # for p in Path:
+                #     if 0 in p and 1 in p:
+                #         Flag = True
+
+                # if Flag == False:
+                #     Body += "{0:2d} ".format(0)
+                # else:
+                #     Body += "{0:2d} ".format(-(-2)**nloop*(-1)**self.Order)
                 #####################################################
 
-            #    Body += "{0:2d} ".format(-(-2)**nloop)
-            #    Body += "{0:2d} ".format(-(-1)**nloop)
+                Body += "{0:2d} ".format(2**nloop*int(Sign))
+            #   Body += "{0:2d} ".format(-(-1)**nloop)
 
             Body += "\n"
             Body += "\n"
@@ -274,6 +276,7 @@ class polar():
                 TempFeynList.append(tuple(TempPermu))
                 TempPermu[start1], TempPermu[start2] = TempPermu[start2], TempPermu[start1]
                 TempFeynList.append(tuple(TempPermu))
+
             FeynList = TempFeynList
         return FeynList
 

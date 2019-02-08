@@ -1,17 +1,18 @@
 from free_energy import *
 from polar import *
 import copy
+import sys
 
 if __name__ == "__main__":
-
-    Order = 4
+    InputStr = raw_input("Input Diagram Order: ")
+    Order = int(InputStr)
 
     LnZOrder = Order-1
     DiagFile = "./Diagram/HugenDiag{0}.txt".format(LnZOrder)
     LnZ = free_energy(LnZOrder)
     # Load pre-generated lnZ diagrams
     # build labeled Feynman diagram to unlabled Hugenholtz diagram mapping
-    print "\nLoad LnZ diagrams ..."
+    print "\nLoad Order {0} LnZ diagrams ...".format(LnZOrder)
     LnZ.LoadDiagrams(DiagFile)
 
     print red("\nThe optimimal LnZ diagrams:")
