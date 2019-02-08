@@ -41,7 +41,6 @@ class free_energy:
 
     def LoadDiagrams(self, FileName):
         """build labeled Feynman diagram to unlabled Hugenholtz diagram mapping"""
-        print "Loading LnZ diagrams..."
         with open(FileName) as f:
             d = f.read()
             exec(d)  # get Diag and Sym from the diagram file
@@ -122,8 +121,8 @@ class free_energy:
                             # sys.exit(0)
             idx += 1
 
-        # list of optimized hugen diagrams
-        OptHugenDiagList = list()
+        # set of optimized hugen diagrams
+        OptHugenDiagList = []
 
         for i in range(len(PermuList)):
             p = PermuList[i]

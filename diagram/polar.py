@@ -128,18 +128,18 @@ class polar():
     def Group(self, PermutationDict, TimeRotation=True):
         """find the topogically same diagrams in the dictionary"""
         PermutationDict = dict(PermutationDict)
-        UnlabeledDiagramList = []
+        UnlabelDiagDeformList = []
         # for permutation in PermutationList[0:1]:
         while len(PermutationDict) > 0:
             print "Remaining diagram {0}".format(len(PermutationDict))
             permutation = PermutationDict.keys()[0]
-            Deformation = self.__check_Unique_Permutation(
+            Deformation = self.__FindDeformation(
                 permutation, PermutationDict, TimeRotation)
             # if len(Deformation)>0:
-            UnlabeledDiagramList.append(Deformation)
-        return UnlabeledDiagramList
+            UnlabelDiagDeformList.append(Deformation)
+        return UnlabelDiagDeformList
 
-    def __check_Unique_Permutation(self, permutation, PermutationDict, TimeRotation):
+    def __FindDeformation(self, permutation, PermutationDict, TimeRotation):
         Order = self.Order
         Deformation = [permutation]
 
@@ -172,39 +172,144 @@ class polar():
         #     PermutationDict)
         return list(DeformationFinal)
 
-    def get_Unique_Permutation(self, permutationList, TimeRotation=True):
-        Order = self.Order
-        PermutationDict = {}
-        for p in permutationList:
-            PermutationDict[tuple(p)] = None
-        for per in permutationList:
-            if not PermutationDict.has_key(tuple(per)):
-                continue
-            Deformation = [per]
+    def ToString(self, PolarHugenList):
+        if len(PolarHugenList) == 0:
+            return
 
-            if TimeRotation:
-                for idx in range(1, Order):
-                    for i in range(len(Deformation)):
-                        for j in range(1, idx):
-                            Deformation.append(diag.SwapTwoInteraction(
-                                Deformation[i], idx*2, idx*2+1, j*2, j*2+1))
+        Title = "#DiagNum: {0}\n".format(len(PolarHugenList))
+        Title += "#Order: {0}\n".format(self.Order)
+        Title += "#Type: {0}\n".format("Normal")
+        Title += "\n"
 
-            for idx in range(1, Order):
-                for i in range(len(Deformation)):
-                    Deformation.append(diag.SwapTwoVertex(
-                        Deformation[i], idx*2, idx*2+1))
+        Body = ""
+        for Diag in PolarHugenList:
+            Permutation = Diag.GetPermu()
+            Mom = Diag.LoopBasis
 
-            # for idx in range(1,Order):
-                # for i in range(len(Deformation)):
-                    # Deformation.append(swap_LR_Hugen(Deformation[i], idx*2, idx*2+1))
+            Body += "#Topology\n"
+            for i in Permutation:
+                Body += "{0:2d} ".format(i)
+            Body += "\n"
 
-            Deformation = set(Deformation)
-            for p in Deformation:
-                if tuple(p) == tuple(per):
-                    continue
-                if p in permutationList:
-                    del PermutationDict[p]
+            Body += "#Propagator Type\n"
+            for i in Permutation:
+                Body += "{0:2d} ".format(0)
+            Body += "\n"
 
-        print "remaining length of permutation dictionary:", len(
-            PermutationDict)
-        return PermutationDict.keys()
+            Body += "#Symmetry Factor\n{0}\n".format(Diag.SymFactor)
+
+            Body += "# Loop Bases\n"
+            for i in range(self.LoopNum):
+                for j in range(self.GNum):
+                    Body += "{0:2d} ".format(Diag.LoopBasis[i, j])
+                Body += "\n"
+
+            Body += "#Ver4 Legs: InLeft OutLeft InRight OutRight\n"
+            for j in range(1, self.Order):
+                end1, end2 = 2*j, 2*j+1
+                start1 = Permutation.index(end1)
+                start2 = Permutation.index(end2)
+                Body += "{0} {1} {2} {3} ".format(start1, end1, start2, end2)
+            Body += "\n"
+
+            Body += "# Interaction Type\n"
+            for i in range(2*(self.Order-1)):
+                Body += "{0:2d} ".format(0)
+            Body += "\n"
+
+            Body += "#Ver Loop Bases\n"
+            InteractionMom = []
+            for j in range(1, self.Order):
+                end1, end2 = 2*j, 2*j+1
+                start1 = Permutation.index(end1)
+                start2 = Permutation.index(end2)
+                InteractionMom.append(Mom[:, start1]-Mom[:, end1])
+                InteractionMom.append(Mom[:, start1]-Mom[:, end2])
+
+            for i in range(self.LoopNum):
+                for j in range(2*(self.Order-1)):
+                    Body += "{0:2d} ".format(InteractionMom[j][i])
+                Body += "\n"
+
+            Body += "#SpinFactor\n"
+            for FeynPermu in self.HugenToFeyn(Diag.GetPermu()):
+                Path = diag.FindAllLoops(FeynPermu)
+                nloop = len(Path)
+
+                ########### for spin susceptibility   #####################
+                # print "path", Path
+                Flag = False
+                for p in Path:
+                    if 0 in p and 1 in p:
+                        Flag = True
+
+                if Flag == False:
+                    # print "false", d, path
+                    Body += "{0:2d} ".format(0)
+                else:
+                    Body += "{0:2d} ".format(-(-2)**nloop)
+                #####################################################
+
+            #    Body += "{0:2d} ".format(-(-2)**nloop)
+            #    Body += "{0:2d} ".format(-(-1)**nloop)
+
+            Body += "\n"
+            Body += "\n"
+
+        return Title+Body
+
+    def HugenToFeyn(self, HugenPermu):
+        """construct a list of feyn diagram permutation from a hugen diagram permutation"""
+        FeynList = []
+        FeynList.append(HugenPermu)
+        Permutation = HugenPermu
+        for j in range(1, self.Order):
+            end1, end2 = 2*j, 2*j+1
+            start1 = Permutation.index(end1)
+            start2 = Permutation.index(end2)
+
+            TempFeynList = []
+            for permu in FeynList:
+                TempPermu = list(permu)
+                TempFeynList.append(tuple(TempPermu))
+                TempPermu[start1], TempPermu[start2] = TempPermu[start2], TempPermu[start1]
+                TempFeynList.append(tuple(TempPermu))
+            FeynList = TempFeynList
+        return FeynList
+
+    # def get_Unique_Permutation(self, permutationList, TimeRotation=True):
+    #     Order = self.Order
+    #     PermutationDict = {}
+    #     for p in permutationList:
+    #         PermutationDict[tuple(p)] = None
+    #     for per in permutationList:
+    #         if not PermutationDict.has_key(tuple(per)):
+    #             continue
+    #         Deformation = [per]
+
+    #         if TimeRotation:
+    #             for idx in range(1, Order):
+    #                 for i in range(len(Deformation)):
+    #                     for j in range(1, idx):
+    #                         Deformation.append(diag.SwapTwoInteraction(
+    #                             Deformation[i], idx*2, idx*2+1, j*2, j*2+1))
+
+    #         for idx in range(1, Order):
+    #             for i in range(len(Deformation)):
+    #                 Deformation.append(diag.SwapTwoVertex(
+    #                     Deformation[i], idx*2, idx*2+1))
+
+    #         # for idx in range(1,Order):
+    #             # for i in range(len(Deformation)):
+    #                 # Deformation.append(swap_LR_Hugen(Deformation[i], idx*2, idx*2+1))
+
+    #         Deformation = set(Deformation)
+    #         for p in Deformation:
+    #             if tuple(p) == tuple(per):
+    #                 continue
+    #             if p in permutationList:
+    #                 del PermutationDict[p]
+
+    #     print "remaining length of permutation dictionary:", len(
+    #         PermutationDict)
+    #     return PermutationDict.keys()

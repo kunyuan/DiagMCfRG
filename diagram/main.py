@@ -1,5 +1,6 @@
 from free_energy import *
 from polar import *
+import copy
 
 if __name__ == "__main__":
 
@@ -10,12 +11,15 @@ if __name__ == "__main__":
     LnZ = free_energy(LnZOrder)
     # Load pre-generated lnZ diagrams
     # build labeled Feynman diagram to unlabled Hugenholtz diagram mapping
+    print "\nLoad LnZ diagrams ..."
     LnZ.LoadDiagrams(DiagFile)
 
     print red("\nThe optimimal LnZ diagrams:")
     OptLnZHugenDiagList = LnZ.OptimizeLoopBasis()
 
     Polar = polar(Order)
+
+    UniqueUnLabelDiagList = []
 
     for d in OptLnZHugenDiagList:
         print "\n============================================================="
@@ -35,12 +39,23 @@ if __name__ == "__main__":
             if diag.HasFock(p, Polar.GetReference()):
                 del OptPolarHugenDiagDict[p]
 
+        print "Group polarization diagrams from the same LnZ diagram..."
+        UnLabelDiagDeformList = Polar.Group(
+            OptPolarHugenDiagDict, TimeRotation=True)
         # each element contains a deforamtion of hugenholz polarization
         # diagrams in the same LnZ group
-        print "Group polarization diagrams from the same LnZ diagram..."
-        UnLabeledDiagList = Polar.Group(
-            OptPolarHugenDiagDict, TimeRotation=True)
+
         print red("Representative polarization Hugenholtz diagram:")
-        for d in UnLabeledDiagList:
+        for d in UnLabelDiagDeformList:
+            diagram = copy.deepcopy(OptPolarHugenDiagDict[d[0]])
+            diagram.SymFactor = diagram.SymFactor*len(d)
+            UniqueUnLabelDiagList.append(diagram)
             print red("{0} with SymFactor {1}".format(
-                d[0], OptPolarHugenDiagDict[d[0]].SymFactor*len(d)))
+                diagram.GetPermu(), diagram.SymFactor))
+
+    print yellow("Total Unique Polarization diagram: {0}".format(
+        len(UniqueUnLabelDiagList)))
+
+    print "Save diagrams ..."
+    with open("./Diag{0}{1}.txt".format("Polar", Order), "w") as f:
+        f.write(Polar.ToString(UniqueUnLabelDiagList))
