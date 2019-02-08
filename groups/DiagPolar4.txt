@@ -1,579 +1,579 @@
-# DiagNum:  23
-# DiagOrder:  4
-# DiagType:  Normal
+#DiagNum: 23
+#Order: 4
+#Type: Normal
 
-# Topology
- 1  7  6  5  2  0  4  3 
-# Propagator Type
+#Topology
+ 2  7  0  4  3  6  5  1 
+#Propagator Type
  0  0  0  0  0  0  0  0 
-# SymmetryFactor
+#Symmetry Factor
 -1.0
-# Loop Bases
- 1  0  0  0  0  0  0  0 
- 0  0  0  0 -1  0 -1  1 
- 0  0  0  1  1  0  0  0 
- 0  0  1  0  1  0  1  0 
- 1  1  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 7 3 6 4 3 5 2 6 1 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0  0  0  0  0  0 
--1 -1  0 -1  1 -1 
- 1  0 -1  0  0  0 
- 0  1  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
--4  2  2 -4  2 -4 -4  8 
-
-# Topology
- 3  5  6  1  2  7  4  0 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--1.0
-# Loop Bases
- 1  0  0  1  0  0  0  0 
- 1  0  0  0 -1  0 -1  1 
- 0  1  0  1  1  0  0  0 
- 0  0  1  0  1  0  1  0 
- 0  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 0 3 6 4 1 5 2 6 5 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0 -1  0  0  0  0 
--1 -1  0 -1  1 -1 
- 1  0 -1  0  0  0 
- 0  1  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
--4  2  2 -4  2  0  0  0 
-
-# Topology
- 5  3  6  0  2  7  4  1 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--1.0
-# Loop Bases
- 1  0  1  0  1  0  0  1 
- 0  1  0  0 -1  0 -1  1 
- 1  0  0  1  1  0  0  0 
- 0  0  1  0  1  0  1  0 
- 0  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 1 3 6 4 0 5 2 6 5 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0  1 -1  0  1  0 
--1 -1  0 -1  1 -1 
- 1  0 -1  0  0  0 
- 0  1  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
--4  2  2 -4  2  0  0  0 
-
-# Topology
- 3  0  6  5  2  7  4  1 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--1.0
-# Loop Bases
- 1  0  1  0  0  0  0  1 
- 1  1  0  0 -1  0 -1  1 
- 0  0  0  1  1  0  0  0 
- 0  0  1  0  1  0  1  0 
- 0  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 0 3 6 4 3 5 2 6 5 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
--1  0  0  0  1  0 
--1 -1  0 -1  1 -1 
- 1  0 -1  0  0  0 
- 0  1  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
--4  2  2 -4  2 -4 -4  8 
-
-# Topology
- 4  3  6  5  2  7  0  1 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--1.0
-# Loop Bases
- 1  0  0  0  0  1  0  1 
--1  1  0  0 -1  0 -1  1 
- 0  0  0  1  1  0  0  0 
- 1  0  1  0  1  0  1  0 
- 1  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 1 3 0 4 3 5 2 6 5 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0  0  1  0  0 -1 
--1 -1  0 -1  1 -1 
- 1  0 -1  0  0  0 
- 0  1  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
- 0  2  2  0  2  0 -4  0 
-
-# Topology
- 4  7  6  5  2  1  0  3 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--1.0
-# Loop Bases
- 1  0  0  0  0  1  0  0 
--1  0  0  0 -1  0 -1  1 
- 0  0  0  1  1  0  0  0 
- 1  0  1  0  1  0  1  0 
- 1  1  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 7 3 0 4 3 5 2 6 1 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0  0  1  0  0  0 
--1 -1  0 -1  1 -1 
- 1  0 -1  0  0  0 
- 0  1  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
- 0  2  2 -4  2 -4 -4  8 
-
-# Topology
- 7  6  1  5  2  0  4  3 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--1.0
-# Loop Bases
- 1  0  1  0  1  0  1  0 
- 0  0  0  0 -1  0 -1  1 
- 0  0  0  1  1  0  0  0 
- 0  1  1  0  1  0  1  0 
- 1  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 7 3 6 4 3 5 1 6 0 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0  1  0  1 -1  0 
--1 -1  0 -1  1 -1 
- 1  0 -1  0  0  0 
- 0  1  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
- 0  2  2  0  2  0 -4  0 
-
-# Topology
- 7  0  6  1  2  3  4  5 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.25
-# Loop Bases
- 1  0  0  1  0  1  1  0 
- 0  0  0  0 -1  1  0  0 
- 0  0  1  0  1  0  0  1 
- 0  0  1  0  1  0  1  0 
- 1  1 -1  1  0  0  0  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 5 3 6 4 7 5 2 6 0 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0 -1  1  0 -1  0 
--1 -1  1 -1  0  0 
- 0  1 -1  0  1  0 
- 0  1  0  1  0  1 
- 1 -1  0  0 -1 -1 
-#SpinFactor
--4  2  2 -4  2 -4 -4  2 
-
-# Topology
- 5  3  6  7  2  1  4  0 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.5
-# Loop Bases
- 1  0  0  0  0  1  0  0 
- 0  1  0  0 -1  1  0  0 
- 1  0  1  0  1  0  0  1 
- 0  0  1  0  1  0  1  0 
- 0  0 -1  1  0  0  0  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 1 3 6 4 0 5 2 6 3 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0  0  0 -1  0  0 
--1 -1  1 -1  0  0 
- 0  1 -1  0  1  0 
- 0  1  0  1  0  1 
- 1 -1  0  0 -1 -1 
-#SpinFactor
--4  2  2  0  2 -4  0  2 
-
-# Topology
- 2  3  6  7  0  1  4  5 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.25
-# Loop Bases
- 1  0  0  1  0  1  1  0 
--1  1  0  0 -1  1  0  0 
- 1  0  1  0  1  0  0  1 
- 1  0  1  0  1  0  1  0 
- 0  0 -1  1  0  0  0  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-0 2 1 3 6 4 7 5 2 6 3 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 1  0  1  0 -1  0 
--1 -1  1 -1  0  0 
- 0  1 -1  0  1  0 
- 0  1  0  1  0  1 
- 1 -1  0  0 -1 -1 
-#SpinFactor
- 0  2  2  0  2  0  0  2 
-
-# Topology
- 3  5  6  7  2  0  4  1 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.5
-# Loop Bases
- 1  0  1  0  0  0  0  1 
- 1  0  0  0 -1  1  0  0 
- 0  1  1  0  1  0  0  1 
- 0  0  1  0  1  0  1  0 
- 0  0 -1  1  0  0  0  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 0 3 6 4 1 5 2 6 3 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
--1  0  0  0  1  0 
--1 -1  1 -1  0  0 
- 0  1 -1  0  1  0 
- 0  1  0  1  0  1 
- 1 -1  0  0 -1 -1 
-#SpinFactor
--4  2  2  0  2 -4  0  2 
-
-# Topology
- 1  7  6  0  2  3  4  5 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.25
-# Loop Bases
- 1  0  0  0  0  0  0  0 
- 0  0  0  0 -1  1  0  0 
- 0  0  1  0  1  0  0  1 
- 0  0  1  0  1  0  1  0 
- 1  1 -1  1  0  0  0  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 5 3 6 4 7 5 2 6 1 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0  0  0  0  0  0 
--1 -1  1 -1  0  0 
- 0  1 -1  0  1  0 
- 0  1  0  1  0  1 
- 1 -1  0  0 -1 -1 
-#SpinFactor
--4  2  2 -4  2 -4 -4  2 
-
-# Topology
- 7  3  1  6  2  0  4  5 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.5
-# Loop Bases
- 1  0  1  0  1  0  1  0 
- 0  1  1  0  0  0  0  0 
- 0  0  0  0  0  0 -1  1 
- 0  0  0  1  1  0  1  0 
- 1  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 1 3 6 4 7 5 3 6 0 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0  1  0  1 -1  0 
--1  0  0  0  0  0 
- 0  0 -1 -1  1 -1 
- 1  0  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
- 0  2  2  0  0  0  0  0 
-
-# Topology
- 1  3  0  6  2  7  4  5 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.5
-# Loop Bases
- 1  0  0  0  0  0  0  0 
- 1  1  1  0  0  0  0  0 
- 0  0  0  0  0  0 -1  1 
- 0  0  0  1  1  0  1  0 
- 0  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 1 3 6 4 7 5 3 6 5 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0  0  0  0  0  0 
--1  0  0  0  0  0 
- 0  0 -1 -1  1 -1 
- 1  0  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
--4  2  2 -4  8 -4 -4  8 
-
-# Topology
- 4  3  1  6  2  7  0  5 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--1.0
-# Loop Bases
- 1  0  1  0  1  0  0  0 
- 0  1  1  0  0  0  0  0 
--1  0  0  0  0  0 -1  1 
- 1  0  0  1  1  0  1  0 
- 1  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 1 3 0 4 7 5 3 6 5 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0  1  0  1  0  0 
--1  0  0  0  0  0 
- 0  0 -1 -1  1 -1 
- 1  0  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
--4  2  2  0  0  0  0  0 
-
-# Topology
- 3  0  1  6  2  7  4  5 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.5
-# Loop Bases
- 1  0  1  0  0  0  0  0 
- 1  1  1  0  0  0  0  0 
- 0  0  0  0  0  0 -1  1 
- 0  0  0  1  1  0  1  0 
- 0  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 0 3 6 4 7 5 3 6 5 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
--1  0  0  0  0  0 
--1  0  0  0  0  0 
- 0  0 -1 -1  1 -1 
- 1  0  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
--4  2  2 -4  8 -4 -4  8 
-
-# Topology
- 3  5  0  6  2  7  4  1 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--1.0
-# Loop Bases
- 1  0  0  1  0  0  0  1 
- 1  0  1  0  0  0  0  0 
- 0  1  0  0  0  0 -1  1 
- 0  0  0  1  1  0  1  0 
- 0  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 0 3 6 4 1 5 3 6 5 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0 -1  0  0  1  0 
--1  0  0  0  0  0 
- 0  0 -1 -1  1 -1 
- 1  0  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
- 0  2  2 -4  0  0  0  0 
-
-# Topology
- 3  7  0  6  2  1  4  5 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.5
-# Loop Bases
+# Loop Basis
  1  0  0  1  0  1  0  1 
  1  0  1  0  0  0  0  0 
- 0  0  0  0  0  0 -1  1 
- 0  0  0  1  1  0  1  0 
- 0  1  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 0 3 6 4 7 5 3 6 1 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0 -1  0 -1  1  0 
--1  0  0  0  0  0 
- 0  0 -1 -1  1 -1 
- 1  0  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
- 0  2  2  0  0  0  0  0 
-
-# Topology
- 2  3  1  6  0  7  4  5 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.5
-# Loop Bases
- 1  0  1  0  0  0  0  0 
- 0  1  1  0  0  0  0  0 
- 0  0  0  0  0  0 -1  1 
- 1  0  0  1  1  0  1  0 
+ 0  0  0  1  1  0  0  0 
  0  0  0  0  0  1  1  0 
+ 0  1  0  0  0  0  0  1 
 #Ver4 Legs: InLeft OutLeft InRight OutRight
-0 2 1 3 6 4 7 5 3 6 5 7 
+0 2 4 3 3 4 6 5 5 6 1 7 
 # Interaction Type
  0  0  0  0  0  0 
-#Ver Loop Bases
+#Ver Loop Basis
+ 1  0  1  0  1  0 
  0  1  0  0  0  0 
--1  0  0  0  0  0 
- 0  0 -1 -1  1 -1 
- 1  0  0  1  0  1 
- 0  0  1  0 -1  0 
+ 0 -1  0  1  0  0 
+ 0  0  0 -1  0  1 
+ 0  0  0  0  0 -1 
 #SpinFactor
--4  2  2 -4  0  0  0  0 
+16 -8 -8  4 -8  4  4 -2 
 
-# Topology
- 3  6  0  1  2  7  4  5 
-# Propagator Type
+#Topology
+ 3  7  6  4  0  2  5  1 
+#Propagator Type
  0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.5
-# Loop Bases
- 1  0  0  1  0  0  0  0 
- 1  0  1  0  0  0  0  0 
- 0  0  0  0  0  0 -1  1 
- 0  1  0  1  1  0  1  0 
- 0  0  0  0  0  1  1  0 
+#Symmetry Factor
+1.0
+# Loop Basis
+ 1  0  1  0  0  0  0  1 
+-1  0  0  0 -1  1  0  0 
+ 1  0  0  1  1  0  0  0 
+ 1  0  1  0  1  0  1  0 
+ 0  1  0  0  0  0  0  1 
 #Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 0 3 6 4 7 5 1 6 5 7 
+5 2 0 3 3 4 6 5 2 6 1 7 
 # Interaction Type
  0  0  0  0  0  0 
-#Ver Loop Bases
- 0 -1  0  0  0  0 
--1  0  0  0  0  0 
- 0  0 -1 -1  1 -1 
- 1  0  0  1  0  1 
- 0  0  1  0 -1  0 
+#Ver Loop Basis
+-1  0  0  0  1  0 
+ 1  1  1 -1  0  0 
+ 0 -1  0  1  0  0 
+-1  0 -1  0  0  1 
+ 0  0  0  0  0 -1 
 #SpinFactor
--4  2  2 -4  0  0  0  0 
+ 8 -4 -4  2 -4  2  8 -4 
 
-# Topology
- 3  2  0  6  1  7  4  5 
-# Propagator Type
+#Topology
+ 5  7  6  4  3  2  0  1 
+#Propagator Type
  0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.5
-# Loop Bases
- 1  0  0  1  1  0  0  1 
- 1  0  1  0  0  0  0  0 
- 0  0  0  0  0  0 -1  1 
- 0  1  0  1  1  0  1  0 
- 0  0  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-1 2 0 3 6 4 7 5 3 6 5 7 
-# Interaction Type
- 0  0  0  0  0  0 
-#Ver Loop Bases
- 0 -1 -1  0  1  0 
--1  0  0  0  0  0 
- 0  0 -1 -1  1 -1 
- 1  0  0  1  0  1 
- 0  0  1  0 -1  0 
-#SpinFactor
--4  2  2 -4  0  0  0  0 
-
-# Topology
- 6  3  1  0  2  7  4  5 
-# Propagator Type
- 0  0  0  0  0  0  0  0 
-# SymmetryFactor
--0.5
-# Loop Bases
+#Symmetry Factor
+0.5
+# Loop Basis
  1  0  1  0  1  0  0  1 
- 0  1  1  0  0  0  0  0 
- 0  0  0  0  0  0 -1  1 
- 1  0  0  1  1  0  1  0 
- 0  0  0  0  0  1  1  0 
+ 0  0  0  0 -1  1  0  0 
+ 0  0  0  1  1  0  0  0 
+ 1  0  1  0  1  0  1  0 
+ 0  1  0  0  0  0  0  1 
 #Ver4 Legs: InLeft OutLeft InRight OutRight
-4 2 1 3 6 4 7 5 0 6 5 7 
+5 2 4 3 3 4 0 5 2 6 1 7 
 # Interaction Type
  0  0  0  0  0  0 
-#Ver Loop Bases
- 0  1 -1  0  1  0 
--1  0  0  0  0  0 
- 0  0 -1 -1  1 -1 
- 1  0  0  1  0  1 
- 0  0  1  0 -1  0 
+#Ver Loop Basis
+-1  0 -1  0  1  0 
+ 1  1  1 -1  0  0 
+ 0 -1  0  1  0  0 
+-1  0 -1  0  0  1 
+ 0  0  0  0  0 -1 
 #SpinFactor
--4  2  2 -4  0  0  0  0 
+ 8 -4 -4  2 -4  2  8 -4 
 
-# Topology
- 3  5  0  6  7  1  4  2 
-# Propagator Type
+#Topology
+ 6  7  0  4  3  2  5  1 
+#Propagator Type
  0  0  0  0  0  0  0  0 
-# SymmetryFactor
+#Symmetry Factor
+0.5
+# Loop Basis
+ 1  0  0  0  0  0  0  1 
+ 0  0  0  0 -1  1  0  0 
+ 0  0  0  1  1  0  0  0 
+ 1  0  1  0  1  0  1  0 
+ 0  1  0  0  0  0  0  1 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 4 3 3 4 6 5 0 6 1 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  0  0  0  1  0 
+ 1  1  1 -1  0  0 
+ 0 -1  0  1  0  0 
+-1  0 -1  0  0  1 
+ 0  0  0  0  0 -1 
+#SpinFactor
+ 8 -4 -4  2 -4  2  8 -4 
+
+#Topology
+ 4  7  6  0  3  2  5  1 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+0.5
+# Loop Basis
+ 1  0  1  0  0  1  0  1 
+ 0  0  0  0 -1  1  0  0 
+ 1  0  0  1  1  0  0  0 
+ 0  0  1  0  1  0  1  0 
+ 0  1  0  0  0  0  0  1 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 4 3 0 4 6 5 2 6 1 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  1  1  0  1  0 
+ 1  1  1 -1  0  0 
+ 0 -1  0  1  0  0 
+-1  0 -1  0  0  1 
+ 0  0  0  0  0 -1 
+#SpinFactor
+ 8 -4 -4  2 -4  2  8 -4 
+
+#Topology
+ 7  4  6  1  3  2  5  0 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+0.5
+# Loop Basis
+ 1  0  0  1  1  0  1  0 
+ 0  0  0  0 -1  1  0  0 
+ 0  1  0  1  1  0  0  0 
+ 0  0  1  0  1  0  1  0 
+ 1  0  0  0  0  0  0  1 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 4 3 1 4 6 5 2 6 0 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0 -1 -1  0 -1  0 
+ 1  1  1 -1  0  0 
+ 0 -1  0  1  0  0 
+-1  0 -1  0  0  1 
+ 0  0  0  0  0 -1 
+#SpinFactor
+ 8 -4 -4  2 -4  2  8 -4 
+
+#Topology
+ 7  0  6  4  3  2  5  1 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+0.5
+# Loop Basis
+ 1  0  0  0  0  0  0  1 
+ 0  0  0  0 -1  1  0  0 
+ 0  0  0  1  1  0  0  0 
+ 0  0  1  0  1  0  1  0 
+ 1  1  0  0  0  0  0  1 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 4 3 3 4 6 5 2 6 0 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  0  0  0  0 -1 
+ 1  1  1 -1  0  0 
+ 0 -1  0  1  0  0 
+-1  0 -1  0  0  1 
+ 0  0  0  0  0 -1 
+#SpinFactor
+ 8 -4 -4  2 -4  2  8 -4 
+
+#Topology
+ 7  6  1  4  3  2  5  0 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+0.5
+# Loop Basis
+ 1  0  1  0  1  0  1  0 
+ 0  0  0  0 -1  1  0  0 
+ 0  0  0  1  1  0  0  0 
+ 0  1  1  0  1  0  1  0 
+ 1  0  0  0  0  0  0  1 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 4 3 3 4 6 5 1 6 0 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+-1  0 -1  0 -1  0 
+ 1  1  1 -1  0  0 
+ 0 -1  0  1  0  0 
+-1  0 -1  0  0  1 
+ 0  0  0  0  0 -1 
+#SpinFactor
+ 8 -4 -4  2 -4  2  8 -4 
+
+#Topology
+ 1  7  6  4  3  2  5  0 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+0.5
+# Loop Basis
+ 1  0  0  0  0  0  0  0 
+ 0  0  0  0 -1  1  0  0 
+ 0  0  0  1  1  0  0  0 
+ 0  0  1  0  1  0  1  0 
+ 1  1  0  0  0  0  0  1 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 4 3 3 4 6 5 2 6 1 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  0  0  0  0  0 
+ 1  1  1 -1  0  0 
+ 0 -1  0  1  0  0 
+-1  0 -1  0  0  1 
+ 0  0  0  0  0 -1 
+#SpinFactor
+ 8 -4 -4  2 -4  2  8 -4 
+
+#Topology
+ 7  2  6  4  3  1  5  0 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+1.0
+# Loop Basis
+ 1  0  0  0  0  1  1  0 
+ 0  1  0  0 -1  1  0  0 
+ 0  0  0  1  1  0  0  0 
+ 0  0  1  0  1  0  1  0 
+ 1  0  0  0  0  0  0  1 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+1 2 4 3 3 4 6 5 2 6 0 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  0  0 -1 -1  0 
+ 1  1  1 -1  0  0 
+ 0 -1  0  1  0  0 
+-1  0 -1  0  0  1 
+ 0  0  0  0  0 -1 
+#SpinFactor
+ 8 -4 -4  2 -4  2  8 -4 
+
+#Topology
+ 7  5  6  4  3  2  1  0 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+0.5
+# Loop Basis
+ 1  0  0  0  0  0  1  0 
+ 0  0  0  0 -1  1  0  0 
+ 0  0  0  1  1  0  0  0 
+ 0  1  1  0  1  0  1  0 
+ 1  0  0  0  0  0  0  1 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 4 3 3 4 1 5 2 6 0 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  0  0  0 -1  0 
+ 1  1  1 -1  0  0 
+ 0 -1  0  1  0  0 
+-1  0 -1  0  0  1 
+ 0  0  0  0  0 -1 
+#SpinFactor
+ 8 -4 -4  2 -4  2  8 -4 
+
+#Topology
+ 3  4  6  7  0  2  5  1 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-0.5
+# Loop Basis
+ 1  0  1  0  0  0  0  1 
+-1  0  0  0 -1  1  0  0 
+ 1  1  1  0  1  0  0  1 
+ 1  0  1  0  1  0  1  0 
+ 0  0 -1  1  0  0  0  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 0 3 1 4 6 5 2 6 3 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+-1  0  0  0  1  0 
+ 1  1  1 -1  0  0 
+-1  0  0  1  1  0 
+-1  0 -1  0  0  1 
+ 1 -1  0  0 -1 -1 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -2 
+
+#Topology
+ 5  4  6  7  3  2  0  1 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-0.25
+# Loop Basis
+ 1  0  1  0  1  0  0  1 
+ 0  0  0  0 -1  1  0  0 
+ 0  1  1  0  1  0  0  1 
+ 1  0  1  0  1  0  1  0 
+ 0  0 -1  1  0  0  0  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 4 3 1 4 0 5 2 6 3 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+-1  0 -1  0  1  0 
+ 1  1  1 -1  0  0 
+-1  0  0  1  1  0 
+-1  0 -1  0  0  1 
+ 1 -1  0  0 -1 -1 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -2 
+
+#Topology
+ 4  3  6  7  1  2  5  0 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-0.5
+# Loop Basis
+ 1  0  0  0  1  0  0  0 
+ 0 -1  0  0 -1  1  0  0 
+ 1  1  1  0  1  0  0  1 
+ 0  1  1  0  1  0  1  0 
+ 0  0 -1  1  0  0  0  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 1 3 0 4 6 5 2 6 3 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  0  0  1  0  0 
+ 1  1  1 -1  0  0 
+-1  0  0  1  1  0 
+-1  0 -1  0  0  1 
+ 1 -1  0  0 -1 -1 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -2 
+
+#Topology
+ 1  3  6  7  0  2  5  4 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-0.25
+# Loop Basis
+ 1  0  0  0  0  0  0  0 
+-1 -1  0  0 -1  1  0  0 
+ 1  1  1  0  1  0  0  1 
+ 1  1  1  0  1  0  1  0 
+ 0  0 -1  1  0  0  0  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 1 3 7 4 6 5 2 6 3 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  0  0  0  0  0 
+ 1  1  1 -1  0  0 
+-1  0  0  1  1  0 
+-1  0 -1  0  0  1 
+ 1 -1  0  0 -1 -1 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -2 
+
+#Topology
+ 6  0  1  7  3  2  5  4 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-0.25
+# Loop Basis
+ 1  0  1  0  0  1  0  1 
+ 0  0  0  0 -1  1  0  0 
+ 1  1  1  0  1  0  0  1 
+ 1  1  1  0  1  0  1  0 
+-1 -1 -1  1  0  0  0  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 4 3 7 4 6 5 0 6 3 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  1  1  0  1  0 
+ 1  1  1 -1  0  0 
+-1  0  0  1  1  0 
+-1  0 -1  0  0  1 
+ 1 -1  0  0 -1 -1 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -2 
+
+#Topology
+ 2  0  6  4  7  1  5  3 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
 -1.0
-# Loop Bases
- 1  0  0  1  0  1  1  0 
- 1  0  1  0  0  0  0  0 
- 0  1  0  0  0  1  0  0 
- 0  0  0  1  0  0  0  1 
+# Loop Basis
+ 1  0  0  1  0  1  0  0 
+ 1  1  0  0  0  1  1 -1 
+ 0  0  0  1  0  0 -1  1 
+ 0  0  1  0  0  0  0  1 
  0  0  0  0  1  0  1  0 
 #Ver4 Legs: InLeft OutLeft InRight OutRight
-7 2 0 3 6 4 1 5 3 6 4 7 
+0 2 7 3 3 4 6 5 2 6 4 7 
 # Interaction Type
  0  0  0  0  0  0 
-#Ver Loop Bases
- 0 -1  1  0  0  1 
--1  0  0  0  0  0 
- 0  0  0 -1  0  0 
- 1  0  0  0  1  0 
- 0  0  0  1 -1  0 
+#Ver Loop Basis
+ 1  0  1  0  0  0 
+ 1  1  0 -1 -1  1 
+ 0 -1  1  1  1 -1 
+-1  0  0  0  1  0 
+ 0  0 -1  0 -1  0 
 #SpinFactor
- 0  0  2  0  0  0  0  0 
+ 4 -2 -2  4 -2  4  4 -8 
+
+#Topology
+ 1  3  6  4  7  2  5  0 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-1.0
+# Loop Basis
+ 1  0  0  0  0  0  0  0 
+-1 -1  0  0  0  1  1 -1 
+ 1  1  0  1  0  0 -1  1 
+ 1  1  1  0  0  0  0  1 
+ 0  0  0  0  1  0  1  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 1 3 3 4 6 5 2 6 4 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  0  0  0  0  0 
+ 1  1  0 -1 -1  1 
+ 0 -1  1  1  1 -1 
+-1  0  0  0  1  0 
+ 0  0 -1  0 -1  0 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -8 
+
+#Topology
+ 4  7  6  0  1  2  5  3 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-1.0
+# Loop Basis
+ 1  0  0  0  1  0  0  0 
+ 0  0  0  0  0  1  1 -1 
+ 1  0  0  1  0  0 -1  1 
+ 0  0  1  0  0  0  0  1 
+ 0  1  0  0  1  0  1  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 7 3 0 4 6 5 2 6 1 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  0  0  1  0  0 
+ 1  1  0 -1 -1  1 
+ 0 -1  1  1  1 -1 
+-1  0  0  0  1  0 
+ 0  0 -1  0 -1  0 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -8 
+
+#Topology
+ 5  3  6  4  7  2  0  1 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-1.0
+# Loop Basis
+ 1  0  0  0  1  0  0  1 
+ 1 -1  0  0  0  1  1 -1 
+-1  1  0  1  0  0 -1  1 
+ 0  1  1  0  0  0  0  1 
+ 1  0  0  0  1  0  1  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 1 3 3 4 0 5 2 6 4 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  0 -1  0  0 -1 
+ 1  1  0 -1 -1  1 
+ 0 -1  1  1  1 -1 
+-1  0  0  0  1  0 
+ 0  0 -1  0 -1  0 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -8 
+
+#Topology
+ 4  5  6  0  7  2  1  3 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-1.0
+# Loop Basis
+ 1  0  1  0  0  1  1  0 
+ 0  1  0  0  0  1  1 -1 
+ 1 -1  0  1  0  0 -1  1 
+ 0  0  1  0  0  0  0  1 
+ 0  1  0  0  1  0  1  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 7 3 0 4 1 5 2 6 4 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  1  1  0  0  1 
+ 1  1  0 -1 -1  1 
+ 0 -1  1  1  1 -1 
+-1  0  0  0  1  0 
+ 0  0 -1  0 -1  0 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -8 
+
+#Topology
+ 3  6  1  4  7  2  5  0 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-1.0
+# Loop Basis
+ 1  0  1  0  0  0  0  0 
+-1  0  0  0  0  1  1 -1 
+ 1  0  0  1  0  0 -1  1 
+ 1  1  1  0  0  0  0  1 
+ 0  0  0  0  1  0  1  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 0 3 3 4 6 5 1 6 4 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+-1  0  0  0  0  0 
+ 1  1  0 -1 -1  1 
+ 0 -1  1  1  1 -1 
+-1  0  0  0  1  0 
+ 0  0 -1  0 -1  0 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -8 
+
+#Topology
+ 4  3  6  0  7  2  5  1 
+#Propagator Type
+ 0  0  0  0  0  0  0  0 
+#Symmetry Factor
+-1.0
+# Loop Basis
+ 1  0  1  0  0  1  0  1 
+ 0 -1  0  0  0  1  1 -1 
+ 1  1  0  1  0  0 -1  1 
+ 0  1  1  0  0  0  0  1 
+ 0  0  0  0  1  0  1  0 
+#Ver4 Legs: InLeft OutLeft InRight OutRight
+5 2 1 3 0 4 6 5 2 6 4 7 
+# Interaction Type
+ 0  0  0  0  0  0 
+#Ver Loop Basis
+ 0  1  1  0  1  0 
+ 1  1  0 -1 -1  1 
+ 0 -1  1  1  1 -1 
+-1  0  0  0  1  0 
+ 0  0 -1  0 -1  0 
+#SpinFactor
+ 4 -2 -2  4 -2  4  4 -8 
 

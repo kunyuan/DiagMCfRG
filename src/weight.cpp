@@ -133,7 +133,7 @@ void weight::ChangeGroup(group &Group, bool Forced) {
     for (int i = 0; i < Group.Ver4Num; i++) {
       // cout << "Ver: " << i << endl;
       if (UseVertex4) {
-        THROW_ERROR(NOTIMPLEMENTED, "Vertex4 not implemented!");
+        ABORT("Vertex4 not implemented!");
         // vertex4 *Ver4 = d.Ver4Index[i];
         // Ver4->Excited=true;
         // Ver4->NewWeight=
@@ -172,7 +172,7 @@ void weight::ChangeMom(group &Group, int MomIndex) {
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
       if (UseVertex4) {
-        THROW_ERROR(NOTIMPLEMENTED, "Vertex4 not implemented!");
+        ABORT("Vertex4 not implemented!");
       } else {
         vertex *Ver = d.Ver[i];
         if (Ver->LoopBasis[IN][MomIndex] != 0) {
@@ -244,7 +244,7 @@ double weight::GetNewWeight(group &Group) {
 
     double VerWeight;
     if (UseVertex4) {
-      THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
+      ABORT("Ver4 has not yet been implemented!");
     } else {
       if (Group.Ver4Num == 0) {
         VerWeight = d.SpinFactor[0];
@@ -315,7 +315,7 @@ void weight::AcceptChange(group &Group) {
     }
     for (int i = 0; i < Group.Ver4Num; i++)
       if (UseVertex4) {
-        THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
+        ABORT("Ver4 has not yet been implemented!");
       } else {
         vertex *Ver = d.Ver[i];
         Ver->Version = Var.CurrVersion;
@@ -338,7 +338,7 @@ void weight::RejectChange(group &Group) {
         d.G[i]->Excited = false;
       for (int i = 0; i < Group.Ver4Num; i++) {
         if (UseVertex4) {
-          THROW_ERROR(NOTIMPLEMENTED, "Ver4 has not yet been implemented!");
+          ABORT("Ver4 has not yet been implemented!");
         } else {
           if (d.Ver[i]->Excited[0])
             d.Ver[i]->Excited[0] = false;

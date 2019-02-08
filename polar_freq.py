@@ -9,25 +9,26 @@ size=12
 
 rs=1.0
 Lambda=1.0
-Beta=25
+Beta=20
 
 ##############   3D    ##################################
-kF=(9.0*np.pi/4.0)**(1.0/3.0)/rs #3D
+# kF=(9.0*np.pi/4.0)**(1.0/3.0)/rs #3D
 ###### Bare Green's function    #########################
 # Bubble=0.08871  # 3D, Beta=0.5, rs=1
 # Bubble=0.0971916  #3D, Beta=10, rs=1
 # Bubble=0.0971613  #3D, T=0.04Ef, rs=1
 # Bubble= 0.097226 # 3D, zero temperature, rs=1
 ###### Fock dressed Green's function ###################
-Bubble, Density=0.088883, 0.2387 #3D, Beta=0.1, rs=1, Lambda=1.0
+# Bubble, Density=0.088883/Beta*kF*kF, 0.2387 #3D, Beta=0.1, rs=1, Lambda=1.0
 
 ##############   2D    ##################################
 ###### Bare Green's function    #########################
-# kF=np.sqrt(2.0)/rs #2D
+kF=np.sqrt(2.0)/rs #2D
 # Bubble=0.11635  #2D, Beta=0.5, rs=1
-# Bubble=0.15916  #2D, Beta=10, rs=1
+Bubble=0.15916  #2D, Beta=10, rs=1
 
 ScanOrder=[1,2,3]
+Name=["1","2","3"]
 # ScanOrder=[3]
 Index={}
 Index[1]=[1,]
@@ -50,7 +51,7 @@ for order in ScanOrder:
     Num=0
     data0=None
     for f in files:
-        if re.match("group"+str(order)+"_pid[0-9]+.dat", f):
+        if re.match("group"+Name[order-1]+"_pid[0-9]+.dat", f):
             print f
             Num+=1
             d=np.loadtxt(folder+f)
@@ -104,8 +105,7 @@ for i in ScanOrder:
 # DataOrderByOrder[4]=np.copy(DataAll[4])
 # DataOrderByOrder[5]=np.copy(DataAll[5])
 
-DataOrderByOrder[2][:,1]*=-1.0
-# DataOrderByOrder[4][:,1]*=-1.0
+# DataOrderByOrder[4][:,1]*=1.0/Density
 
 DataAtOrder[1]=np.copy(DataOrderByOrder[1])
 DataAtOrder[2]=np.copy(DataOrderByOrder[1])
@@ -136,8 +136,8 @@ ColorList=['k','r', 'b', 'g', 'm', 'c']
 
 for i in range(0, len(ScanOrder)):
     o=ScanOrder[i]
-    # ErrorPlot(ax, DataOrderByOrder[o], ColorList[i], 's', "Order {0}".format(o))
-    ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
+    ErrorPlot(ax, DataOrderByOrder[o], ColorList[i], 's', "Order {0}".format(o))
+    # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
 
 # ErrorPlot(ax, Data[1][0], 'k', 's', "Diag 1")
 # ErrorPlot(ax, tmp, 'm', 's', "Diag 3+c 1")
