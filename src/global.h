@@ -13,6 +13,7 @@ const bool DEBUGMODE = true;
 // define NDEBUG will turn off debug checking, including the boundary check in
 // array.h
 /////////// Global Parameter ////////////////////
+
 struct parameter {
   double Rs, Ef, Kf,
       Mu;            // r_s, fermi energy, fermi momentum, chemical potential
@@ -21,16 +22,19 @@ struct parameter {
   double UVCoupling; // the coupling constant at the UV scale
   double Mass2;      // screening length^2
   double MaxExtMom;  // the maximum external momentum
-  int TotalStep;     // total steps of the Monte Carlo
-  int ObsType;       // 0: static polarization, 1: equal-time polarization
-  int Seed;          // rng seed
-  int PID;           // ID of the job
+
+  int TotalStep;         // total steps of the Monte Carlo
+  int ObsType;           // 0: static polarization, 1: equal-time polarization
+  int Seed;              // rng seed
+  int PID;               // ID of the job
   long long int Counter; // counter to save the current MC step
   int Sweep;             // how many MC steps between two measuring
-  int PrinterTimer;      // how many seconds between to printing to screen
-  int SaveFileTimer;     // how many secondes between saving to file
-  int MessageTimer;      // how many secondes between two checking for message
-  int ReweightTimer;     // how many secondes between two reweighting
+
+  int PrinterTimer;  // how many seconds between to printing to screen
+  int SaveFileTimer; // how many secondes between saving to file
+  int MessageTimer;  // how many secondes between two checking for message
+  int ReweightTimer; // how many secondes between two reweighting
+
   std::string DiagFileFormat;         // the diagram file needs to be loaded
   std::vector<std::string> GroupName; // ID for each group
   std::vector<double> ReWeight;       // reweight factor for each group

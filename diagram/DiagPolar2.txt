@@ -1,5 +1,7 @@
 #DiagNum: 1
 #Order: 2
+#LoopNum: 3
+#ExtLoopNum: 1
 #Type: Normal
 
 #Topology
@@ -8,7 +10,7 @@
  0  0  0  0 
 #Symmetry Factor
 -1.0
-# Loop Bases
+# Loop Basis
  1  0  1  0 
  0  1  1  0 
  1  0  0  1 
@@ -16,7 +18,7 @@
 1 2 0 3 
 # Interaction Type
  0  0 
-#Ver Loop Bases
+#Ver Loop Basis
 -1  0 
  0  1 
  0 -1 

@@ -1,25 +1,27 @@
-# DiagNum     1
-# DiagOrder   2
-# DiagType    Normal
+#DiagNum: 1
+#Order: 2
+#LoopNum: 3
+#ExtLoopNum: 1
+#Type: Normal
 
-# Topology
+#Topology
  3  2  1  0 
-# Propagator Type
- 0  0  0  0
-# SymmetryFactor
+#Propagator Type
+ 0  0  0  0 
+#Symmetry Factor
 -1.0
-# Loop Bases
+# Loop Basis
  1  0  1  0 
  0  1  1  0 
  1  0  0  1 
 #Ver4 Legs: InLeft OutLeft InRight OutRight
 1 2 0 3 
 # Interaction Type
- 0  0
-#Ver Loop Bases
+ 0  0 
+#Ver Loop Basis
 -1  0 
  0  1 
  0 -1 
 #SpinFactor
- -4  2 
+ 4 -2 
 

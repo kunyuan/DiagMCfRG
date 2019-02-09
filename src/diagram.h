@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+extern parameter Para;
+
 namespace diag {
 using namespace std;
 const size_t MaxBranchNum = 1 << (MaxOrder - 1); // 2**(MaxOrder-1)
@@ -91,13 +93,20 @@ struct group {
   int GNum;            // number of G
   int LoopNum;         // dimension of loop basis
   int InternalLoopNum; // dimension of internal loop basis
+  int ExtLoopNum;      // dimension of external loop basis
   int TauNum;          // dimension of tau basis
   int InternalTauNum;  // dimension of internal tau basis
+  bool IsRG;           // Is the group about RG?
   double ReWeight;
   double Weight;
   double NewWeight;
   vector<diagram> Diag; // diagrams
 };
+
+// diagram type in the group
+// const int HUGEN = 1;
+// const int NORMAL = 1;
+// const int RG = 2;
 
 group ReadOneGroup(istream &, pool &);
 

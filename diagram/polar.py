@@ -178,6 +178,8 @@ class polar():
 
         Title = "#DiagNum: {0}\n".format(len(PolarHugenList))
         Title += "#Order: {0}\n".format(self.Order)
+        Title += "#LoopNum: {0}\n".format(self.LoopNum)
+        Title += "#ExtLoopNum: {0}\n".format(self.ExtLoopNum)
         Title += "#Type: {0}\n".format("Normal")
         Title += "\n"
 

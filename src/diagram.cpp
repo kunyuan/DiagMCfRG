@@ -329,10 +329,17 @@ group diag::ReadOneGroup(istream &DiagFile, pool &Pool) {
   group Group;
   Group.HugenNum = _ExtractOneLine<int>(DiagFile)[0];
   Group.Order = _ExtractOneLine<int>(DiagFile)[0];
+  Group.LoopNum = _ExtractOneLine<int>(DiagFile)[0];
+  Group.ExtLoopNum = _ExtractOneLine<int>(DiagFile)[0];
   string buff = _GetOneLine(DiagFile); // skip the line for the group type
 
-  Group.LoopNum = Group.Order + 1;
-  Group.InternalLoopNum = Group.Order;
+  std::size_t found = buff.find("RG");
+  if (found != string::npos)
+    Group.IsRG = true; // will use RG way to calculate the weight
+  else
+    Group.IsRG = false;
+
+  Group.InternalLoopNum = Group.LoopNum - Group.ExtLoopNum;
   Group.TauNum = Group.Order * 2;
   Group.InternalTauNum = Group.Order * 2 - 2;
   Group.GNum = Group.Order * 2;

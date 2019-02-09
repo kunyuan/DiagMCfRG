@@ -1,8 +1,8 @@
 #DiagNum: 2
 #Order: 1
-#Type: RG
-#ExtLoopNum: 6
 #LoopNum: 6
+#ExtLoopNum: 6
+#Type: RG
 
 #Topology
  3  2  1  0 
@@ -36,7 +36,7 @@
 #Propagator Type
 -1 -1 -1 -1
 #Symmetry Factor
--1.0
+ 1.0
 #Loop Bases
  0  0  0  0
  0  0  0  0

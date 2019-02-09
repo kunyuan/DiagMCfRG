@@ -41,6 +41,7 @@ void InitPara() {
 
   // diagram file path: groups/DiagPolar1.dat
   Para.DiagFileFormat = "groups/DiagPolar{}.txt";
+  // Para.DiagFileFormat = "groups/DiagLoop{}.txt";
   Para.GroupName = {
       "1",
       "2",
