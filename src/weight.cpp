@@ -61,6 +61,13 @@ void weight::Initialization() {
         diag.Ver4[i]->Weight = {1.0e-10, -1.0e-10};
       }
     }
+
+    if (Para.ObsType == EQUALTIME) {
+      for (int i = 0; i < group.Ver4Num; ++i)
+        if (group.IsExtTau[i])
+          // to measure equal-time observable, lock all external tau
+          group.IsLockedTau[i] = true;
+    }
   }
 
   LOG_INFO("Initializating MC variables ...")
@@ -96,6 +103,7 @@ void weight::Initialization() {
   Var.Tau[0] = 0.0;
   Var.Tau[1] = 1.0e-10; // do not make Tau[1]==Tau[0], otherwise the Green's
                         // function is not well-defined
+
   Var.CurrTau = Var.Tau[1] - Var.Tau[0];
 
   // initialize group
@@ -132,7 +140,7 @@ void weight::ChangeGroup(group &Group, bool Forced) {
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
       // cout << "Ver: " << i << endl;
-      if (Group.UseVer4) {
+      if (Para.UseVer4) {
         vertex4 *Ver4 = d.Ver4[i];
         if (Forced || Ver4->Version < Var.CurrVersion) {
           Ver4->Excited = {true, true};
@@ -203,7 +211,7 @@ void weight::ChangeMom(group &Group, int MomIndex) {
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
-      if (Group.UseVer4) {
+      if (Para.UseVer4) {
         vertex4 *Ver4 = d.Ver4[i];
         if (Ver4->LoopBasis[INL][MomIndex] != 0 ||
             Ver4->LoopBasis[INR][MomIndex] != 0 ||
@@ -276,18 +284,7 @@ void weight::ChangeTau(group &Group, int TauIndex) {
       int TauOut = G->TauBasis[OUT];
       bool ReCalcFlag = false;
 
-      // if TauIndex is 0, or 1, then G is recaculated only if TauIn or TauOut
-      // exactly matches TauIndex
-      // we also assume that 0 will never be changed!
-      if (TauIndex <= 1 && (TauIn == 1 || TauOut == 1))
-        ReCalcFlag = true;
-      // if TauIndex is >1, then G is recaculated if TauIndex/2==TauIn/2 or
-      // TauOut/2
-      if (TauIndex > 1 &&
-          (TauIn / 2 == TauIndex / 2 || TauOut / 2 == TauIndex / 2))
-        ReCalcFlag = true;
-
-      if (ReCalcFlag) {
+      if (TauIndex == TauIn || TauIndex == TauOut) {
         // trigger recalculation
         double Tau = Var.Tau[TauOut] - Var.Tau[TauIn];
         G->Excited = true;
@@ -312,7 +309,7 @@ double weight::GetNewWeight(group &Group) {
     }
 
     double VerWeight;
-    if (Group.UseVer4) {
+    if (Para.UseVer4) {
       if (Group.Ver4Num == 0) {
         VerWeight = d.SpinFactor[0];
         // cout << "spin factor: " << d.SpinFactor[0] << endl;
@@ -413,7 +410,7 @@ void weight::AcceptChange(group &Group) {
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++)
-      if (Group.UseVer4) {
+      if (Para.UseVer4) {
         vertex4 *Ver4 = d.Ver4[i];
         Ver4->Version = Var.CurrVersion;
         if (Ver4->Excited[DIRECT]) {
@@ -445,7 +442,7 @@ void weight::RejectChange(group &Group) {
       if (d.G[i]->Excited)
         d.G[i]->Excited = false;
       for (int i = 0; i < Group.Ver4Num; i++) {
-        if (Group.UseVer4) {
+        if (Para.UseVer4) {
           if (d.Ver4[i]->Excited[0])
             d.Ver4[i]->Excited[0] = false;
           if (d.Ver4[i]->Excited[1])

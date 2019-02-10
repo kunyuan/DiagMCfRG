@@ -75,6 +75,7 @@ struct pool {
 
 struct diagram {
   int ID;
+  array<int, MaxGNum> Permutation;
   double SymFactor;                       // the symmetry factor of a diagram
   array<double, MaxBranchNum> SpinFactor; // the spin factor of a diagram
   array<green *, 2 * MaxOrder> G;         // the index of all indepdent G
@@ -98,16 +99,16 @@ struct group {
   int InternalLoopNum; // dimension of internal loop basis
   int ExtLoopNum;      // dimension of external loop basis
   int TauNum;          // dimension of tau basis
+  int ExtTauNum;       // dimension of external tau basis
   int InternalTauNum;  // dimension of internal tau basis
-  bool IsRG;           // Is the group about RG?
-  bool UseVer4;        // use ver4 to calculate weight or not
   double ReWeight;
   double Weight;
   double NewWeight;
-  vector<diagram> Diag; // diagrams
   array<bool, MaxLoopNum> IsExtLoop;
+  array<bool, MaxLoopNum> IsLockedLoop;
   array<bool, MaxTauNum> IsExtTau;
-  array<bool, MaxLoopNum> IsFixedLoop;
+  array<bool, MaxTauNum> IsLockedTau;
+  vector<diagram> Diag; // diagrams
 };
 
 // diagram type in the group

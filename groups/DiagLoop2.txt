@@ -1,18 +1,25 @@
+#Type: RG
 #DiagNum:    3
 #DiagOrder:  2
 #GNum: 6
 #Ver4Num: 2
 #LoopNum: 7
-#ExtLoopNum: 6
-#Type: RG
+#ExtLoop: 0
+#DummyLoop: 3 4 5
+#TauNum: 4
+#ExtTau: 0 1
+#DummyTau:
 
 # Topology
  4  3  1  5  2  0 
-# Propagator Type
--1 -1 -1  0  0 -1
 # Symmetry Factor
 -1.0
-# Loop Bases
+# Propagator Type
+-1 -1 -1  0  0 -1
+# Ver Basis
+ 0  1  2  2  3  3
+ 3  2  1  3  2  0
+# Loop Basis
  1  0  1  0  1  0 
  0  1  1  0  0  0 
  1  0  0  0  0  1 
@@ -37,10 +44,13 @@
 
 # Topology
  3  2  5  4  1  0 
-# Propagator Type
--1 -1  0  0 -1 -1
 # Symmetry Factor
 -0.5
+# Propagator Type
+-1 -1  0  0 -1 -1
+# Ver Basis
+ 0  1  2  2  3  3
+ 2  2  3  3  1  0
 # Loop Bases
  1  0  1  0  1  0 
  0  1  1  0  1  0 
@@ -66,10 +76,13 @@
 
 # Topology
  4  2  5  0  1  3 
-# Propagator Type
--1 -1  0 -1 -1  0
 # Symmetry Factor
 -1.0
+# Propagator Type
+-1 -1  0 -1 -1  0
+# Ver Basis
+ 0  1  2  2  3  3
+ 3  2  3  0  1  2
 # Loop Bases
  1  0  0  0  1  0 
  0  1  0  0  1 -1 
@@ -95,10 +108,13 @@
 
 # Topology
  4  3  1  5  2  0 
-# Propagator Type
--1 -1 -1  0  0 -1
 # Symmetry Factor
  1.0
+# Propagator Type
+-1 -1 -1  0  0 -1
+# Ver Basis
+ 0  1  2  2  3  3
+ 3  2  1  3  2  0
 # Loop Bases
  0  0  0  0  0  0
  0  0  0  0  0  0
@@ -124,10 +140,13 @@
 
 # Topology
  3  2  5  4  1  0 
-# Propagator Type
--1 -1  0  0 -1 -1
 # Symmetry Factor
 -0.5
+# Propagator Type
+-1 -1  0  0 -1 -1
+# Ver Basis
+ 0  1  2  2  3  3
+ 2  2  3  3  1  0
 # Loop Bases
  0  0  0  0  0  0
  0  0  0  0  0  0
@@ -153,10 +172,13 @@
 
 # Topology
  4  2  5  0  1  3 
-# Propagator Type
--1 -1  0 -1 -1  0
 # Symmetry Factor
  1.0
+# Propagator Type
+-1 -1  0 -1 -1  0
+# Ver Basis
+ 0  1  2  2  3  3
+ 3  2  3  0  1  2
 # Loop Bases
  0  0  0  0  0  0
  0  0  0  0  0  0

@@ -14,6 +14,9 @@ const bool DEBUGMODE = true;
 // array.h
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
+enum type { RG, POLAR };
+enum obstype { FREQ, EQUALTIME };
+enum ver4type { STATIC, DYNAMIC };
 /////////// Global Parameter ////////////////////
 struct parameter {
   // physical parameters
@@ -27,8 +30,11 @@ struct parameter {
   selfenergy SelfEnergyType;
 
   // MC inputs
+  type Type;             // polarization, RG
+  obstype ObsType;       // 0: static polarization, 1: equal-time polarization
+  ver4type Ver4Type;     // static or dynamic 4-vertex
+  bool UseVer4;          // use vertex4 to calculate weight or not
   int TotalStep;         // total steps of the Monte Carlo
-  int ObsType;           // 0: static polarization, 1: equal-time polarization
   int Seed;              // rng seed
   int PID;               // ID of the job
   long long int Counter; // counter to save the current MC step

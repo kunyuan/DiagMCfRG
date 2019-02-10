@@ -71,24 +71,9 @@ green *_AddOneGToPool(pool &Pool, green &Green) {
   // select all green's function with same TauIn and TauOut
   vector<green *> GPool_Tau;
   for (auto g : GPool_Type) {
-    // TODO: ugly logic flow
-    ///   ASSUME Tau(2*i)==Tau(2*i+1), except Tau=0,1, which are are the
-    /// external tau, which are indepdently fluctuate
-    bool InFlag = false, OutFlag = false;
-    if (Green.TauBasis[0] <= 1 && Green.TauBasis[0] == g->TauBasis[0])
-      InFlag = true;
-    if (Green.TauBasis[0] > 1 && Green.TauBasis[0] / 2 == g->TauBasis[0] / 2)
-      InFlag = true;
-
-    if (Green.TauBasis[1] <= 1 && Green.TauBasis[1] == g->TauBasis[1])
-      OutFlag = true;
-    if (Green.TauBasis[1] > 1 && Green.TauBasis[1] / 2 == g->TauBasis[1] / 2)
-      OutFlag = true;
-    if (InFlag && OutFlag) {
+    if (g->TauBasis[IN] == Green.TauBasis[IN] &&
+        g->TauBasis[OUT] == Green.TauBasis[OUT]) {
       GPool_Tau.push_back(g);
-      //   cout << "Same Tau" << endl;
-      //   cout << ToString(Green) << endl;
-      //   cout << ToString(*g) << endl;
     }
   }
   // select all green's function with same LoopBasis
@@ -221,7 +206,7 @@ vertex4 *_AddOneVer4ToPool(pool &Pool, vertex4 &Vertex4) {
   }
 }
 
-vector<green *> _AddAllGToPool(pool &Pool, vector<int> &Permutation,
+vector<green *> _AddAllGToPool(pool &Pool, vector<tau> &VerBasis,
                                vector<loop> &LoopBasis, vector<int> &GType,
                                int GNum) {
   vector<green *> GIndex;
@@ -232,8 +217,7 @@ vector<green *> _AddAllGToPool(pool &Pool, vector<int> &Permutation,
     Green.LoopBasis.fill(0);
     std::copy(LoopBasis[i].begin(), LoopBasis[i].end(),
               Green.LoopBasis.begin());
-    Green.TauBasis[IN] = i;
-    Green.TauBasis[OUT] = Permutation[i];
+    Green.TauBasis = VerBasis[i];
     // GList.push_back(Green);
     GIndex.push_back(_AddOneGToPool(Pool, Green));
   }
@@ -245,7 +229,7 @@ vector<green *> _AddAllGToPool(pool &Pool, vector<int> &Permutation,
   return GIndex;
 }
 
-vector<vertex *> _AddAllVerToPool(pool &Pool, vector<int> &Permutation,
+vector<vertex *> _AddAllVerToPool(pool &Pool, vector<tau> &VerBasis,
                                   vector<loop> &LoopBasisVer,
                                   vector<int> &VerType, int Ver4Num) {
   vector<vertex *> VerIndex;
@@ -265,10 +249,11 @@ vector<vertex *> _AddAllVerToPool(pool &Pool, vector<int> &Permutation,
   return VerIndex;
 }
 
-vector<vertex4 *>
-_AddAllVer4ToPool(pool &Pool, vector<int> &Permutation, vector<int> &Ver4Legs,
-                  vector<loop> &LoopBasisG, vector<loop> &LoopBasisVer,
-                  vector<int> &VerType, int Ver4Num, bool UseVer4) {
+vector<vertex4 *> _AddAllVer4ToPool(pool &Pool, vector<tau> &VerBasis,
+                                    vector<int> &Ver4Legs,
+                                    vector<loop> &LoopBasisG,
+                                    vector<loop> &LoopBasisVer,
+                                    vector<int> &VerType, int Ver4Num) {
   vector<vertex4 *> Ver4Index;
   for (int i = 0; i < Ver4Num; i++) {
     int Inidx = 2 * i, Outidx = 2 * i + 1;
@@ -293,7 +278,7 @@ _AddAllVer4ToPool(pool &Pool, vector<int> &Permutation, vector<int> &Ver4Legs,
                 Vertex4.LoopBasis[leg].begin());
     }
 
-    if (UseVer4)
+    if (Para.UseVer4)
       Ver4Index.push_back(_AddOneVer4ToPool(Pool, Vertex4));
     else
       Ver4Index.push_back(_AddOneInteractionToPool(Pool, Vertex4));
@@ -302,7 +287,7 @@ _AddAllVer4ToPool(pool &Pool, vector<int> &Permutation, vector<int> &Ver4Legs,
 }
 
 diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
-                       int GNum, int Ver4Num, bool UseVer4) {
+                       int GNum, int Ver4Num) {
   string buff;
   diagram Diagram;
 
@@ -312,15 +297,24 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
 
   //////// Diagram Topology  ////////////////////////
   buff = _GetOneLine(DiagFile); // title
-  auto Permutation = _ExtractOneLine<int>(DiagFile);
+  vector<int> Permutation = _ExtractOneLine<int>(DiagFile);
+  copy(Permutation.begin(), Permutation.end(), Diagram.Permutation.begin());
+
+  //////// symmetry factor //////////////////
+  buff = _GetOneLine(DiagFile); // title
+  Diagram.SymFactor = _ExtractOneLine<double>(DiagFile)[0];
 
   //////// Propagator type //////////////////
   buff = _GetOneLine(DiagFile); // title
   auto GType = _ExtractOneLine<int>(DiagFile);
 
-  //////// symmetry factor //////////////////
+  /////// Ver Basis  /////////////////////////
   buff = _GetOneLine(DiagFile); // title
-  Diagram.SymFactor = _ExtractOneLine<double>(DiagFile)[0];
+  vector<int> StartVer = _ExtractOneLine<int>(DiagFile);
+  vector<int> EndVer = _ExtractOneLine<int>(DiagFile);
+  vector<tau> VerBasis;
+  for (int i = 0; i < GNum; i++)
+    VerBasis.push_back(tau({StartVer[i], EndVer[i]}));
 
   /////// Loop Basis  /////////////////////////
   buff = _GetOneLine(DiagFile); // title
@@ -358,7 +352,7 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
 
   ////////   Add G to GPool ////////////////////////
   vector<green *> GIndex =
-      _AddAllGToPool(Pool, Permutation, LoopBasis, GType, GNum);
+      _AddAllGToPool(Pool, VerBasis, LoopBasis, GType, GNum);
   ASSERT_ALLWAYS(GIndex.size() == GNum,
                  "Number of Green's function does not match!");
   copy(GIndex.begin(), GIndex.end(), Diagram.G.begin());
@@ -369,13 +363,12 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
 
   if (Ver4Num > 0) {
     //////  Add 4-Vertex to Ver4Pool /////////
-    vector<vertex4 *> Ver4Index =
-        _AddAllVer4ToPool(Pool, Permutation, Ver4Legs, LoopBasis, LoopBasisVer,
-                          VerType, Ver4Num, UseVer4);
+    vector<vertex4 *> Ver4Index = _AddAllVer4ToPool(
+        Pool, VerBasis, Ver4Legs, LoopBasis, LoopBasisVer, VerType, Ver4Num);
     copy(Ver4Index.begin(), Ver4Index.end(), Diagram.Ver4.begin());
     //////  Add Vertex to VerPool /////////
     vector<vertex *> VerIndex =
-        _AddAllVerToPool(Pool, Permutation, LoopBasisVer, VerType, Ver4Num);
+        _AddAllVerToPool(Pool, VerBasis, LoopBasisVer, VerType, Ver4Num);
     copy(VerIndex.begin(), VerIndex.end(), Diagram.Ver.begin());
   }
 
@@ -384,63 +377,60 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
 
 group diag::ReadOneGroup(istream &DiagFile, pool &Pool) {
   group Group;
+  string buff = _GetOneLine(DiagFile); // group type, simply skip
+
   Group.HugenNum = _ExtractOneLine<int>(DiagFile)[0];
-  Group.Order = _ExtractOneLine<int>(DiagFile)[0];
-  Group.GNum = _ExtractOneLine<int>(DiagFile)[0];
-  Group.Ver4Num = _ExtractOneLine<int>(DiagFile)[0];
-  Group.LoopNum = _ExtractOneLine<int>(DiagFile)[0];
-  Group.ExtLoopNum = _ExtractOneLine<int>(DiagFile)[0];
-  string buff = _GetOneLine(DiagFile); // skip the line for the group type
-
-  std::size_t found = buff.find("RG");
-  if (found != string::npos) {
-    Group.IsRG = true; // will use RG way to calculate the weight
-    Group.UseVer4 = true;
-
-    Group.IsExtTau.fill(false);
-    Group.IsFixedLoop.fill(false);
-    Group.IsFixedLoop[0] = true;
-    Group.IsFixedLoop[3] = true;
-    Group.IsFixedLoop[4] = true;
-    Group.IsFixedLoop[5] = true;
-
-  } else {
-    Group.IsRG = false;
-    // Group.UseVer4 = false;
-    Group.UseVer4 = true;
-
-    Group.IsExtTau.fill(false);
-    Group.IsExtTau[0] = true;
-    Group.IsExtTau[1] = true;
-
-    Group.IsFixedLoop.fill(false);
-    Group.IsFixedLoop[0] = true;
-  }
-
-  Group.IsExtLoop.fill(false);
-  for (int i = 0; i < Group.ExtLoopNum; ++i)
-    Group.IsExtLoop[i] = true;
-
-  Group.InternalLoopNum = Group.LoopNum - Group.ExtLoopNum;
-  Group.TauNum = Group.GNum;
-  Group.InternalTauNum = Group.Order * 2 - 2;
-
   ASSERT_ALLWAYS(Group.HugenNum <= MaxDiagNum,
                  "Diagram Number must be smaller than " << MaxDiagNum);
+
+  Group.Order = _ExtractOneLine<int>(DiagFile)[0];
   ASSERT_ALLWAYS(Group.Order <= MaxOrder,
                  "Order Number must be smaller than " << MaxOrder);
+
+  Group.GNum = _ExtractOneLine<int>(DiagFile)[0];
   ASSERT_ALLWAYS(Group.GNum <= MaxGNum,
                  "G Number must be smaller than " << MaxGNum);
-  ASSERT_ALLWAYS(Group.TauNum <= MaxTauNum,
-                 "Tau Number must be smaller than " << MaxTauNum);
+
+  Group.Ver4Num = _ExtractOneLine<int>(DiagFile)[0];
   ASSERT_ALLWAYS(Group.Ver4Num <= MaxVer4Num,
                  "Ver4 Number must be smaller than " << MaxVer4Num);
+
+  Group.LoopNum = _ExtractOneLine<int>(DiagFile)[0];
   ASSERT_ALLWAYS(Group.LoopNum <= MaxLoopNum,
                  "Loop Number must be smaller than " << MaxLoopNum);
 
+  vector<int> ExtLoop = _ExtractOneLine<int>(DiagFile);
+  Group.ExtLoopNum = ExtLoop.size();
+  Group.IsExtLoop.fill(false);
+  for (auto index : ExtLoop)
+    Group.IsExtLoop[index] = true;
+
+  vector<int> LockedLoop = _ExtractOneLine<int>(DiagFile);
+  Group.IsLockedLoop.fill(false);
+  for (auto index : LockedLoop)
+    Group.IsLockedLoop[index] = true;
+
+  Group.TauNum = _ExtractOneLine<int>(DiagFile)[0];
+  ASSERT_ALLWAYS(Group.TauNum <= MaxTauNum,
+                 "Tau Number must be smaller than " << MaxTauNum);
+
+  vector<int> ExtTau = _ExtractOneLine<int>(DiagFile);
+  Group.ExtTauNum = ExtTau.size();
+  Group.IsExtTau.fill(false);
+  for (auto index : ExtTau)
+    Group.IsExtTau[index] = true;
+
+  vector<int> LockedTau = _ExtractOneLine<int>(DiagFile);
+  Group.IsLockedTau.fill(false);
+  for (auto index : LockedTau)
+    Group.IsLockedTau[index] = true;
+
+  Group.InternalLoopNum = Group.LoopNum - Group.ExtLoopNum;
+  Group.InternalTauNum = Group.TauNum - Group.ExtTauNum;
+
   for (int i = 0; i < Group.HugenNum; i++) {
     diagram Diagram = ReadOneDiagram(DiagFile, Pool, Group.Order, Group.LoopNum,
-                                     Group.GNum, Group.Ver4Num, Group.UseVer4);
+                                     Group.GNum, Group.Ver4Num);
     Diagram.ID = i;
     Group.Diag.push_back(Diagram);
     // for (int i = 0; i < Group.GNum; i++)

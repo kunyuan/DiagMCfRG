@@ -55,7 +55,7 @@ string weight::DebugInfo(group &Group) {
   //        ToString(Green(-Tau, G2, UP, 0, true)) + "; ";
   // msg += "\n";
 
-  if (Group.UseVer4) {
+  if (Para.UseVer4) {
     msg += "Ver4Weight: \n";
     for (int i = 0; i < Group.Ver4Num; i++)
       msg += fmt::format("{:.3f}, {:.3f}", Group.Diag[0].Ver4[i]->Weight[0],
@@ -115,13 +115,13 @@ int weight::DynamicTest() {
   LOG_INFO("Start Dynamic Test...");
   LOG_INFO(DebugInfo(*Var.CurrGroup));
   //=================== Tau variable check ===================================//
-  for (int i = 1; i < Var.CurrGroup->TauNum / 2; i++)
-    ASSERT_ALLWAYS(Equal(Var.Tau[2 * i], Var.Tau[2 * i + 1], 1.e-10),
-                   ERR("Odd and Even are not the same! {0} vs {1}",
-                       Var.Tau[2 * i], Var.Tau[2 * i + 1]));
+  // for (int i = 1; i < Var.CurrGroup->TauNum / 2; i++)
+  //   ASSERT_ALLWAYS(Equal(Var.Tau[2 * i], Var.Tau[2 * i + 1], 1.e-10),
+  //                  ERR("Odd and Even are not the same! {0} vs {1}",
+  //                      Var.Tau[2 * i], Var.Tau[2 * i + 1]));
   //================== External Variable
   //=========================================//
-  ASSERT_ALLWAYS(Equal(Var.Tau[0], 0.0, 1.0e-10), ERR("Tau 0 is not zero!"));
+  // ASSERT_ALLWAYS(Equal(Var.Tau[0], 0.0, 1.0e-10), ERR("Tau 0 is not zero!"));
   ASSERT_ALLWAYS(Equal(Var.ExtMomTable[Var.CurrExtMomBin].data(),
                        Var.LoopMom[0].data(), D, 1.0e-8),
                  ERR("ExtMom is inconsistent! Bin: {0}; Mom: {1} vs {2}\n",
@@ -140,7 +140,7 @@ int weight::DynamicTest() {
                            diag.ID, group.ID));
       }
       for (auto i = 0; i < group.Ver4Num; i++) {
-        if (group.UseVer4) {
+        if (Para.UseVer4) {
           ASSERT_ALLWAYS(
               !std::isnan(diag.Ver4[i]->Weight[0] || diag.Ver4[i]->Weight[1]),
               ERR("One 4-Ver is NaN!\n Diag: {0} in Group: {1}\n", diag.ID,
@@ -182,7 +182,7 @@ int weight::DynamicTest() {
                            diag.G[i]->NewWeight, diag.G[i]->Weight));
       }
       for (auto i = 0; i < Var.CurrGroup->Ver4Num; i++) {
-        if (Var.CurrGroup->UseVer4) {
+        if (Para.UseVer4) {
           ASSERT_ALLWAYS(
               Equal(diag.Ver4[i]->NewWeight[0], diag.Ver4[i]->Weight[0], 1.e-8),
               ERR("Ver4 Weight is different: {0} vs {1}\n",
@@ -214,7 +214,7 @@ int weight::DynamicTest() {
   //====== check reducibility ============================//
   for (auto &diag : Var.CurrGroup->Diag) {
     for (int i = 0; i < Var.CurrGroup->Ver4Num; i++) {
-      if (Var.CurrGroup->UseVer4 == false) {
+      if (Para.UseVer4 == false) {
         vertex &Ver = *(diag.Ver[i]);
         if (IsInteractionReducible(Ver.LoopBasis[0], Var.CurrGroup->LoopNum))
           ASSERT_ALLWAYS(

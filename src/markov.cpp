@@ -21,6 +21,10 @@ using namespace std;
 //   for (int i = 0; i < D; i++)                                                  \
 //     y[i] = x[i];
 
+// x=2*i, then PAIR(x)=2*i+1
+// x=2*i+1, then PAIR(x)=2*i
+#define PAIR(x) (int(x / 2) * 4 + 1 - x)
+
 markov::markov() : Var(Weight.Var), Groups(Weight.Groups) {
   ///==== initialize Weight ============================//
   Weight.ReadDiagrams();
@@ -165,7 +169,6 @@ void markov::ChangeGroup() {
     int NewTauIndex = Var.CurrGroup->TauNum;
     // ASSUME: NewTauIndex will never equal to 0 or 1
     Var.Tau[NewTauIndex] = NewTau;
-    Var.Tau[NewTauIndex + 1] = NewTau;
     // Generate New Mom
     Prop *= GetNewK(NewMom);
     Var.LoopMom[Var.CurrGroup->LoopNum] = NewMom;
@@ -174,7 +177,7 @@ void markov::ChangeGroup() {
     // change to a new group with one lower order
     Name = DECREASE_ORDER;
     // Remove OldTau
-    int TauToRemove = Var.CurrGroup->TauNum - 2;
+    int TauToRemove = Var.CurrGroup->TauNum - 1;
     Prop = RemoveOldTau(Var.Tau[TauToRemove]);
     // Remove OldMom
     int LoopToRemove = Var.CurrGroup->LoopNum - 1;
@@ -211,21 +214,19 @@ void markov::ChangeGroup() {
 };
 
 void markov::ChangeTau() {
-  // TauIndex can be 0, 2, 4, ...
-  int TauIndex = Random.irn(0, Var.CurrGroup->TauNum / 2 - 1) * 2;
-  if (Para.ObsType == 1 && TauIndex == 0)
+  int TauIndex = Random.irn(0, Var.CurrGroup->TauNum);
+
+  // if TauIndex is a locked tau, skip
+  if (Var.CurrGroup->IsLockedTau[TauIndex])
     return;
+
   Proposed[CHANGE_TAU][Var.CurrGroup->ID]++;
 
-  // note that if TauIndex==0, then Tau[1]!=Tau[0].
-  // since we only change Tau[1] in this case, it is better set
-  // CurrTau=Tau[Odd]
-  double CurrTau = Var.Tau[TauIndex + 1];
+  double CurrTau = Var.Tau[TauIndex];
   double NewTau;
   double Prop = ShiftTau(CurrTau, NewTau);
-  if (TauIndex != 0)
-    Var.Tau[TauIndex] = NewTau;
-  Var.Tau[TauIndex + 1] = NewTau;
+
+  Var.Tau[TauIndex] = NewTau;
 
   Weight.ChangeTau(*Var.CurrGroup, TauIndex);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
@@ -235,15 +236,19 @@ void markov::ChangeTau() {
     Weight.AcceptChange(*Var.CurrGroup);
   } else {
     // retore the old Tau if the update is rejected
-    if (TauIndex != 0)
-      Var.Tau[TauIndex] = CurrTau;
-    Var.Tau[TauIndex + 1] = CurrTau;
+    // if TauIndex is external, then its partner can be different
+    Var.Tau[TauIndex] = CurrTau;
     Weight.RejectChange(*Var.CurrGroup);
   }
 };
 
 void markov::ChangeMomentum() {
   int LoopIndex = Random.irn(0, Var.CurrGroup->LoopNum - 1);
+
+  // if loopIndex is a locked loop, skip
+  if (Var.CurrGroup->IsLockedLoop[LoopIndex])
+    return;
+
   Proposed[CHANGE_MOM][Var.CurrGroup->ID]++;
 
   double Prop;
@@ -252,9 +257,7 @@ void markov::ChangeMomentum() {
 
   CurrMom = Var.LoopMom[LoopIndex];
 
-  if (Var.CurrGroup->IsFixedLoop[LoopIndex]) {
-    if (LoopIndex != 0)
-      return;
+  if (Var.CurrGroup->IsExtLoop[LoopIndex]) {
     Prop = ShiftExtK(Var.CurrExtMomBin, NewExtMomBin);
     Var.LoopMom[LoopIndex] = Var.ExtMomTable[NewExtMomBin];
     if (Var.LoopMom[LoopIndex].norm() > Para.MaxExtMom) {
@@ -271,7 +274,7 @@ void markov::ChangeMomentum() {
   if (Random.urn() < R) {
     Accepted[CHANGE_MOM][Var.CurrGroup->ID]++;
     Weight.AcceptChange(*Var.CurrGroup);
-    if (LoopIndex == 0)
+    if (Var.CurrGroup->IsExtLoop[LoopIndex])
       Var.CurrExtMomBin = NewExtMomBin;
   } else {
     Var.LoopMom[LoopIndex] = CurrMom;
