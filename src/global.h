@@ -88,7 +88,7 @@ const int OUT = 1;
 const int LEFT = 0;
 const int RIGHT = 1;
 
-const int INL = 0, INR = 1, OUTL = 2, OUTR = 3;
+const int INL = 0, OUTL = 1, INR = 2, OUTR = 3;
 
 const int DIRECT = 0, EXCHANGE = 1;
 

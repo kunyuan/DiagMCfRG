@@ -137,8 +137,8 @@ void weight::ChangeGroup(group &Group, bool Forced) {
         if (Forced || Ver4->Version < Var.CurrVersion) {
           Ver4->Excited = {true, true};
           GetMom(Ver4->LoopBasis[INL], Group.LoopNum, _InL);
-          GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
           GetMom(Ver4->LoopBasis[OUTL], Group.LoopNum, _OutL);
+          GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
           VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, Ver4->NewWeight[DIRECT],
                           Ver4->NewWeight[EXCHANGE]);
@@ -201,8 +201,8 @@ void weight::ChangeMom(group &Group, int MomIndex) {
             Ver4->LoopBasis[OUTR][MomIndex] != 0) {
           Ver4->Excited = {true, true};
           GetMom(Ver4->LoopBasis[INL], Group.LoopNum, _InL);
-          GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
           GetMom(Ver4->LoopBasis[OUTL], Group.LoopNum, _OutL);
+          GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
           VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, Ver4->NewWeight[DIRECT],
                           Ver4->NewWeight[EXCHANGE]);
