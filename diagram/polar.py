@@ -7,7 +7,7 @@ class polar():
     def __init__(self, Order):
         self.Order = Order
         self.GNum = 2*self.Order
-        self.Ver4Num = self.Order
+        self.Ver4Num = self.Order-1
         self.VerNum = 2*self.Ver4Num
 
         self.ExtLegNum = 2
@@ -16,7 +16,7 @@ class polar():
         self.LoopNum = self.Order+self.ExtLoopNum
 
     def GetInteractionPairs(self):
-        return tuple([(2*i, 2*i+1) for i in range(1, self.Ver4Num)])
+        return tuple([(2*i, 2*i+1) for i in range(1, self.Ver4Num+1)])
 
     def GetReference(self):
         return tuple(range(self.GNum))
