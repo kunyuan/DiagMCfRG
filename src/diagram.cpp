@@ -214,7 +214,7 @@ vector<vertex *> _AddAllVerToPool(pool &Pool, vector<int> &Permutation,
   vector<vertex *> VerIndex;
   for (int i = 0; i < Ver4Num; i++) {
     int Inidx = 2 * i, Outidx = 2 * i + 1;
-    // construct a new green's function
+    // construct a new vertex function
     vertex Vertex;
     Vertex.Type = {VerType[Inidx], VerType[Outidx]};
     Vertex.LoopBasis[IN].fill(0);
@@ -234,13 +234,13 @@ vector<vertex4 *> _AddAllVer4ToPool(pool &Pool, vector<int> &Permutation,
                                     vector<int> &VerType, int Ver4Num) {
   vector<vertex4 *> Ver4Index;
   for (int i = 0; i < Ver4Num; i++) {
-    int Inidx = 2 * i, Outidx = 2 * i + 1;
-    // construct a new green's function
+    // construct a new vertex 4 function
     vertex4 Vertex4;
-    Vertex4.Type = VerType[Inidx];
+    Vertex4.Type = VerType[i];
     for (int leg = 0; leg < 4; leg++) {
+      int legidx = 4 * i + leg; // index shift
       Vertex4.LoopBasis[leg].fill(0);
-      int gidx = Ver4Legs[leg];
+      int gidx = Ver4Legs[legidx];
       std::copy(LoopBasis[gidx].begin(), LoopBasis[gidx].end(),
                 Vertex4.LoopBasis[leg].begin());
     }
@@ -343,10 +343,20 @@ group diag::ReadOneGroup(istream &DiagFile, pool &Pool) {
   if (found != string::npos) {
     Group.IsRG = true; // will use RG way to calculate the weight
     Group.UseVer4 = true;
+
+    Group.IsExtTau.fill(false);
   } else {
     Group.IsRG = false;
     Group.UseVer4 = false;
+
+    Group.IsExtTau.fill(false);
+    Group.IsExtTau[0] = true;
+    Group.IsExtTau[1] = true;
   }
+
+  Group.IsExtLoop.fill(false);
+  for (int i = 0; i < Group.ExtLoopNum; ++i)
+    Group.IsExtLoop[i] = true;
 
   Group.InternalLoopNum = Group.LoopNum - Group.ExtLoopNum;
   Group.TauNum = Group.GNum;

@@ -1,7 +1,7 @@
 #DiagNum    1
 #DiagOrder  1
 #GNum    2
-#Ver4Num    1
+#Ver4Num    0
 #LoopNum    2
 #ExtLoopNum 1
 #DiagType   Normal

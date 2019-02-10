@@ -252,15 +252,17 @@ void markov::ChangeMomentum() {
 
   CurrMom = Var.LoopMom[LoopIndex];
 
-  if (LoopIndex == 0) {
+  if (Var.CurrGroup->IsExtLoop[LoopIndex]) {
+    if (LoopIndex != 0)
+      return;
     Prop = ShiftExtK(Var.CurrExtMomBin, NewExtMomBin);
     Var.LoopMom[LoopIndex] = Var.ExtMomTable[NewExtMomBin];
+    if (Var.LoopMom[LoopIndex].norm() > Para.MaxExtMom) {
+      Var.LoopMom[LoopIndex] = CurrMom;
+      return;
+    }
   } else {
     Prop = ShiftK(CurrMom, Var.LoopMom[LoopIndex]);
-  }
-  if (LoopIndex == 0 && Var.LoopMom[LoopIndex].norm() > Para.MaxExtMom) {
-    Var.LoopMom[LoopIndex] = CurrMom;
-    return;
   }
 
   Weight.ChangeMom(*Var.CurrGroup, LoopIndex);
@@ -357,24 +359,48 @@ double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
     Prop = 1.0;
   } else if (x < 2.0 / 3) {
     double k = OldMom.norm();
-    if (k < EPS)
+    if (k < 1.0e-9) {
       Prop = 0.0;
+      NewMom = OldMom;
+    } else {
+      const double Lambda = 1.5;
+      double knew = k / Lambda + Random.urn() * (Lambda - 1.0 / Lambda) * k;
+      double Ratio = knew / k;
+      for (int i = 0; i < D; i++)
+        NewMom[i] = OldMom[i] * Ratio;
+      if (D == 2)
+        Prop = 1.0;
+      else if (D == 3)
+        Prop = Ratio;
+    }
 
-    const double Lambda = 1.5;
-    double knew = k / Lambda + Random.urn() * (Lambda - 1.0 / Lambda) * k;
-    double Ratio = knew / k;
-    for (int i = 0; i < D; i++)
-      NewMom[i] = OldMom[i] * Ratio;
-    if (D == 2)
-      Prop = 1.0;
-    else if (D == 3)
-      Prop = Ratio;
-
+    // if (isnan(Var.LoopMom[0][0]) || isnan(Var.LoopMom[0][0])) {
+    //   cout << "Na" << endl;
+    // }
+    // if (isnan(Var.LoopMom[1][0]) || isnan(Var.LoopMom[1][0])) {
+    //   cout << "Na" << endl;
+    // }
+    // if (isnan(Var.LoopMom[2][0]) || isnan(Var.LoopMom[2][0])) {
+    //   cout << "Na" << endl;
+    // }
+    // if (isnan(Var.LoopMom[3][0]) || isnan(Var.LoopMom[3][0])) {
+    //   cout << "Na" << endl;
+    // }
+    // if (isnan(Var.LoopMom[4][0]) || isnan(Var.LoopMom[4][0])) {
+    //   cout << "Na" << endl;
+    // }
+    // if (isnan(Var.LoopMom[5][0]) || isnan(Var.LoopMom[5][0])) {
+    //   cout << "Na" << endl;
+    // }
+    // if (isnan(Var.LoopMom[6][0]) || isnan(Var.LoopMom[6][0])) {
+    //   cout << "Na" << endl;
+    // }
   } else {
     for (int i = 0; i < D; i++)
       NewMom[i] = -OldMom[i];
     Prop = 1.0;
   }
+
   return Prop;
 };
 

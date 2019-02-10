@@ -104,6 +104,8 @@ struct group {
   double Weight;
   double NewWeight;
   vector<diagram> Diag; // diagrams
+  array<bool, MaxLoopNum> IsExtLoop;
+  array<bool, MaxTauNum> IsExtTau;
 };
 
 // diagram type in the group

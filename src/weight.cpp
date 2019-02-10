@@ -142,6 +142,23 @@ void weight::ChangeGroup(group &Group, bool Forced) {
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
           VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, Ver4->NewWeight[DIRECT],
                           Ver4->NewWeight[EXCHANGE]);
+          /************************** Test ****************************/
+          vertex *Ver = d.Ver[i];
+          GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
+          double dirweight = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
+          ASSERT_ALLWAYS(abs(dirweight - Ver4->NewWeight[DIRECT]) < 1.0e-8,
+                         "Step: " << Para.Counter
+                                  << ", direct interaction should be equal."
+                                  << dirweight << " vs "
+                                  << Ver4->NewWeight[DIRECT]);
+          GetMom(Ver->LoopBasis[OUT], Group.LoopNum, _Mom);
+          double exchweight = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
+          ASSERT_ALLWAYS(abs(exchweight - Ver4->NewWeight[EXCHANGE]) < 1.0e-8,
+                         "Step: " << Para.Counter
+                                  << ", exchange interaction should be equal."
+                                  << exchweight << " vs "
+                                  << Ver4->NewWeight[EXCHANGE]);
+
           /***********  Reducibility Check ******************/
           if (IsInteractionReducible(Ver4->LoopBasis[INL],
                                      Ver4->LoopBasis[OUTL], Group.LoopNum)) {
@@ -199,6 +216,22 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
           VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, Ver4->NewWeight[DIRECT],
                           Ver4->NewWeight[EXCHANGE]);
+          /************************** Test ****************************/
+          vertex *Ver = d.Ver[i];
+          GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
+          double dirweight = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
+          ASSERT_ALLWAYS(abs(dirweight - Ver4->NewWeight[DIRECT]) < 1.0e-8,
+                         "Step: " << Para.Counter
+                                  << ", direct interaction should be equal."
+                                  << dirweight << " vs "
+                                  << Ver4->NewWeight[DIRECT]);
+          GetMom(Ver->LoopBasis[OUT], Group.LoopNum, _Mom);
+          double exchweight = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
+          ASSERT_ALLWAYS(abs(exchweight - Ver4->NewWeight[EXCHANGE]) < 1.0e-8,
+                         "Step: " << Para.Counter
+                                  << ", exchange interaction should be equal."
+                                  << exchweight << " vs "
+                                  << Ver4->NewWeight[EXCHANGE]);
           /***********  Reducibility Check ******************/
           if (IsInteractionReducible(Ver4->LoopBasis[INL],
                                      Ver4->LoopBasis[OUTL], Group.LoopNum)) {
