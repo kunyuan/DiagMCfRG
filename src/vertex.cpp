@@ -222,9 +222,10 @@ verfunc::verfunc() {
 }
 
 void verfunc::Vertex4(const momentum &InL, const momentum &InR,
-                      const momentum &OutL, const momentum &OutR, int Ver4Type,
-                      double &Direct, double &Exchange) {
-  if (Ver4Type != 0)
+                      const momentum &OutL, const momentum &OutR,
+                      int Ver4TypeDirect, int Ver4TypeExchange, double &Direct,
+                      double &Exchange) {
+  if (Ver4TypeDirect != 0 || Ver4TypeExchange != 0)
     ABORT("Ver4Type is only implemented for 0!");
 
   /**************   Yokawar Interaction ************************/

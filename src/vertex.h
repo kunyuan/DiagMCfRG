@@ -40,8 +40,8 @@ class verfunc {
 public:
   verfunc();
   void Vertex4(const momentum &InL, const momentum &InR, const momentum &OutL,
-               const momentum &OutR, int Ver4Type, double &Direct,
-               double &Exchange);
+               const momentum &OutR, int Ver4TypeDirect, int Ver4TypeExchange,
+               double &Direct, double &Exchange);
 
 private:
   double Ver4AtUV[InInAngBinSize][InOutAngBinSize];

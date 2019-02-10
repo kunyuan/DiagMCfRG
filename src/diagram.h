@@ -50,10 +50,11 @@ struct vertex {
 // Ver pool to store all basis for 4-vertex functions
 struct vertex4 {
   long long int Version; // keep track of the version
-  int Type;              // type of each vertex function
+  array<int, 2> Type;    // type of each vertex function
   array<green *, 4>
       Ver4Legs; // the GIndex of four legs of every indepdent 4-vertex
-  array<loop, 4> LoopBasis; // loop basis for momentum transfer
+  array<loop, 4> LoopBasis;    // loop basis for momentum transfer
+  array<loop, 2> IntLoopBasis; // interaction loop basis for momentum transfer
   // tau TauBasis;               //tau basis, Left and Right
   array<double, 2> Weight; // direct/exchange weight of each 4-vertex function
   array<double, 2> NewWeight;
@@ -106,6 +107,7 @@ struct group {
   vector<diagram> Diag; // diagrams
   array<bool, MaxLoopNum> IsExtLoop;
   array<bool, MaxTauNum> IsExtTau;
+  array<bool, MaxLoopNum> IsFixedLoop;
 };
 
 // diagram type in the group

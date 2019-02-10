@@ -140,8 +140,8 @@ void weight::ChangeGroup(group &Group, bool Forced) {
           GetMom(Ver4->LoopBasis[OUTL], Group.LoopNum, _OutL);
           GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
-          VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, Ver4->NewWeight[DIRECT],
-                          Ver4->NewWeight[EXCHANGE]);
+          VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, 0,
+                          Ver4->NewWeight[DIRECT], Ver4->NewWeight[EXCHANGE]);
           /************************** Test ****************************/
           vertex *Ver = d.Ver[i];
           GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
@@ -166,7 +166,7 @@ void weight::ChangeGroup(group &Group, bool Forced) {
           }
           if (IsInteractionReducible(Ver4->LoopBasis[INL],
                                      Ver4->LoopBasis[OUTR], Group.LoopNum)) {
-            Ver4->NewWeight[DIRECT] = 0.0;
+            Ver4->NewWeight[EXCHANGE] = 0.0;
           }
         }
       } else {
@@ -214,8 +214,8 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           GetMom(Ver4->LoopBasis[OUTL], Group.LoopNum, _OutL);
           GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
-          VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, Ver4->NewWeight[DIRECT],
-                          Ver4->NewWeight[EXCHANGE]);
+          VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, 0,
+                          Ver4->NewWeight[DIRECT], Ver4->NewWeight[EXCHANGE]);
           /************************** Test ****************************/
           vertex *Ver = d.Ver[i];
           GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
@@ -239,7 +239,7 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           }
           if (IsInteractionReducible(Ver4->LoopBasis[INL],
                                      Ver4->LoopBasis[OUTR], Group.LoopNum)) {
-            Ver4->NewWeight[DIRECT] = 0.0;
+            Ver4->NewWeight[EXCHANGE] = 0.0;
           }
         }
       } else {
@@ -313,33 +313,37 @@ double weight::GetNewWeight(group &Group) {
 
     double VerWeight;
     if (Group.UseVer4) {
-      vertex4 *Ver4 = d.Ver4[0];
+      if (Group.Ver4Num == 0) {
+        VerWeight = d.SpinFactor[0];
+        // cout << "spin factor: " << d.SpinFactor[0] << endl;
+      } else {
+        vertex4 *Ver4 = d.Ver4[0];
 
-      _Tree[0][0] = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
-                                          : Ver4->Weight[DIRECT];
-      _Tree[0][1] = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
-                                            : Ver4->Weight[EXCHANGE];
+        _Tree[0][0] = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
+                                            : Ver4->Weight[DIRECT];
+        _Tree[0][1] = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
+                                              : Ver4->Weight[EXCHANGE];
 
-      int BlockNum = 2;
-      for (int level = 1; level < Group.Ver4Num; level++) {
+        int BlockNum = 2;
+        for (int level = 1; level < Group.Ver4Num; level++) {
 
-        vertex4 *Ver4 = d.Ver4[level];
-        VIn = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
-                                    : Ver4->Weight[DIRECT];
-        VOut = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
-                                       : Ver4->Weight[EXCHANGE];
+          vertex4 *Ver4 = d.Ver4[level];
+          VIn = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
+                                      : Ver4->Weight[DIRECT];
+          VOut = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
+                                         : Ver4->Weight[EXCHANGE];
 
-        for (int j = 0; j < BlockNum; j++) {
-          _Tree[level][2 * j] = _Tree[level - 1][j] * VIn;
-          _Tree[level][2 * j + 1] = _Tree[level - 1][j] * VOut;
+          for (int j = 0; j < BlockNum; j++) {
+            _Tree[level][2 * j] = _Tree[level - 1][j] * VIn;
+            _Tree[level][2 * j + 1] = _Tree[level - 1][j] * VOut;
+          }
+          BlockNum *= 2;
         }
-        BlockNum *= 2;
+
+        VerWeight = 0.0;
+        for (int j = 0; j < BlockNum; j++)
+          VerWeight += _Tree[Group.Ver4Num - 1][j] * d.SpinFactor[j];
       }
-
-      VerWeight = 0.0;
-      for (int j = 0; j < BlockNum; j++)
-        VerWeight += _Tree[Group.Ver4Num - 1][j] * d.SpinFactor[j];
-
     } else {
       if (Group.Ver4Num == 0) {
         VerWeight = d.SpinFactor[0];

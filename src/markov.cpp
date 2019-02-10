@@ -252,7 +252,7 @@ void markov::ChangeMomentum() {
 
   CurrMom = Var.LoopMom[LoopIndex];
 
-  if (Var.CurrGroup->IsExtLoop[LoopIndex]) {
+  if (Var.CurrGroup->IsFixedLoop[LoopIndex]) {
     if (LoopIndex != 0)
       return;
     Prop = ShiftExtK(Var.CurrExtMomBin, NewExtMomBin);

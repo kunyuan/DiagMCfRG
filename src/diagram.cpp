@@ -13,6 +13,8 @@ string _GetOneLine(istream &file) {
   string buff;
   do {
     getline(file, buff);
+    if (file.bad())
+      ABORT("Fail to read the file!");
   } while (buff.find_first_not_of(' ') == buff.npos);
   return buff;
 }
@@ -149,13 +151,48 @@ vertex *_AddOneVerToPool(pool &Pool, vertex &Vertex) {
   }
 }
 
+vertex4 *_AddOneInteractionToPool(pool &Pool, vertex4 &Vertex4) {
+  vector<vertex4 *> Ver4Pool_Type;
+  // select all vertex in VerPooll have the type as Vertex
+
+  for (int i = 0; i < Pool.Ver4PoolSize; i++) {
+    vertex4 *v = &(Pool.Ver4Pool[i]);
+    if (v->Type[0] == Vertex4.Type[0])
+      if (v->Type[1] == Vertex4.Type[1])
+        Ver4Pool_Type.push_back(v);
+  }
+
+  vector<vertex4 *> Ver4Pool_Basis;
+  for (auto v : Ver4Pool_Type)
+    if (Equal<double>(v->IntLoopBasis[0].data(), Vertex4.IntLoopBasis[0].data(),
+                      MaxLoopNum) &&
+        Equal<double>(v->IntLoopBasis[1].data(), Vertex4.IntLoopBasis[1].data(),
+                      MaxLoopNum))
+      Ver4Pool_Basis.push_back(v);
+  // cout << "Basis pool: " << GPool_Basis.size() << "," << MaxLoopNum << endl;
+  // if GPool_Filter is not empty, means the green's function already exists
+  if (Ver4Pool_Basis.size() > 0) {
+    ASSERT_ALLWAYS(Ver4Pool_Basis.size() == 1,
+                   "There are more than two same Vertex in the VerPool!");
+    return Ver4Pool_Basis[0];
+  } else {
+    // add new vertex4 to pool
+    ASSERT_ALLWAYS(Pool.Ver4PoolSize < MaxVerPoolSize,
+                   "MaxVerPoolSize is too small!");
+    Pool.Ver4PoolSize++;
+    Pool.Ver4Pool[Pool.Ver4PoolSize - 1] = Vertex4;
+    return &Pool.Ver4Pool[Pool.Ver4PoolSize - 1];
+  }
+}
+
 vertex4 *_AddOneVer4ToPool(pool &Pool, vertex4 &Vertex4) {
   vector<vertex4 *> Ver4Pool_Type;
   // select all vertex in VerPooll have the type as Vertex
   for (int i = 0; i < Pool.Ver4PoolSize; i++) {
     vertex4 *v = &(Pool.Ver4Pool[i]);
-    if (v->Type == Vertex4.Type)
-      Ver4Pool_Type.push_back(v);
+    if (v->Type[0] == Vertex4.Type[0])
+      if (v->Type[1] == Vertex4.Type[1])
+        Ver4Pool_Type.push_back(v);
   }
 
   vector<vertex4 *> Ver4Pool_Basis;
@@ -228,29 +265,44 @@ vector<vertex *> _AddAllVerToPool(pool &Pool, vector<int> &Permutation,
   return VerIndex;
 }
 
-vector<vertex4 *> _AddAllVer4ToPool(pool &Pool, vector<int> &Permutation,
-                                    vector<int> &Ver4Legs,
-                                    vector<loop> &LoopBasis,
-                                    vector<int> &VerType, int Ver4Num) {
+vector<vertex4 *>
+_AddAllVer4ToPool(pool &Pool, vector<int> &Permutation, vector<int> &Ver4Legs,
+                  vector<loop> &LoopBasisG, vector<loop> &LoopBasisVer,
+                  vector<int> &VerType, int Ver4Num, bool UseVer4) {
   vector<vertex4 *> Ver4Index;
   for (int i = 0; i < Ver4Num; i++) {
+    int Inidx = 2 * i, Outidx = 2 * i + 1;
     // construct a new vertex 4 function
     vertex4 Vertex4;
-    Vertex4.Type = VerType[i];
+    Vertex4.Type = {VerType[Inidx], VerType[Outidx]};
+
+    // build Interaction loop basis
+    Vertex4.IntLoopBasis[DIRECT].fill(0);
+    Vertex4.IntLoopBasis[EXCHANGE].fill(0);
+    std::copy(LoopBasisVer[Inidx].begin(), LoopBasisVer[Inidx].end(),
+              Vertex4.IntLoopBasis[DIRECT].begin());
+    std::copy(LoopBasisVer[Outidx].begin(), LoopBasisVer[Outidx].end(),
+              Vertex4.IntLoopBasis[EXCHANGE].begin());
+
+    // build 4-leg loop basis
     for (int leg = 0; leg < 4; leg++) {
       int legidx = 4 * i + leg; // index shift
       Vertex4.LoopBasis[leg].fill(0);
       int gidx = Ver4Legs[legidx];
-      std::copy(LoopBasis[gidx].begin(), LoopBasis[gidx].end(),
+      std::copy(LoopBasisG[gidx].begin(), LoopBasisG[gidx].end(),
                 Vertex4.LoopBasis[leg].begin());
     }
-    Ver4Index.push_back(_AddOneVer4ToPool(Pool, Vertex4));
+
+    if (UseVer4)
+      Ver4Index.push_back(_AddOneVer4ToPool(Pool, Vertex4));
+    else
+      Ver4Index.push_back(_AddOneInteractionToPool(Pool, Vertex4));
   }
   return Ver4Index;
 }
 
 diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
-                       int GNum, int Ver4Num) {
+                       int GNum, int Ver4Num, bool UseVer4) {
   string buff;
   diagram Diagram;
 
@@ -317,8 +369,9 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
 
   if (Ver4Num > 0) {
     //////  Add 4-Vertex to Ver4Pool /////////
-    vector<vertex4 *> Ver4Index = _AddAllVer4ToPool(
-        Pool, Permutation, Ver4Legs, LoopBasis, VerType, Ver4Num);
+    vector<vertex4 *> Ver4Index =
+        _AddAllVer4ToPool(Pool, Permutation, Ver4Legs, LoopBasis, LoopBasisVer,
+                          VerType, Ver4Num, UseVer4);
     copy(Ver4Index.begin(), Ver4Index.end(), Diagram.Ver4.begin());
     //////  Add Vertex to VerPool /////////
     vector<vertex *> VerIndex =
@@ -345,13 +398,23 @@ group diag::ReadOneGroup(istream &DiagFile, pool &Pool) {
     Group.UseVer4 = true;
 
     Group.IsExtTau.fill(false);
+    Group.IsFixedLoop.fill(false);
+    Group.IsFixedLoop[0] = true;
+    Group.IsFixedLoop[3] = true;
+    Group.IsFixedLoop[4] = true;
+    Group.IsFixedLoop[5] = true;
+
   } else {
     Group.IsRG = false;
-    Group.UseVer4 = false;
+    // Group.UseVer4 = false;
+    Group.UseVer4 = true;
 
     Group.IsExtTau.fill(false);
     Group.IsExtTau[0] = true;
     Group.IsExtTau[1] = true;
+
+    Group.IsFixedLoop.fill(false);
+    Group.IsFixedLoop[0] = true;
   }
 
   Group.IsExtLoop.fill(false);
@@ -377,7 +440,7 @@ group diag::ReadOneGroup(istream &DiagFile, pool &Pool) {
 
   for (int i = 0; i < Group.HugenNum; i++) {
     diagram Diagram = ReadOneDiagram(DiagFile, Pool, Group.Order, Group.LoopNum,
-                                     Group.GNum, Group.Ver4Num);
+                                     Group.GNum, Group.Ver4Num, Group.UseVer4);
     Diagram.ID = i;
     Group.Diag.push_back(Diagram);
     // for (int i = 0; i < Group.GNum; i++)
