@@ -78,7 +78,8 @@ private:
 
   // the spin cache to calculate vertex weight
   double _Tree[MaxOrder][MaxBranchNum];
-  bool IsInteractionReducible(loop &, int);
+  bool IsInteractionReducible(loop &, int LoopNum);
+  bool IsInteractionReducible(loop &, loop &, int LoopNum);
 
   template <typename... TS> string ERR(string format, TS... args);
 

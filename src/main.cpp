@@ -122,6 +122,7 @@ void MonteCarlo() {
       // }
 
       Markov.Measure();
+      // Markov.DynamicTest();
 
       if (i % 1000 == 0) {
         // Markov.PrintDeBugMCInfo();

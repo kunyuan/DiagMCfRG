@@ -175,7 +175,9 @@ double fermi::PhyGreen(double Tau, const momentum &Mom) {
   // cout << "G: " << green << endl;
 
   if (std::isnan(green))
-    ABORT("Green is too large!" << Tau << " " << Ek << " " << green);
+    ABORT("Step:" << Para.Counter << ", Green is too large! Tau=" << Tau
+                  << ", Ek=" << Ek << ", Green=" << green << ", Mom"
+                  << ToString(Mom));
   return green;
 }
 
@@ -187,7 +189,8 @@ double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
     // equal time green's function
     green = PhyGreen(-1.0e-10, Mom);
   } else if (GType == -1) {
-    green = 1.0;
+    green = PhyGreen(Tau, Mom);
+    // green = 1.0;
   } else {
     ABORT("GType " << GType << " has not yet been implemented!");
     // return FakeGreen(Tau, Mom);

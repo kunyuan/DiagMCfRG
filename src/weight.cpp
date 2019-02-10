@@ -142,22 +142,15 @@ void weight::ChangeGroup(group &Group, bool Forced) {
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
           VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, Ver4->NewWeight[DIRECT],
                           Ver4->NewWeight[EXCHANGE]);
-          /************************** Test ****************************/
-          vertex *Ver = d.Ver[i];
-          GetMom(Ver->LoopBasis[DIRECT], Group.LoopNum, _Mom);
-          double dirweight = Bose.Interaction(0.0, _Mom, Ver->Type[DIRECT]);
-          ASSERT_ALLWAYS(abs(dirweight - Ver4->NewWeight[DIRECT]) < 1.0e-8,
-                         "Step: " << Para.Counter
-                                  << ", direct interaction should be equal."
-                                  << dirweight << " vs "
-                                  << Ver4->NewWeight[DIRECT]);
-          GetMom(Ver->LoopBasis[EXCHANGE], Group.LoopNum, _Mom);
-          double exchweight = Bose.Interaction(0.0, _Mom, Ver->Type[EXCHANGE]);
-          ASSERT_ALLWAYS(abs(exchweight - Ver4->NewWeight[EXCHANGE]) < 1.0e-8,
-                         "Step: " << Para.Counter
-                                  << ", exchange interaction should be equal."
-                                  << exchweight << " vs "
-                                  << Ver4->NewWeight[EXCHANGE]);
+          /***********  Reducibility Check ******************/
+          if (IsInteractionReducible(Ver4->LoopBasis[INL],
+                                     Ver4->LoopBasis[OUTL], Group.LoopNum)) {
+            Ver4->NewWeight[DIRECT] = 0.0;
+          }
+          if (IsInteractionReducible(Ver4->LoopBasis[INL],
+                                     Ver4->LoopBasis[OUTR], Group.LoopNum)) {
+            Ver4->NewWeight[DIRECT] = 0.0;
+          }
         }
       } else {
         vertex *Ver = d.Ver[i];
@@ -206,22 +199,15 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
           VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, Ver4->NewWeight[DIRECT],
                           Ver4->NewWeight[EXCHANGE]);
-          /************************** Test ****************************/
-          vertex *Ver = d.Ver[i];
-          GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
-          double dirweight = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
-          ASSERT_ALLWAYS(abs(dirweight - Ver4->NewWeight[DIRECT]) < 1.0e-8,
-                         "Step: " << Para.Counter
-                                  << ", direct interaction should be equal."
-                                  << dirweight << " vs "
-                                  << Ver4->NewWeight[DIRECT]);
-          GetMom(Ver->LoopBasis[OUT], Group.LoopNum, _Mom);
-          double exchweight = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
-          ASSERT_ALLWAYS(abs(exchweight - Ver4->NewWeight[EXCHANGE]) < 1.0e-8,
-                         "Step: " << Para.Counter
-                                  << ", exchange interaction should be equal."
-                                  << exchweight << " vs "
-                                  << Ver4->NewWeight[EXCHANGE]);
+          /***********  Reducibility Check ******************/
+          if (IsInteractionReducible(Ver4->LoopBasis[INL],
+                                     Ver4->LoopBasis[OUTL], Group.LoopNum)) {
+            Ver4->NewWeight[DIRECT] = 0.0;
+          }
+          if (IsInteractionReducible(Ver4->LoopBasis[INL],
+                                     Ver4->LoopBasis[OUTR], Group.LoopNum)) {
+            Ver4->NewWeight[DIRECT] = 0.0;
+          }
         }
       } else {
         vertex *Ver = d.Ver[i];
@@ -459,6 +445,23 @@ bool weight::IsInteractionReducible(loop &LoopBasisVer, int LoopNum) {
   bool Flag = true;
   for (int i = 1; i < LoopNum; i++) {
     if (!Equal(LoopBasisVer[i], 0.0)) {
+      Flag = false;
+      break;
+    }
+  }
+  return Flag;
+};
+
+bool weight::IsInteractionReducible(loop &LoopBasisVer1, loop &LoopBasisVer2,
+                                    int LoopNum) {
+  // check if an interaction is reducible
+  if ((!Equal(LoopBasisVer1[0] - LoopBasisVer2[0], 1.0)) &&
+      (!Equal(LoopBasisVer1[0] - LoopBasisVer2[0], -1.0)))
+    return false;
+
+  bool Flag = true;
+  for (int i = 1; i < LoopNum; i++) {
+    if (!Equal(LoopBasisVer1[i] - LoopBasisVer2[i], 0.0)) {
       Flag = false;
       break;
     }

@@ -1,4 +1,4 @@
-#DiagNum: 2
+#DiagNum: 1
 #Order: 1
 #GNum: 4
 #Ver4Num: 1

@@ -55,17 +55,32 @@ string weight::DebugInfo(group &Group) {
   //        ToString(Green(-Tau, G2, UP, 0, true)) + "; ";
   // msg += "\n";
 
-  msg += "VerWeight: \n";
-  for (int i = 0; i < Group.Ver4Num; i++)
-    msg += fmt::format("{:.3f}, {:.3f}", Group.Diag[0].Ver[i]->Weight[0],
-                       Group.Diag[0].Ver[i]->Weight[1]);
-  msg += "\n";
+  if (Group.UseVer4) {
+    msg += "Ver4Weight: \n";
+    for (int i = 0; i < Group.Ver4Num; i++)
+      msg += fmt::format("{:.3f}, {:.3f}", Group.Diag[0].Ver4[i]->Weight[0],
+                         Group.Diag[0].Ver4[i]->Weight[1]);
+    msg += "\n";
 
-  msg += "NewVerWeight: \n";
-  for (int i = 0; i < Group.Ver4Num; i++)
-    msg += fmt::format("{:.3f}, {:.3f}", Group.Diag[0].Ver[i]->NewWeight[0],
-                       Group.Diag[0].Ver[i]->NewWeight[1]);
-  msg += "\n";
+    msg += "NewVer4Weight: \n";
+    for (int i = 0; i < Group.Ver4Num; i++)
+      msg += fmt::format("{:.3f}, {:.3f}", Group.Diag[0].Ver4[i]->NewWeight[0],
+                         Group.Diag[0].Ver4[i]->NewWeight[1]);
+    msg += "\n";
+
+  } else {
+    msg += "VerWeight: \n";
+    for (int i = 0; i < Group.Ver4Num; i++)
+      msg += fmt::format("{:.3f}, {:.3f}", Group.Diag[0].Ver[i]->Weight[0],
+                         Group.Diag[0].Ver[i]->Weight[1]);
+    msg += "\n";
+
+    msg += "NewVerWeight: \n";
+    for (int i = 0; i < Group.Ver4Num; i++)
+      msg += fmt::format("{:.3f}, {:.3f}", Group.Diag[0].Ver[i]->NewWeight[0],
+                         Group.Diag[0].Ver[i]->NewWeight[1]);
+    msg += "\n";
+  }
 
   msg += string(80, '=') + "\n";
   msg += "LoopMom: \n";
@@ -199,18 +214,20 @@ int weight::DynamicTest() {
   //====== check reducibility ============================//
   for (auto &diag : Var.CurrGroup->Diag) {
     for (int i = 0; i < Var.CurrGroup->Ver4Num; i++) {
-      vertex &Ver = *(diag.Ver[i]);
-      if (IsInteractionReducible(Ver.LoopBasis[0], Var.CurrGroup->LoopNum))
-        ASSERT_ALLWAYS(
-            Equal(Ver.Weight[0], 0.0, 1.0e-10),
-            ERR("Ver {0} is reducible but with finite Weight = {1}\n", i,
-                Ver.Weight[0]));
+      if (Var.CurrGroup->UseVer4 == false) {
+        vertex &Ver = *(diag.Ver[i]);
+        if (IsInteractionReducible(Ver.LoopBasis[0], Var.CurrGroup->LoopNum))
+          ASSERT_ALLWAYS(
+              Equal(Ver.Weight[0], 0.0, 1.0e-10),
+              ERR("Ver {0} is reducible but with finite Weight = {1}\n", i,
+                  Ver.Weight[0]));
 
-      if (IsInteractionReducible(Ver.LoopBasis[1], Var.CurrGroup->LoopNum))
-        ASSERT_ALLWAYS(
-            Equal(Ver.Weight[1], 0.0, 1.0e-10),
-            ERR("Ver {0} is reducible but with finite Weight = {1}\n", i,
-                Ver.Weight[1]));
+        if (IsInteractionReducible(Ver.LoopBasis[1], Var.CurrGroup->LoopNum))
+          ASSERT_ALLWAYS(
+              Equal(Ver.Weight[1], 0.0, 1.0e-10),
+              ERR("Ver {0} is reducible but with finite Weight = {1}\n", i,
+                  Ver.Weight[1]));
+      }
     }
   }
 
