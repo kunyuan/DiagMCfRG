@@ -186,8 +186,117 @@ double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
   } else if (GType == 1) {
     // equal time green's function
     green = PhyGreen(-1.0e-10, Mom);
-  } else
+  } else if (GType == -1) {
+    green = 1.0;
+  } else {
     ABORT("GType " << GType << " has not yet been implemented!");
-  // return FakeGreen(Tau, Mom);
+    // return FakeGreen(Tau, Mom);
+  }
   return green;
+}
+
+verfunc::verfunc() {
+  // test angle utility
+
+  // TODO: implement D=3
+  if (D == 3)
+    return;
+
+  _TestAngle2D();
+  _TestAngleIndex();
+
+  // initialize UV ver4 table
+  momentum KInL = {1.0, 0.0};
+  for (int inin = 0; inin < InInAngBinSize; ++inin)
+    for (int inout = 0; inout < InOutAngBinSize; ++inout) {
+      double AngleInIn = Index2Angle(inin, InInAngBinSize);
+      double AngleInOut = Index2Angle(inout, InOutAngBinSize);
+      momentum KInR = {cos(AngleInIn), sin(AngleInIn)};
+      momentum KOutL = {cos(AngleInOut), sin(AngleInOut)};
+      momentum KOutR = KInL + KInR - KOutL;
+      Ver4AtUV[inin][inout] = (KInL - KInR).dot(KOutL - KOutR);
+    }
+}
+
+void verfunc::Vertex4(const momentum &InL, const momentum &InR,
+                      const momentum &OutL, const momentum &OutR, int Ver4Type,
+                      double &Direct, double &Exchange) {
+  if (Ver4Type != 0)
+    ABORT("Ver4Type is only implemented for 0!");
+
+  /**************   Yokawar Interaction ************************/
+  Direct = 8.0 * PI / ((OutL - InL).squaredNorm() + Para.Mass2);
+  Exchange = 8.0 * PI / ((OutR - InL).squaredNorm() + Para.Mass2);
+
+  /**************   Generic Interaction ************************/
+}
+
+double verfunc::Angle2D(const momentum &K1, const momentum &K2) {
+  // Returns the angle in radians between vectors 'K1' and 'K2'
+  double dotp = K1.dot(K2);
+  double det = K1[0] * K2[1] - K1[1] * K2[0];
+  double Angle2D = atan2(det, dotp);
+  if (Angle2D < 0)
+    Angle2D += 2.0 * PI;
+  return Angle2D;
+}
+
+double verfunc::Index2Angle(const int &Index, const int &AngleNum) {
+  // Map index [0...AngleNum-1] to the theta range [0.0, 2*pi)
+  return Index * 2.0 * PI / AngleNum;
+}
+
+int verfunc::Angle2Index(const double &Angle, const int &AngleNum) {
+  // Map theta range  [0.0, 2*pi) to index [0...AngleNum-1]
+  double dAngle = 2.0 * PI / AngleNum;
+  if (Angle >= 2.0 * PI - dAngle / 2.0 || Angle < dAngle / 2.0)
+    return 0;
+  else
+    return int(Angle / dAngle + 0.5);
+}
+
+void verfunc::_TestAngle2D() {
+  // Test Angle functions
+  momentum K1 = {1.0, 0.0};
+  momentum K2 = {1.0, 0.0};
+
+  ASSERT_ALLWAYS(
+      abs(Angle2D(K1, K2)) < 1.e-7,
+      fmt::format("Angle between K1 and K2 are not zero! It is {:.13f}",
+                  Angle2D(K1, K2)));
+
+  K1 = {1.0, 0.0};
+  K2 = {-1.0, 0.0};
+  ASSERT_ALLWAYS(
+      abs(Angle2D(K1, K2) - PI) < 1.e-7,
+      fmt::format("Angle between K1 and K2 are not Pi! Instead, it is {:.13f}",
+                  Angle2D(K1, K2)));
+
+  K1 = {1.0, 0.0};
+  K2 = {1.0, -EPS};
+  ASSERT_ALLWAYS(
+      abs(Angle2D(K1, K2) - 2.0 * PI) < 1.e-7,
+      fmt::format("Angle between K1 and K2 are not 2.0*Pi! It is {:.13f}",
+                  Angle2D(K1, K2)));
+}
+
+void verfunc::_TestAngleIndex() {
+  // Test Angle functions
+  int AngleNum = 64;
+  ASSERT_ALLWAYS(abs(Index2Angle(0, AngleNum) - 0.0) < 1.0e-10,
+                 "Angle for index 0 should be zero!");
+
+  ASSERT_ALLWAYS(abs(Index2Angle(AngleNum - 1, AngleNum) -
+                     (2.0 * PI * (1.0 - 1.0 / AngleNum))) < 1.0e-10,
+                 "Angle for index AngleNum should be 2.0*pi-0^+!");
+
+  ASSERT_ALLWAYS(Angle2Index(0.0, AngleNum) == 0,
+                 "Angle zero should have index 0!");
+  ASSERT_ALLWAYS(
+      Angle2Index(2.0 * PI * (1.0 - 0.5 / AngleNum) + EPS, AngleNum) == 0,
+      "Angle 2*pi-pi/AngleNum should have index 1!");
+
+  ASSERT_ALLWAYS(Angle2Index(2.0 * PI * (1.0 - 0.5 / AngleNum) - EPS,
+                             AngleNum) == AngleNum - 1,
+                 "Angle 2*pi-pi/AngleNum-0^+ should have index AngleNum!");
 }

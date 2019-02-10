@@ -1,5 +1,7 @@
 #DiagNum: 2
 #Order: 1
+#GNum: 4
+#Ver4Num: 1
 #LoopNum: 6
 #ExtLoopNum: 6
 #Type: RG

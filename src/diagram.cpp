@@ -1,6 +1,8 @@
 #include "diagram.h"
+#include "utility/abort.h"
 #include "utility/fmt/format.h"
 #include "utility/utility.h"
+#include <iostream>
 #include <sstream>
 
 using namespace diag;
@@ -273,6 +275,7 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
   vector<vector<double>> TransposedLoopBasis;
   for (int j = 0; j < LoopNum; j++)
     TransposedLoopBasis.push_back(_ExtractOneLine<double>(DiagFile));
+
   vector<loop> LoopBasis = _Transpose(TransposedLoopBasis);
 
   /////// 4 legs of 4-ver  /////////////////////////
@@ -330,21 +333,37 @@ group diag::ReadOneGroup(istream &DiagFile, pool &Pool) {
   group Group;
   Group.HugenNum = _ExtractOneLine<int>(DiagFile)[0];
   Group.Order = _ExtractOneLine<int>(DiagFile)[0];
+  Group.GNum = _ExtractOneLine<int>(DiagFile)[0];
+  Group.Ver4Num = _ExtractOneLine<int>(DiagFile)[0];
   Group.LoopNum = _ExtractOneLine<int>(DiagFile)[0];
   Group.ExtLoopNum = _ExtractOneLine<int>(DiagFile)[0];
   string buff = _GetOneLine(DiagFile); // skip the line for the group type
 
   std::size_t found = buff.find("RG");
-  if (found != string::npos)
+  if (found != string::npos) {
     Group.IsRG = true; // will use RG way to calculate the weight
-  else
+    Group.UseVer4 = true;
+  } else {
     Group.IsRG = false;
+    Group.UseVer4 = false;
+  }
 
   Group.InternalLoopNum = Group.LoopNum - Group.ExtLoopNum;
-  Group.TauNum = Group.Order * 2;
+  Group.TauNum = Group.GNum;
   Group.InternalTauNum = Group.Order * 2 - 2;
-  Group.GNum = Group.Order * 2;
-  Group.Ver4Num = Group.Order - 1;
+
+  ASSERT_ALLWAYS(Group.HugenNum <= MaxDiagNum,
+                 "Diagram Number must be smaller than " << MaxDiagNum);
+  ASSERT_ALLWAYS(Group.Order <= MaxOrder,
+                 "Order Number must be smaller than " << MaxOrder);
+  ASSERT_ALLWAYS(Group.GNum <= MaxGNum,
+                 "G Number must be smaller than " << MaxGNum);
+  ASSERT_ALLWAYS(Group.TauNum <= MaxTauNum,
+                 "Tau Number must be smaller than " << MaxTauNum);
+  ASSERT_ALLWAYS(Group.Ver4Num <= MaxVer4Num,
+                 "Ver4 Number must be smaller than " << MaxVer4Num);
+  ASSERT_ALLWAYS(Group.LoopNum <= MaxLoopNum,
+                 "Loop Number must be smaller than " << MaxLoopNum);
 
   for (int i = 0; i < Group.HugenNum; i++) {
     diagram Diagram = ReadOneDiagram(DiagFile, Pool, Group.Order, Group.LoopNum,

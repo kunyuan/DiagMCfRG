@@ -69,8 +69,12 @@ private:
 
   void Initialization();
 
-  void GetMom(const loop &LoopBasis, const int &LoopNum);
+  void GetMom(const loop &LoopBasis, const int &LoopNum, momentum &Mom);
   momentum _Mom;
+  momentum _InL;
+  momentum _InR;
+  momentum _OutL;
+  momentum _OutR;
 
   // the spin cache to calculate vertex weight
   double _Tree[MaxOrder][MaxBranchNum];
@@ -80,6 +84,7 @@ private:
 
   fermi Fermi;
   bose Bose;
+  verfunc VerFunc;
 };
 
 }; // namespace diag

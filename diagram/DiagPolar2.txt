@@ -1,5 +1,7 @@
 #DiagNum: 1
 #Order: 2
+#GNum: 4
+#Ver4Num: 2
 #LoopNum: 3
 #ExtLoopNum: 1
 #Type: Normal

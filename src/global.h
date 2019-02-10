@@ -15,7 +15,6 @@ const bool DEBUGMODE = true;
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
 /////////// Global Parameter ////////////////////
-
 struct parameter {
   // physical parameters
   double Rs, Ef, Kf,
@@ -26,21 +25,23 @@ struct parameter {
   double Mass2;      // screening length^2
   double MaxExtMom;  // the maximum external momentum
   selfenergy SelfEnergyType;
+
+  // MC inputs
   int TotalStep;         // total steps of the Monte Carlo
   int ObsType;           // 0: static polarization, 1: equal-time polarization
   int Seed;              // rng seed
   int PID;               // ID of the job
   long long int Counter; // counter to save the current MC step
   int Sweep;             // how many MC steps between two measuring
+  std::vector<std::string> GroupName; // ID for each group
+  std::vector<double> ReWeight;       // reweight factor for each group
 
   // others
   int PrinterTimer;  // how many seconds between to printing to screen
   int SaveFileTimer; // how many secondes between saving to file
   int MessageTimer;  // how many secondes between two checking for message
   int ReweightTimer; // how many secondes between two reweighting
-  std::string DiagFileFormat;         // the diagram file needs to be loaded
-  std::vector<std::string> GroupName; // ID for each group
-  std::vector<double> ReWeight;       // reweight factor for each group
+  std::string DiagFileFormat; // the diagram file needs to be loaded
 };
 
 ///////////  Global Constants ////////////////////
@@ -48,12 +49,10 @@ struct parameter {
 const int D = 2;
 // number of q bins of the external momentum
 const int ExtMomBinSize = 64;
-// Use 4-vertex or interaction line
-const bool UseVertex4 = false;
 // number of bins for the angle between InL and InR legs
-const int InInAngleBinSize = 32;
+const int InInAngBinSize = 32;
 // number of bins for the angle between InL and OutL legs
-const int InOutAngleBinSize = 32;
+const int InOutAngBinSize = 32;
 // number of energy scales, only useful in RG approach
 const int ScaleBinSize = 32;
 
@@ -89,7 +88,10 @@ const int OUT = 1;
 const int LEFT = 0;
 const int RIGHT = 1;
 
-const int INL = 0, INR = 1, OUTL = 3, OUTR = 4;
+const int INL = 0, INR = 1, OUTL = 2, OUTR = 3;
+
+const int DIRECT = 0, EXCHANGE = 1;
+
 #define FLIP(x) (1 - x)
 //////////////////////////////////////////////////////
 

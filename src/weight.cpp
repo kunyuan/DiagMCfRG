@@ -56,9 +56,9 @@ void weight::Initialization() {
         diag.Ver[i]->Weight = {1.0e-10, 1.0e-10};
       }
       for (int i = 0; i < group.Ver4Num; i++) {
-        diag.Ver4[i]->Excited = false;
+        diag.Ver4[i]->Excited = {false, false};
         diag.Ver4[i]->Version = -1;
-        diag.Ver4[i]->Weight = 1.0e-10;
+        diag.Ver4[i]->Weight = {1.0e-10, -1.0e-10};
       }
     }
   }
@@ -126,29 +126,51 @@ void weight::ChangeGroup(group &Group, bool Forced) {
       if (Forced || G->Version < Var.CurrVersion) {
         double Tau = Var.Tau[G->TauBasis[OUT]] - Var.Tau[G->TauBasis[IN]];
         G->Excited = true;
-        GetMom(G->LoopBasis, Group.LoopNum);
+        GetMom(G->LoopBasis, Group.LoopNum, _Mom);
         G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type);
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
       // cout << "Ver: " << i << endl;
-      if (UseVertex4) {
-        ABORT("Vertex4 not implemented!");
-        // vertex4 *Ver4 = d.Ver4Index[i];
-        // Ver4->Excited=true;
-        // Ver4->NewWeight=
+      if (Group.UseVer4) {
+        vertex4 *Ver4 = d.Ver4[i];
+        if (Forced || Ver4->Version < Var.CurrVersion) {
+          Ver4->Excited = {true, true};
+          GetMom(Ver4->LoopBasis[INL], Group.LoopNum, _InL);
+          GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
+          GetMom(Ver4->LoopBasis[OUTL], Group.LoopNum, _OutL);
+          GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
+          VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, Ver4->NewWeight[DIRECT],
+                          Ver4->NewWeight[EXCHANGE]);
+          /************************** Test ****************************/
+          vertex *Ver = d.Ver[i];
+          GetMom(Ver->LoopBasis[DIRECT], Group.LoopNum, _Mom);
+          double dirweight = Bose.Interaction(0.0, _Mom, Ver->Type[DIRECT]);
+          ASSERT_ALLWAYS(abs(dirweight - Ver4->NewWeight[DIRECT]) < 1.0e-8,
+                         "Step: " << Para.Counter
+                                  << ", direct interaction should be equal."
+                                  << dirweight << " vs "
+                                  << Ver4->NewWeight[DIRECT]);
+          GetMom(Ver->LoopBasis[EXCHANGE], Group.LoopNum, _Mom);
+          double exchweight = Bose.Interaction(0.0, _Mom, Ver->Type[EXCHANGE]);
+          ASSERT_ALLWAYS(abs(exchweight - Ver4->NewWeight[EXCHANGE]) < 1.0e-8,
+                         "Step: " << Para.Counter
+                                  << ", exchange interaction should be equal."
+                                  << exchweight << " vs "
+                                  << Ver4->NewWeight[EXCHANGE]);
+        }
       } else {
         vertex *Ver = d.Ver[i];
         if (Forced || Ver->Version < Var.CurrVersion) {
           Ver->Excited = {true, true};
           if (!IsInteractionReducible(Ver->LoopBasis[IN], Group.LoopNum)) {
-            GetMom(Ver->LoopBasis[IN], Group.LoopNum);
+            GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
             Ver->NewWeight[IN] = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
           } else {
             Ver->NewWeight[IN] = 0.0;
           }
           if (!IsInteractionReducible(Ver->LoopBasis[OUT], Group.LoopNum)) {
-            GetMom(Ver->LoopBasis[OUT], Group.LoopNum);
+            GetMom(Ver->LoopBasis[OUT], Group.LoopNum, _Mom);
             Ver->NewWeight[OUT] = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
           } else {
             Ver->NewWeight[OUT] = 0.0;
@@ -166,19 +188,47 @@ void weight::ChangeMom(group &Group, int MomIndex) {
       if (G->LoopBasis[MomIndex] != 0) {
         double Tau = Var.Tau[G->TauBasis[OUT]] - Var.Tau[G->TauBasis[IN]];
         G->Excited = true;
-        GetMom(G->LoopBasis, Group.LoopNum);
+        GetMom(G->LoopBasis, Group.LoopNum, _Mom);
         G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type);
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
-      if (UseVertex4) {
-        ABORT("Vertex4 not implemented!");
+      if (Group.UseVer4) {
+        vertex4 *Ver4 = d.Ver4[i];
+        if (Ver4->LoopBasis[INL][MomIndex] != 0 ||
+            Ver4->LoopBasis[INR][MomIndex] != 0 ||
+            Ver4->LoopBasis[OUTL][MomIndex] != 0 ||
+            Ver4->LoopBasis[OUTR][MomIndex] != 0) {
+          Ver4->Excited = {true, true};
+          GetMom(Ver4->LoopBasis[INL], Group.LoopNum, _InL);
+          GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
+          GetMom(Ver4->LoopBasis[OUTL], Group.LoopNum, _OutL);
+          GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
+          VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, Ver4->NewWeight[DIRECT],
+                          Ver4->NewWeight[EXCHANGE]);
+          /************************** Test ****************************/
+          vertex *Ver = d.Ver[i];
+          GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
+          double dirweight = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
+          ASSERT_ALLWAYS(abs(dirweight - Ver4->NewWeight[DIRECT]) < 1.0e-8,
+                         "Step: " << Para.Counter
+                                  << ", direct interaction should be equal."
+                                  << dirweight << " vs "
+                                  << Ver4->NewWeight[DIRECT]);
+          GetMom(Ver->LoopBasis[OUT], Group.LoopNum, _Mom);
+          double exchweight = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
+          ASSERT_ALLWAYS(abs(exchweight - Ver4->NewWeight[EXCHANGE]) < 1.0e-8,
+                         "Step: " << Para.Counter
+                                  << ", exchange interaction should be equal."
+                                  << exchweight << " vs "
+                                  << Ver4->NewWeight[EXCHANGE]);
+        }
       } else {
         vertex *Ver = d.Ver[i];
         if (Ver->LoopBasis[IN][MomIndex] != 0) {
           Ver->Excited[IN] = true;
           if (!IsInteractionReducible(Ver->LoopBasis[IN], Group.LoopNum)) {
-            GetMom(Ver->LoopBasis[IN], Group.LoopNum);
+            GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
             Ver->NewWeight[IN] = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
           } else {
             Ver->NewWeight[IN] = 0.0;
@@ -187,7 +237,7 @@ void weight::ChangeMom(group &Group, int MomIndex) {
         if (Ver->LoopBasis[OUT][MomIndex] != 0) {
           Ver->Excited[OUT] = true;
           if (!IsInteractionReducible(Ver->LoopBasis[OUT], Group.LoopNum)) {
-            GetMom(Ver->LoopBasis[OUT], Group.LoopNum);
+            GetMom(Ver->LoopBasis[OUT], Group.LoopNum, _Mom);
             Ver->NewWeight[OUT] = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
           } else {
             Ver->NewWeight[OUT] = 0.0;
@@ -222,7 +272,7 @@ void weight::ChangeTau(group &Group, int TauIndex) {
         // trigger recalculation
         double Tau = Var.Tau[TauOut] - Var.Tau[TauIn];
         G->Excited = true;
-        GetMom(G->LoopBasis, Group.LoopNum);
+        GetMom(G->LoopBasis, Group.LoopNum, _Mom);
         G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type);
       }
     }
@@ -243,8 +293,34 @@ double weight::GetNewWeight(group &Group) {
     }
 
     double VerWeight;
-    if (UseVertex4) {
-      ABORT("Ver4 has not yet been implemented!");
+    if (Group.UseVer4) {
+      vertex4 *Ver4 = d.Ver4[0];
+
+      _Tree[0][0] = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
+                                          : Ver4->Weight[DIRECT];
+      _Tree[0][1] = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
+                                            : Ver4->Weight[EXCHANGE];
+
+      int BlockNum = 2;
+      for (int level = 1; level < Group.Ver4Num; level++) {
+
+        vertex4 *Ver4 = d.Ver4[level];
+        VIn = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
+                                    : Ver4->Weight[DIRECT];
+        VOut = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
+                                       : Ver4->Weight[EXCHANGE];
+
+        for (int j = 0; j < BlockNum; j++) {
+          _Tree[level][2 * j] = _Tree[level - 1][j] * VIn;
+          _Tree[level][2 * j + 1] = _Tree[level - 1][j] * VOut;
+        }
+        BlockNum *= 2;
+      }
+
+      VerWeight = 0.0;
+      for (int j = 0; j < BlockNum; j++)
+        VerWeight += _Tree[Group.Ver4Num - 1][j] * d.SpinFactor[j];
+
     } else {
       if (Group.Ver4Num == 0) {
         VerWeight = d.SpinFactor[0];
@@ -314,8 +390,17 @@ void weight::AcceptChange(group &Group) {
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++)
-      if (UseVertex4) {
-        ABORT("Ver4 has not yet been implemented!");
+      if (Group.UseVer4) {
+        vertex4 *Ver4 = d.Ver4[i];
+        Ver4->Version = Var.CurrVersion;
+        if (Ver4->Excited[DIRECT]) {
+          Ver4->Excited[DIRECT] = false;
+          Ver4->Weight[DIRECT] = Ver4->NewWeight[DIRECT];
+        }
+        if (Ver4->Excited[EXCHANGE]) {
+          Ver4->Excited[EXCHANGE] = false;
+          Ver4->Weight[EXCHANGE] = Ver4->NewWeight[EXCHANGE];
+        }
       } else {
         vertex *Ver = d.Ver[i];
         Ver->Version = Var.CurrVersion;
@@ -337,8 +422,11 @@ void weight::RejectChange(group &Group) {
       if (d.G[i]->Excited)
         d.G[i]->Excited = false;
       for (int i = 0; i < Group.Ver4Num; i++) {
-        if (UseVertex4) {
-          ABORT("Ver4 has not yet been implemented!");
+        if (Group.UseVer4) {
+          if (d.Ver4[i]->Excited[0])
+            d.Ver4[i]->Excited[0] = false;
+          if (d.Ver4[i]->Excited[1])
+            d.Ver4[i]->Excited[1] = false;
         } else {
           if (d.Ver[i]->Excited[0])
             d.Ver[i]->Excited[0] = false;
@@ -350,17 +438,17 @@ void weight::RejectChange(group &Group) {
   }
 }
 
-void weight::GetMom(const loop &LoopBasis, const int &LoopNum) {
+void weight::GetMom(const loop &LoopBasis, const int &LoopNum, momentum &Mom) {
   // In C++11, because of the move semantics, there is no additional cost by
   // returning an array
 
   auto &loopmom = Var.LoopMom;
   for (int d = 0; d < D; ++d)
-    _Mom[d] = loopmom[0][d] * LoopBasis[0];
+    Mom[d] = loopmom[0][d] * LoopBasis[0];
 
   for (int i = 1; i < LoopNum; ++i)
     for (int d = 0; d < D; ++d)
-      _Mom[d] += loopmom[i][d] * LoopBasis[i];
+      Mom[d] += loopmom[i][d] * LoopBasis[i];
 }
 
 bool weight::IsInteractionReducible(loop &LoopBasisVer, int LoopNum) {

@@ -55,9 +55,11 @@ struct vertex4 {
       Ver4Legs; // the GIndex of four legs of every indepdent 4-vertex
   array<loop, 4> LoopBasis; // loop basis for momentum transfer
   // tau TauBasis;               //tau basis, Left and Right
-  double Weight;    // weight of each green's function
-  double NewWeight; // weight of each green's function
-  bool Excited;
+  array<double, 2> Weight; // direct/exchange weight of each 4-vertex function
+  array<double, 2> NewWeight;
+  // direct/exchange weight of each 4-vertex function
+  array<bool, 2> Excited;
+  // status of direct/exchange weight of each 4-vertex function
 };
 
 struct pool {
@@ -97,6 +99,7 @@ struct group {
   int TauNum;          // dimension of tau basis
   int InternalTauNum;  // dimension of internal tau basis
   bool IsRG;           // Is the group about RG?
+  bool UseVer4;        // use ver4 to calculate weight or not
   double ReWeight;
   double Weight;
   double NewWeight;

@@ -125,12 +125,14 @@ int weight::DynamicTest() {
                            diag.ID, group.ID));
       }
       for (auto i = 0; i < group.Ver4Num; i++) {
-        if (UseVertex4) {
-          ASSERT_ALLWAYS(!std::isnan(diag.Ver4[i]->Weight),
-                         ERR("One 4-Ver is NaN!\n Diag: {0} in Group: {1}\n",
-                             diag.ID, group.ID));
+        if (group.UseVer4) {
           ASSERT_ALLWAYS(
-              diag.Ver4[i]->Excited == false,
+              !std::isnan(diag.Ver4[i]->Weight[0] || diag.Ver4[i]->Weight[1]),
+              ERR("One 4-Ver is NaN!\n Diag: {0} in Group: {1}\n", diag.ID,
+                  group.ID));
+          ASSERT_ALLWAYS(
+              diag.Ver4[i]->Excited[0] == false ||
+                  diag.Ver4[i]->Excited[1] == false,
               ERR("One 4-Ver is Excited!\n Diag: {0} in Group: {1}\n", diag.ID,
                   group.ID));
         } else {
@@ -165,11 +167,15 @@ int weight::DynamicTest() {
                            diag.G[i]->NewWeight, diag.G[i]->Weight));
       }
       for (auto i = 0; i < Var.CurrGroup->Ver4Num; i++) {
-        if (UseVertex4) {
+        if (Var.CurrGroup->UseVer4) {
           ASSERT_ALLWAYS(
-              Equal(diag.Ver4[i]->NewWeight, diag.Ver4[i]->Weight, 1.e-8),
+              Equal(diag.Ver4[i]->NewWeight[0], diag.Ver4[i]->Weight[0], 1.e-8),
               ERR("Ver4 Weight is different: {0} vs {1}\n",
-                  diag.Ver4[i]->NewWeight, diag.Ver4[i]->Weight));
+                  diag.Ver4[i]->NewWeight[0], diag.Ver4[i]->Weight[0]));
+          ASSERT_ALLWAYS(
+              Equal(diag.Ver4[i]->NewWeight[1], diag.Ver4[i]->Weight[1], 1.e-8),
+              ERR("Ver4 Weight is different: {0} vs {1}\n",
+                  diag.Ver4[i]->NewWeight[1], diag.Ver4[i]->Weight[1]));
         } else {
           ASSERT_ALLWAYS(
               Equal(diag.Ver[i]->NewWeight[0], diag.Ver[i]->Weight[0], 1.e-8),
