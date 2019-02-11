@@ -75,14 +75,15 @@ void InitPara() {
   // scale all energy with E_F
   Para.Beta /= Para.Ef;
   Para.UVCoupling = 1.0 * Para.Ef;
-  Para.UVScale = 8.0 * Para.Kf;
 
   if (Para.Type == RG) {
+    Para.UVScale = 8.0 * Para.Kf;
     Para.Scales[0] = Para.UVScale;
     for (int i = 1; i < ScaleBinSize + 1; ++i) {
       Para.Scales[i] = Para.Scales[i - 1] / 2.0;
     }
   } else {
+    Para.UVScale = 10000.0 * Para.Kf;
     Para.Scales.fill(Para.Kf);
   }
 

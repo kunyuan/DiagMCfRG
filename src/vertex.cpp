@@ -144,7 +144,7 @@ double fermi::PhyGreen(double Tau, const momentum &Mom) {
   KK = Mom.norm();
 
   //// enforce an UV cutoff for the Green's function ////////
-  if (KK < Para.UVScale) {
+  if (KK > Para.UVScale) {
     return 0.0;
   }
 
