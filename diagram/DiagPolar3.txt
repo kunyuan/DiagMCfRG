@@ -1,119 +1,117 @@
+#Type: Polarization
 #DiagNum: 5
 #Order: 3
-#Type: Normal
+#GNum: 6
+#Ver4Num: 2
+#LoopNum: 4
+#ExtLoopIndex: 0
+#DummyLoopIndex: 
+#TauNum: 4
+#ExtTauIndex: 0 1
+#DummyTauIndex: 
 
-#Topology
+# Permutation
  5  2  1  4  3  0 
-#Propagator Type
- 0  0  0  0  0  0 
-#Symmetry Factor
+# SymFactor
 -1.0
-# Loop Basis
+# GType
+ 0  0  0  0  0  0 
+# VertexBasis
+ 0  1  2  2  3  3 
+ 3  2  1  3  2  0 
+# LoopBasis
  1  0  1  0  1  0 
  0  1  1  0  0  0 
  0  0  0  1  1  0 
  1  0  0  0  0  1 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-1 2 4 3 3 4 0 5 
-# Interaction Type
- 0  0  0  0 
-#Ver Loop Basis
--1  0 -1  0 
- 0  1  0  0 
- 0 -1  0  1 
- 0  0  0 -1 
-#SpinFactor
- 8 -4 -4  2 
+# Ver4Legs(InL,OutL,InR,OutR)
+ 1  2  4  3 | 3  4  0  5 |
+# WType(Direct,Exchange)
+ 0  0 | 0  0 |
+# SpinFactor
+ 0  0  0  2 
 
-#Topology
+# Permutation
  5  2  0  4  3  1 
-#Propagator Type
- 0  0  0  0  0  0 
-#Symmetry Factor
+# SymFactor
 1.0
-# Loop Basis
+# GType
+ 0  0  0  0  0  0 
+# VertexBasis
+ 0  1  2  2  3  3 
+ 3  2  0  3  2  1 
+# LoopBasis
  1  0  0  0  0  1 
  0  1  0  0 -1  1 
  0  0  0  1  1  0 
  1  0  1  0  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-1 2 4 3 3 4 0 5 
-# Interaction Type
- 0  0  0  0 
-#Ver Loop Basis
- 0  0  0 -1 
- 1  1  1 -1 
- 0 -1  0  1 
--1  0 -1  0 
-#SpinFactor
+# Ver4Legs(InL,OutL,InR,OutR)
+ 1  2  4  3 | 3  4  0  5 |
+# WType(Direct,Exchange)
+ 0  0 | 0  0 |
+# SpinFactor
  4 -2 -2  4 
 
-#Topology
+# Permutation
  2  0  5  4  3  1 
-#Propagator Type
- 0  0  0  0  0  0 
-#Symmetry Factor
+# SymFactor
 0.5
-# Loop Basis
+# GType
+ 0  0  0  0  0  0 
+# VertexBasis
+ 0  1  2  2  3  3 
+ 2  0  3  3  2  1 
+# LoopBasis
  1  0  0  1  0  1 
  1  1  0  0 -1  1 
  0  0  0  1  1  0 
  0  0  1  0  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-0 2 4 3 3 4 2 5 
-# Interaction Type
- 0  0  0  0 
-#Ver Loop Basis
- 1  0  1  0 
- 1  1  1 -1 
- 0 -1  0  1 
--1  0 -1  0 
-#SpinFactor
+# Ver4Legs(InL,OutL,InR,OutR)
+ 0  2  4  3 | 3  4  2  5 |
+# WType(Direct,Exchange)
+ 0  0 | 0  0 |
+# SpinFactor
  4 -2 -2  4 
 
-#Topology
+# Permutation
  5  4  0  1  3  2 
-#Propagator Type
- 0  0  0  0  0  0 
-#Symmetry Factor
+# SymFactor
 0.5
-# Loop Basis
+# GType
+ 0  0  0  0  0  0 
+# VertexBasis
+ 0  1  2  2  3  3 
+ 3  3  0  1  2  2 
+# LoopBasis
  1  0  0  1  1  0 
  0  0  0  0 -1  1 
  0  1  0  1  1  0 
  1  0  1  0  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-5 2 4 3 1 4 0 5 
-# Interaction Type
- 0  0  0  0 
-#Ver Loop Basis
- 0 -1 -1  0 
- 1  1  1 -1 
- 0 -1  0  1 
--1  0 -1  0 
-#SpinFactor
+# Ver4Legs(InL,OutL,InR,OutR)
+ 5  2  4  3 | 1  4  0  5 |
+# WType(Direct,Exchange)
+ 0  0 | 0  0 |
+# SpinFactor
  4 -2 -2  4 
 
-#Topology
+# Permutation
  1  4  5  0  3  2 
-#Propagator Type
- 0  0  0  0  0  0 
-#Symmetry Factor
+# SymFactor
 0.5
-# Loop Basis
+# GType
+ 0  0  0  0  0  0 
+# VertexBasis
+ 0  1  2  2  3  3 
+ 1  3  3  0  2  2 
+# LoopBasis
  1  0  0  0  0  0 
  0  0  0  0 -1  1 
  1  1  0  1  1  0 
  0  0  1  0  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-5 2 4 3 1 4 2 5 
-# Interaction Type
- 0  0  0  0 
-#Ver Loop Basis
- 0  0  0  0 
- 1  1  1 -1 
- 0 -1  0  1 
--1  0 -1  0 
-#SpinFactor
+# Ver4Legs(InL,OutL,InR,OutR)
+ 5  2  4  3 | 1  4  2  5 |
+# WType(Direct,Exchange)
+ 0  0 | 0  0 |
+# SpinFactor
  4 -2 -2  4 
 

@@ -35,6 +35,11 @@ public:
 
   int DynamicTest();
 
+  // MC variables
+  diag::weight Weight;
+  diag::variable &Var;
+  vector<diag::group> &Groups;
+
 private:
   // polarizatoin for each group
   unordered_map<int, polar> Polar;
@@ -52,11 +57,6 @@ private:
   double GetNewK(momentum &);
   double RemoveOldTau(double &);
   double RemoveOldK(momentum &);
-
-  // MC variables
-  diag::weight Weight;
-  diag::variable &Var;
-  vector<diag::group> &Groups;
 
   // MC updates information
   std::string UpdatesName[MCUpdates];

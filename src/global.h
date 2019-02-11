@@ -14,6 +14,8 @@ const bool DEBUGMODE = true;
 // array.h
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
+enum type { RG, POLAR };
+enum obstype { FREQ, EQUALTIME };
 /////////// Global Parameter ////////////////////
 struct parameter {
   // physical parameters
@@ -27,8 +29,10 @@ struct parameter {
   selfenergy SelfEnergyType;
 
   // MC inputs
+  type Type;             // polarization, RG
+  obstype ObsType;       // 0: static polarization, 1: equal-time polarization
+  bool UseVer4;          // use vertex4 to calculate weight or not
   int TotalStep;         // total steps of the Monte Carlo
-  int ObsType;           // 0: static polarization, 1: equal-time polarization
   int Seed;              // rng seed
   int PID;               // ID of the job
   long long int Counter; // counter to save the current MC step
@@ -49,12 +53,10 @@ struct parameter {
 const int D = 2;
 // number of q bins of the external momentum
 const int ExtMomBinSize = 64;
-// Use 4-vertex or interaction line
-const bool UseVertex4 = false;
 // number of bins for the angle between InL and InR legs
-const int InInAngleBinSize = 32;
+const int InInAngBinSize = 32;
 // number of bins for the angle between InL and OutL legs
-const int InOutAngleBinSize = 32;
+const int InOutAngBinSize = 32;
 // number of energy scales, only useful in RG approach
 const int ScaleBinSize = 32;
 
@@ -90,7 +92,10 @@ const int OUT = 1;
 const int LEFT = 0;
 const int RIGHT = 1;
 
-const int INL = 0, INR = 1, OUTL = 3, OUTR = 4;
+const int INL = 0, OUTL = 1, INR = 2, OUTR = 3;
+
+const int DIRECT = 0, EXCHANGE = 1;
+
 #define FLIP(x) (1 - x)
 //////////////////////////////////////////////////////
 

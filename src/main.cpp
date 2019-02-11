@@ -25,10 +25,10 @@ parameter Para; // parameters as a global variable
 RandomFactory Random;
 
 int main(int argc, const char *argv[]) {
-  cout << "Beta, Rs, Mass2, MaxExtMom(*kF), TotalStep(*1e6), Observable, Seed, "
+  cout << "Beta, Rs, Mass2, MaxExtMom(*kF), TotalStep(*1e6), Seed, "
           "PID\n";
   cin >> Para.Beta >> Para.Rs >> Para.Mass2 >> Para.MaxExtMom >>
-      Para.TotalStep >> Para.ObsType >> Para.Seed >> Para.PID;
+      Para.TotalStep >> Para.Seed >> Para.PID;
   InitPara(); // initialize global parameters
   MonteCarlo();
   return 0;
@@ -39,9 +39,17 @@ void InitPara() {
   string LogFile = "_" + to_string(Para.PID) + ".log";
   LOGGER_CONF(LogFile, "MC", Logger::file_on | Logger::screen_on, INFO, INFO);
 
+  Para.Type = POLAR;
+  Para.ObsType = FREQ;
+
+  // Para.UseVer4 = false;
+  Para.UseVer4 = true;
+
   // diagram file path: groups/DiagPolar1.dat
   Para.DiagFileFormat = "groups/DiagPolar{}.txt";
+  // Para.DiagFileFormat = "groups/DiagLoop{}.txt";
   Para.GroupName = {"1", "2", "3"};
+  // Para.GroupName = {"1", "2"};
   Para.ReWeight = {1.0, 1.0, 5.0, 1.0, 0.1};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
@@ -120,6 +128,7 @@ void MonteCarlo() {
       // }
 
       Markov.Measure();
+      // Markov.DynamicTest();
 
       if (i % 1000 == 0) {
         // Markov.PrintDeBugMCInfo();

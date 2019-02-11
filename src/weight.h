@@ -56,11 +56,6 @@ private:
   } NewG;
   struct {
     int Num;
-    array<double, MaxVer4Num * 2> Weight;
-    array<vertex *, MaxVer4Num * 2> Index;
-  } NewVer;
-  struct {
-    int Num;
     array<double, MaxVer4Num> Weight;
     array<vertex4 *, MaxVer4Num> Index;
   } NewVer4;
@@ -69,17 +64,23 @@ private:
 
   void Initialization();
 
-  void GetMom(const loop &LoopBasis, const int &LoopNum);
+  void GetMom(const loop &LoopBasis, const int &LoopNum, momentum &Mom);
   momentum _Mom;
+  momentum _InL;
+  momentum _InR;
+  momentum _OutL;
+  momentum _OutR;
 
   // the spin cache to calculate vertex weight
   double _Tree[MaxOrder][MaxBranchNum];
-  bool IsInteractionReducible(loop &, int);
+  bool IsInteractionReducible(loop &, int LoopNum);
+  bool IsInteractionReducible(loop &, loop &, int LoopNum);
 
   template <typename... TS> string ERR(string format, TS... args);
 
   fermi Fermi;
   bose Bose;
+  verfunc VerFunc;
 };
 
 }; // namespace diag

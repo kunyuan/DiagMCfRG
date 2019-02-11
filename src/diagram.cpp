@@ -1,25 +1,53 @@
 #include "diagram.h"
+#include "utility/abort.h"
 #include "utility/fmt/format.h"
 #include "utility/utility.h"
+#include <iostream>
 #include <sstream>
 
 using namespace diag;
 using namespace std;
 
-string _GetOneLine(istream &file) {
+/*Find Case Insensitive Sub String in a given substring */
+size_t _findCaseInsensitive(std::string data, std::string toSearch,
+                            size_t pos = 0) {
+  // Convert complete given String to lower case
+  std::transform(data.begin(), data.end(), data.begin(), ::tolower);
+  // Convert complete given Sub String to lower case
+  std::transform(toSearch.begin(), toSearch.end(), toSearch.begin(), ::tolower);
+  // Find sub string in given string
+  return data.find(toSearch, pos);
+}
+
+string _CheckKeyWord(istream &file, string KeyWord) {
   // a line only contains space will be skipped
   string buff;
   do {
     getline(file, buff);
+    if (file.bad())
+      ABORT("Fail to read the file!");
   } while (buff.find_first_not_of(' ') == buff.npos);
+
+  auto found = _findCaseInsensitive(buff, KeyWord);
+  ASSERT_ALLWAYS(found != string::npos,
+                 fmt::format("{0} is not in: {1}", KeyWord, buff));
+
   return buff;
 }
 
-template <typename T> vector<T> _ExtractOneLine(istream &file) {
+template <typename T>
+vector<T> _ExtractNumbers(istream &file, string KeyWord = "") {
   // This function extracts the first T type number in one line in the file
   // stream.
   string line;
   getline(file, line);
+
+  if (KeyWord.size() > 0) {
+    auto found = _findCaseInsensitive(line, KeyWord);
+    ASSERT_ALLWAYS(found != string::npos,
+                   fmt::format("{0} is not in: {1}", KeyWord, line));
+  }
+
   stringstream ss;
   vector<T> IntList;
   /* Storing the whole string into string stream */
@@ -67,24 +95,9 @@ green *_AddOneGToPool(pool &Pool, green &Green) {
   // select all green's function with same TauIn and TauOut
   vector<green *> GPool_Tau;
   for (auto g : GPool_Type) {
-    // TODO: ugly logic flow
-    ///   ASSUME Tau(2*i)==Tau(2*i+1), except Tau=0,1, which are are the
-    /// external tau, which are indepdently fluctuate
-    bool InFlag = false, OutFlag = false;
-    if (Green.TauBasis[0] <= 1 && Green.TauBasis[0] == g->TauBasis[0])
-      InFlag = true;
-    if (Green.TauBasis[0] > 1 && Green.TauBasis[0] / 2 == g->TauBasis[0] / 2)
-      InFlag = true;
-
-    if (Green.TauBasis[1] <= 1 && Green.TauBasis[1] == g->TauBasis[1])
-      OutFlag = true;
-    if (Green.TauBasis[1] > 1 && Green.TauBasis[1] / 2 == g->TauBasis[1] / 2)
-      OutFlag = true;
-    if (InFlag && OutFlag) {
+    if (g->TauBasis[IN] == Green.TauBasis[IN] &&
+        g->TauBasis[OUT] == Green.TauBasis[OUT]) {
       GPool_Tau.push_back(g);
-      //   cout << "Same Tau" << endl;
-      //   cout << ToString(Green) << endl;
-      //   cout << ToString(*g) << endl;
     }
   }
   // select all green's function with same LoopBasis
@@ -113,37 +126,37 @@ green *_AddOneGToPool(pool &Pool, green &Green) {
   }
 }
 
-vertex *_AddOneVerToPool(pool &Pool, vertex &Vertex) {
-  vector<vertex *> VerPool_Type;
+vertex4 *_AddOneInteractionToPool(pool &Pool, vertex4 &Vertex4) {
+  vector<vertex4 *> Ver4Pool_Type;
   // select all vertex in VerPooll have the type as Vertex
 
-  for (int i = 0; i < Pool.VerPoolSize; i++) {
-    vertex *v = &(Pool.VerPool[i]);
-    if (v->Type[0] == Vertex.Type[0])
-      if (v->Type[1] == Vertex.Type[1])
-        VerPool_Type.push_back(v);
+  for (int i = 0; i < Pool.Ver4PoolSize; i++) {
+    vertex4 *v = &(Pool.Ver4Pool[i]);
+    if (v->Type[0] == Vertex4.Type[0])
+      if (v->Type[1] == Vertex4.Type[1])
+        Ver4Pool_Type.push_back(v);
   }
 
-  vector<vertex *> VerPool_Basis;
-  for (auto v : VerPool_Type)
-    if (Equal<double>(v->LoopBasis[0].data(), Vertex.LoopBasis[0].data(),
+  vector<vertex4 *> Ver4Pool_Basis;
+  for (auto v : Ver4Pool_Type)
+    if (Equal<double>(v->IntLoopBasis[0].data(), Vertex4.IntLoopBasis[0].data(),
+                      MaxLoopNum) &&
+        Equal<double>(v->IntLoopBasis[1].data(), Vertex4.IntLoopBasis[1].data(),
                       MaxLoopNum))
-      if (Equal<double>(v->LoopBasis[1].data(), Vertex.LoopBasis[1].data(),
-                        MaxLoopNum))
-        VerPool_Basis.push_back(v);
+      Ver4Pool_Basis.push_back(v);
   // cout << "Basis pool: " << GPool_Basis.size() << "," << MaxLoopNum << endl;
   // if GPool_Filter is not empty, means the green's function already exists
-  if (VerPool_Basis.size() > 0) {
-    ASSERT_ALLWAYS(VerPool_Basis.size() == 1,
+  if (Ver4Pool_Basis.size() > 0) {
+    ASSERT_ALLWAYS(Ver4Pool_Basis.size() == 1,
                    "There are more than two same Vertex in the VerPool!");
-    return VerPool_Basis[0];
+    return Ver4Pool_Basis[0];
   } else {
     // add new vertex4 to pool
-    ASSERT_ALLWAYS(Pool.VerPoolSize < MaxVerPoolSize,
+    ASSERT_ALLWAYS(Pool.Ver4PoolSize < MaxVerPoolSize,
                    "MaxVerPoolSize is too small!");
-    Pool.VerPoolSize++;
-    Pool.VerPool[Pool.VerPoolSize - 1] = Vertex;
-    return &Pool.VerPool[Pool.VerPoolSize - 1];
+    Pool.Ver4PoolSize++;
+    Pool.Ver4Pool[Pool.Ver4PoolSize - 1] = Vertex4;
+    return &Pool.Ver4Pool[Pool.Ver4PoolSize - 1];
   }
 }
 
@@ -152,8 +165,9 @@ vertex4 *_AddOneVer4ToPool(pool &Pool, vertex4 &Vertex4) {
   // select all vertex in VerPooll have the type as Vertex
   for (int i = 0; i < Pool.Ver4PoolSize; i++) {
     vertex4 *v = &(Pool.Ver4Pool[i]);
-    if (v->Type == Vertex4.Type)
-      Ver4Pool_Type.push_back(v);
+    if (v->Type[0] == Vertex4.Type[0])
+      if (v->Type[1] == Vertex4.Type[1])
+        Ver4Pool_Type.push_back(v);
   }
 
   vector<vertex4 *> Ver4Pool_Basis;
@@ -182,7 +196,7 @@ vertex4 *_AddOneVer4ToPool(pool &Pool, vertex4 &Vertex4) {
   }
 }
 
-vector<green *> _AddAllGToPool(pool &Pool, vector<int> &Permutation,
+vector<green *> _AddAllGToPool(pool &Pool, vector<tau> &VerBasis,
                                vector<loop> &LoopBasis, vector<int> &GType,
                                int GNum) {
   vector<green *> GIndex;
@@ -193,8 +207,7 @@ vector<green *> _AddAllGToPool(pool &Pool, vector<int> &Permutation,
     Green.LoopBasis.fill(0);
     std::copy(LoopBasis[i].begin(), LoopBasis[i].end(),
               Green.LoopBasis.begin());
-    Green.TauBasis[IN] = i;
-    Green.TauBasis[OUT] = Permutation[i];
+    Green.TauBasis = VerBasis[i];
     // GList.push_back(Green);
     GIndex.push_back(_AddOneGToPool(Pool, Green));
   }
@@ -206,43 +219,40 @@ vector<green *> _AddAllGToPool(pool &Pool, vector<int> &Permutation,
   return GIndex;
 }
 
-vector<vertex *> _AddAllVerToPool(pool &Pool, vector<int> &Permutation,
-                                  vector<loop> &LoopBasisVer,
-                                  vector<int> &VerType, int Ver4Num) {
-  vector<vertex *> VerIndex;
-  for (int i = 0; i < Ver4Num; i++) {
-    int Inidx = 2 * i, Outidx = 2 * i + 1;
-    // construct a new green's function
-    vertex Vertex;
-    Vertex.Type = {VerType[Inidx], VerType[Outidx]};
-    Vertex.LoopBasis[IN].fill(0);
-    Vertex.LoopBasis[OUT].fill(0);
-    std::copy(LoopBasisVer[Inidx].begin(), LoopBasisVer[Inidx].end(),
-              Vertex.LoopBasis[IN].begin());
-    std::copy(LoopBasisVer[Outidx].begin(), LoopBasisVer[Outidx].end(),
-              Vertex.LoopBasis[OUT].begin());
-    VerIndex.push_back(_AddOneVerToPool(Pool, Vertex));
-  }
-  return VerIndex;
-}
-
-vector<vertex4 *> _AddAllVer4ToPool(pool &Pool, vector<int> &Permutation,
+vector<vertex4 *> _AddAllVer4ToPool(pool &Pool, vector<tau> &VerBasis,
                                     vector<int> &Ver4Legs,
-                                    vector<loop> &LoopBasis,
+                                    vector<loop> &LoopBasisG,
                                     vector<int> &VerType, int Ver4Num) {
   vector<vertex4 *> Ver4Index;
   for (int i = 0; i < Ver4Num; i++) {
     int Inidx = 2 * i, Outidx = 2 * i + 1;
-    // construct a new green's function
+    // construct a new vertex 4 function
     vertex4 Vertex4;
-    Vertex4.Type = VerType[Inidx];
+    Vertex4.Type = {VerType[Inidx], VerType[Outidx]};
+
+    // build 4-leg loop basis
     for (int leg = 0; leg < 4; leg++) {
+      int legidx = 4 * i + leg; // index shift
       Vertex4.LoopBasis[leg].fill(0);
-      int gidx = Ver4Legs[leg];
-      std::copy(LoopBasis[gidx].begin(), LoopBasis[gidx].end(),
+      int gidx = Ver4Legs[legidx];
+      std::copy(LoopBasisG[gidx].begin(), LoopBasisG[gidx].end(),
                 Vertex4.LoopBasis[leg].begin());
     }
-    Ver4Index.push_back(_AddOneVer4ToPool(Pool, Vertex4));
+
+    // build Interaction loop basis
+    Vertex4.IntLoopBasis[DIRECT].fill(0);
+    Vertex4.IntLoopBasis[EXCHANGE].fill(0);
+    for (int i = 0; i < Vertex4.IntLoopBasis[DIRECT].size(); ++i) {
+      Vertex4.IntLoopBasis[DIRECT][i] =
+          Vertex4.LoopBasis[INL][i] - Vertex4.LoopBasis[OUTL][i];
+      Vertex4.IntLoopBasis[EXCHANGE][i] =
+          Vertex4.LoopBasis[INL][i] - Vertex4.LoopBasis[OUTR][i];
+    }
+
+    if (Para.UseVer4)
+      Ver4Index.push_back(_AddOneVer4ToPool(Pool, Vertex4));
+    else
+      Ver4Index.push_back(_AddOneInteractionToPool(Pool, Vertex4));
   }
   return Ver4Index;
 }
@@ -253,57 +263,58 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
   diagram Diagram;
 
   Diagram.G.fill(nullptr);
-  Diagram.Ver.fill(nullptr);
   Diagram.Ver4.fill(nullptr);
 
   //////// Diagram Topology  ////////////////////////
-  buff = _GetOneLine(DiagFile); // title
-  auto Permutation = _ExtractOneLine<int>(DiagFile);
-
-  //////// Propagator type //////////////////
-  buff = _GetOneLine(DiagFile); // title
-  auto GType = _ExtractOneLine<int>(DiagFile);
+  _CheckKeyWord(DiagFile, "Permutation"); // title
+  vector<int> Permutation = _ExtractNumbers<int>(DiagFile);
+  copy(Permutation.begin(), Permutation.end(), Diagram.Permutation.begin());
 
   //////// symmetry factor //////////////////
-  buff = _GetOneLine(DiagFile); // title
-  Diagram.SymFactor = _ExtractOneLine<double>(DiagFile)[0];
+  _CheckKeyWord(DiagFile, "SymFactor"); // title
+  Diagram.SymFactor = _ExtractNumbers<double>(DiagFile)[0];
+
+  //////// Propagator type //////////////////
+  _CheckKeyWord(DiagFile, "GType"); // title
+  auto GType = _ExtractNumbers<int>(DiagFile);
+
+  /////// Ver Basis  /////////////////////////
+  _CheckKeyWord(DiagFile, "VertexBasis"); // title
+  vector<int> StartVer = _ExtractNumbers<int>(DiagFile);
+  vector<int> EndVer = _ExtractNumbers<int>(DiagFile);
+  vector<tau> VerBasis;
+  for (int i = 0; i < GNum; i++)
+    VerBasis.push_back(tau({StartVer[i], EndVer[i]}));
 
   /////// Loop Basis  /////////////////////////
-  buff = _GetOneLine(DiagFile); // title
+  _CheckKeyWord(DiagFile, "LoopBasis"); // title
   vector<vector<double>> TransposedLoopBasis;
   for (int j = 0; j < LoopNum; j++)
-    TransposedLoopBasis.push_back(_ExtractOneLine<double>(DiagFile));
+    TransposedLoopBasis.push_back(_ExtractNumbers<double>(DiagFile));
+
   vector<loop> LoopBasis = _Transpose(TransposedLoopBasis);
 
   /////// 4 legs of 4-ver  /////////////////////////
-  buff = _GetOneLine(DiagFile); // title
+  _CheckKeyWord(DiagFile, "Ver4Legs"); // title
   vector<int> Ver4Legs;
   if (Ver4Num > 0)
-    Ver4Legs = _ExtractOneLine<int>(DiagFile);
+    Ver4Legs = _ExtractNumbers<int>(DiagFile);
 
   /////// Interaction Type  /////////////////////////
-  buff = _GetOneLine(DiagFile); // title
+  _CheckKeyWord(DiagFile, "WType"); // title
   vector<int> VerType;
   if (Ver4Num > 0)
-    VerType = _ExtractOneLine<int>(DiagFile);
-
-  /////// Interaction Loop Basis  ////////////////////
-  buff = _GetOneLine(DiagFile); // title
-  vector<vector<double>> TransposedLoopBasisVer;
-  if (Ver4Num > 0)
-    for (int j = 0; j < LoopNum; j++)
-      TransposedLoopBasisVer.push_back(_ExtractOneLine<double>(DiagFile));
-  vector<loop> LoopBasisVer = _Transpose(TransposedLoopBasisVer);
+    VerType = _ExtractNumbers<int>(DiagFile);
 
   /////// Spin Factor  ////////////////////
-  buff = _GetOneLine(DiagFile); // title
-  auto SpinFactor = _ExtractOneLine<double>(DiagFile);
+  _CheckKeyWord(DiagFile, "SpinFactor"); // title
+  auto SpinFactor = _ExtractNumbers<double>(DiagFile);
   copy(SpinFactor.begin(), SpinFactor.end(),
        Diagram.SpinFactor.begin()); // copy spin factor into the group member
 
   ////////   Add G to GPool ////////////////////////
   vector<green *> GIndex =
-      _AddAllGToPool(Pool, Permutation, LoopBasis, GType, GNum);
+      _AddAllGToPool(Pool, VerBasis, LoopBasis, GType, GNum);
   ASSERT_ALLWAYS(GIndex.size() == GNum,
                  "Number of Green's function does not match!");
   copy(GIndex.begin(), GIndex.end(), Diagram.G.begin());
@@ -315,12 +326,8 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
   if (Ver4Num > 0) {
     //////  Add 4-Vertex to Ver4Pool /////////
     vector<vertex4 *> Ver4Index = _AddAllVer4ToPool(
-        Pool, Permutation, Ver4Legs, LoopBasis, VerType, Ver4Num);
+        Pool, VerBasis, Ver4Legs, LoopBasis, VerType, Ver4Num);
     copy(Ver4Index.begin(), Ver4Index.end(), Diagram.Ver4.begin());
-    //////  Add Vertex to VerPool /////////
-    vector<vertex *> VerIndex =
-        _AddAllVerToPool(Pool, Permutation, LoopBasisVer, VerType, Ver4Num);
-    copy(VerIndex.begin(), VerIndex.end(), Diagram.Ver.begin());
   }
 
   return Diagram;
@@ -328,16 +335,56 @@ diagram ReadOneDiagram(istream &DiagFile, pool &Pool, int Order, int LoopNum,
 
 group diag::ReadOneGroup(istream &DiagFile, pool &Pool) {
   group Group;
-  Group.HugenNum = _ExtractOneLine<int>(DiagFile)[0];
-  Group.Order = _ExtractOneLine<int>(DiagFile)[0];
-  string buff = _GetOneLine(DiagFile); // skip the line for the group type
+  _CheckKeyWord(DiagFile, "Type"); // group type, simply skip
 
-  Group.LoopNum = Group.Order + 1;
-  Group.InternalLoopNum = Group.Order;
-  Group.TauNum = Group.Order * 2;
-  Group.InternalTauNum = Group.Order * 2 - 2;
-  Group.GNum = Group.Order * 2;
-  Group.Ver4Num = Group.Order - 1;
+  Group.HugenNum = _ExtractNumbers<int>(DiagFile, "DiagNum")[0];
+  ASSERT_ALLWAYS(Group.HugenNum <= MaxDiagNum,
+                 "Diagram Number must be smaller than " << MaxDiagNum);
+
+  Group.Order = _ExtractNumbers<int>(DiagFile, "Order")[0];
+  ASSERT_ALLWAYS(Group.Order <= MaxOrder,
+                 "Order Number must be smaller than " << MaxOrder);
+
+  Group.GNum = _ExtractNumbers<int>(DiagFile, "GNum")[0];
+  ASSERT_ALLWAYS(Group.GNum <= MaxGNum,
+                 "G Number must be smaller than " << MaxGNum);
+
+  Group.Ver4Num = _ExtractNumbers<int>(DiagFile, "Ver4Num")[0];
+  ASSERT_ALLWAYS(Group.Ver4Num <= MaxVer4Num,
+                 "Ver4 Number must be smaller than " << MaxVer4Num);
+
+  Group.LoopNum = _ExtractNumbers<int>(DiagFile, "LoopNum")[0];
+  ASSERT_ALLWAYS(Group.LoopNum <= MaxLoopNum,
+                 "Loop Number must be smaller than " << MaxLoopNum);
+
+  vector<int> ExtLoop = _ExtractNumbers<int>(DiagFile, "ExtLoopIndex");
+  Group.ExtLoopNum = ExtLoop.size();
+  Group.IsExtLoop.fill(false);
+  for (auto index : ExtLoop)
+    Group.IsExtLoop[index] = true;
+
+  vector<int> LockedLoop = _ExtractNumbers<int>(DiagFile, "DummyLoopIndex");
+  Group.IsLockedLoop.fill(false);
+  for (auto index : LockedLoop)
+    Group.IsLockedLoop[index] = true;
+
+  Group.TauNum = _ExtractNumbers<int>(DiagFile, "TauNum")[0];
+  ASSERT_ALLWAYS(Group.TauNum <= MaxTauNum,
+                 "Tau Number must be smaller than " << MaxTauNum);
+
+  vector<int> ExtTau = _ExtractNumbers<int>(DiagFile, "ExtTauIndex");
+  Group.ExtTauNum = ExtTau.size();
+  Group.IsExtTau.fill(false);
+  for (auto index : ExtTau)
+    Group.IsExtTau[index] = true;
+
+  vector<int> LockedTau = _ExtractNumbers<int>(DiagFile, "DummyTauIndex");
+  Group.IsLockedTau.fill(false);
+  for (auto index : LockedTau)
+    Group.IsLockedTau[index] = true;
+
+  Group.InternalLoopNum = Group.LoopNum - Group.ExtLoopNum;
+  Group.InternalTauNum = Group.TauNum - Group.ExtTauNum;
 
   for (int i = 0; i < Group.HugenNum; i++) {
     diagram Diagram = ReadOneDiagram(DiagFile, Pool, Group.Order, Group.LoopNum,
@@ -379,7 +426,6 @@ std::string ToString(const green &G) {
       << endl;
   return oss.str();
 };
-std::string ToString(const vertex &);
 std::string ToString(const vertex4 &);
 
 void diag::Test(group &Group) {
@@ -388,7 +434,6 @@ void diag::Test(group &Group) {
       CHECKNULL(d.G[i]);
     }
     for (auto i = 0; i < Group.Ver4Num; i++) {
-      CHECKNULL(d.Ver[i]);
       CHECKNULL(d.Ver4[i]);
     }
   }
