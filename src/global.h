@@ -19,8 +19,17 @@ enum intertype { YOKAWAR, PWAVE_ON_EF }; // interaction type
 enum type { RG, POLAR };
 enum obstype { FREQ, EQUALTIME };
 
+///////////  Global Constants ////////////////////
+// D=2 or D=3
+const int D = 2;
+// number of q bins of the external momentum
+const int ExtMomBinSize = 64;
 // number of energy scales, only useful in RG approach
 const int ScaleBinSize = 8;
+// number of bins for the angle between InL and InR legs
+const int InInAngBinSize = 128;
+// number of bins for the angle between InL and OutL legs
+const int InOutAngBinSize = 128;
 
 /////////// Global Parameter ////////////////////
 struct parameter {
@@ -48,7 +57,7 @@ struct parameter {
   std::vector<double> ReWeight;       // reweight factor for each group
 
   // RG
-  array<double, ScaleBinSize> Scales; // energy scales in RG
+  array<double, ScaleBinSize + 1> Scales; // energy scales in RG
 
   // others
   int PrinterTimer;  // how many seconds between to printing to screen
@@ -57,16 +66,6 @@ struct parameter {
   int ReweightTimer; // how many secondes between two reweighting
   std::string DiagFileFormat; // the diagram file needs to be loaded
 };
-
-///////////  Global Constants ////////////////////
-// D=2 or D=3
-const int D = 2;
-// number of q bins of the external momentum
-const int ExtMomBinSize = 64;
-// number of bins for the angle between InL and InR legs
-const int InInAngBinSize = 128;
-// number of bins for the angle between InL and OutL legs
-const int InOutAngBinSize = 128;
 
 //////////   Diagram  ////////////////////////////
 const int MaxOrder = 8;        // Max diagram order

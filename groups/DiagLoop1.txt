@@ -5,7 +5,7 @@
 #Ver4Num: 1
 #LoopNum: 6
 #ExtLoopIndex: 0
-#DummyLoopIndex: 3 4 5
+#DummyLoopIndex: 1 2 3 4 5
 #TauNum: 3
 #ExtTauIndex: 0 1
 #DummyTauIndex:

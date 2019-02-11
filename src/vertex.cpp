@@ -38,7 +38,7 @@ double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
       ABORT("VerType can not be " << VerType);
     }
   } else {
-    ABORT("Interaction Type is not implemented!");
+    ABORT("Interaction Type " << VerType << " is not implemented!");
   }
 }
 

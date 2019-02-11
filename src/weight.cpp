@@ -79,14 +79,28 @@ void weight::Initialization() {
   for (auto &sp : Var.LoopSpin)
     sp = (spin)(Random.irn(0, 1));
 
-  // initialize external momentum
-  for (int i = 0; i < ExtMomBinSize; i++) {
-    // the external momentum only has x component
-    Var.ExtMomTable[i][0] = i * Para.MaxExtMom / ExtMomBinSize;
-    for (int j = 1; j < D; j++)
-      Var.ExtMomTable[i][j] = 0.0;
+  if (Para.Type == POLAR) {
+    // initialize external momentum
+    for (int i = 0; i < ExtMomBinSize; i++) {
+      // the external momentum only has x component
+      Var.ExtMomTable[i][0] = i * Para.MaxExtMom / ExtMomBinSize;
+      for (int j = 1; j < D; j++)
+        Var.ExtMomTable[i][j] = 0.0;
+    }
+  } else if (Para.Type == RG) {
+
+    ASSERT_ALLWAYS(ExtMomBinSize == ScaleBinSize,
+                   "In RG Calculation, please set ExtMomBinSize=ScaleBinSize!");
+    for (int i = 0; i < ExtMomBinSize; i++) {
+      Var.ExtMomTable[i][0] = Para.Scales[i];
+      for (int j = 1; j < D; j++)
+        Var.ExtMomTable[i][j] = 0.0;
+    }
+  } else {
+    ABORT("Job type " << Para.Type << " has not yet been implemented!");
   }
   Var.CurrExtMomBin = 0;
+  Var.CurrScale = 0;
   // Var.LoopMom[0].fill(0.0);
   // for (int i = 0; i < D; i++)
   //   Var.LoopMom[0][i] = Var.ExtMomTable[Var.CurrExtMomBin][i];
@@ -100,8 +114,6 @@ void weight::Initialization() {
   Var.CurrTau = Var.Tau[1] - Var.Tau[0];
 
   // initialize group
-
-  Var.CurrScale = 0;
 
   Var.CurrVersion = 0;
   //   Var.CurrGroup = &Groups[0];
@@ -118,9 +130,9 @@ void weight::Initialization() {
 
 void weight::ChangeGroup(group &Group, bool Forced) {
   // the objects (G, Ver or Ver4) in the new group will be recalculated if the
-  // either of the following conditions is met: 1) Forced=true, then all objects
-  // are forced recalculated 2) object.Version<CurrVersion, means the objects
-  // are not in the current group, and are already outdated
+  // either of the following conditions is met: 1) Forced=true, then all
+  // objects are forced recalculated 2) object.Version<CurrVersion, means the
+  // objects are not in the current group, and are already outdated
   for (auto &d : Group.Diag) {
     // cout << "diag ID: " << d.ID << endl;
     for (int i = 0; i < Group.GNum; i++) {

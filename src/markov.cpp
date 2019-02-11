@@ -170,7 +170,7 @@ void markov::ChangeGroup() {
     // ASSUME: NewTauIndex will never equal to 0 or 1
     Var.Tau[NewTauIndex] = NewTau;
     // Generate New Mom
-    Prop *= GetNewK(NewMom);
+    Prop *= GetNewK(NewMom, Var.CurrScale);
     Var.LoopMom[Var.CurrGroup->LoopNum] = NewMom;
 
   } else if (NewGroup.Order == Var.CurrGroup->Order - 1) {
@@ -181,7 +181,7 @@ void markov::ChangeGroup() {
     Prop = RemoveOldTau(Var.Tau[TauToRemove]);
     // Remove OldMom
     int LoopToRemove = Var.CurrGroup->LoopNum - 1;
-    Prop *= RemoveOldK(Var.LoopMom[LoopToRemove]);
+    Prop *= RemoveOldK(Var.LoopMom[LoopToRemove], Var.CurrScale);
 
   } else {
     return;
@@ -265,7 +265,7 @@ void markov::ChangeMomentum() {
       return;
     }
   } else {
-    Prop = ShiftK(CurrMom, Var.LoopMom[LoopIndex]);
+    Prop = ShiftK(CurrMom, Var.LoopMom[LoopIndex], Var.CurrScale);
   }
 
   Weight.ChangeMom(*Var.CurrGroup, LoopIndex);
@@ -288,12 +288,13 @@ double markov::GetNewTau(double &NewTau) {
 };
 double markov::RemoveOldTau(double &OldTau) { return 1.0 / Para.Beta; }
 
-double markov::GetNewK(momentum &NewMom) {
+double markov::GetNewK(momentum &NewMom, int Scale) {
+  double KScale = Para.Scales[Scale];
   //====== The hard Way ======================//
-  double dK = Para.Kf / sqrt(Para.Beta) / 4.0;
-  if (dK > Para.Kf / 2)
-    dK = Para.Kf / 2; // to avoid dK>Kf situation
-  double KAmp = Para.Kf + (Random.urn() - 0.5) * 2.0 * dK;
+  double dK = KScale / sqrt(Para.Beta) / 4.0;
+  if (dK > KScale / 2)
+    dK = KScale / 2; // to avoid dK>Kf situation
+  double KAmp = KScale + (Random.urn() - 0.5) * 2.0 * dK;
   // Kf-dK<KAmp<Kf+dK
   double Phi = 2.0 * PI * Random.urn();
   if (D == 3) {
@@ -324,13 +325,14 @@ double markov::GetNewK(momentum &NewMom) {
   //============================================//
 };
 
-double markov::RemoveOldK(momentum &OldMom) {
+double markov::RemoveOldK(momentum &OldMom, int Scale) {
+  double KScale = Para.Scales[Scale];
   //====== The hard Way ======================//
-  double dK = Para.Kf / sqrt(Para.Beta) / 4.0;
-  if (dK > Para.Kf / 2)
-    dK = Para.Kf / 2; // to avoid dK>Kf situation
+  double dK = KScale / sqrt(Para.Beta) / 4.0;
+  if (dK > KScale / 2)
+    dK = KScale / 2; // to avoid dK>Kf situation
   double KAmp = OldMom.norm();
-  if (KAmp < Para.Kf - dK || KAmp > Para.Kf + dK)
+  if (KAmp < KScale - dK || KAmp > KScale + dK)
     // Kf-dK<KAmp<Kf+dK
     return 0.0;
   if (D == 3) {
@@ -350,14 +352,16 @@ double markov::RemoveOldK(momentum &OldMom) {
   //============================================//
 }
 
-double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
+double markov::ShiftK(const momentum &OldMom, momentum &NewMom, int Scale) {
   double x = Random.urn();
+  double KScale = Para.Scales[Scale];
   double Prop;
   if (x < 1.0 / 3) {
     // COPYFROMTO(OldMom, NewMom);
     NewMom = OldMom;
     int dir = Random.irn(0, D - 1);
-    double STEP = Para.Beta > 1.0 ? Para.Kf / Para.Beta * 3.0 : Para.Kf;
+    // double STEP = Para.Beta > 1.0 ? Para.Kf / Para.Beta * 3.0 : Para.Kf;
+    double STEP = Para.Beta > 1.0 ? KScale / Para.Beta * 3.0 : KScale;
     NewMom[dir] += STEP * (Random.urn() - 0.5);
     Prop = 1.0;
   } else if (x < 2.0 / 3) {

@@ -42,8 +42,14 @@ void InitPara() {
   Para.Type = POLAR;
   Para.ObsType = FREQ;
 
-  // Para.UseVer4 = false;
-  Para.UseVer4 = true;
+  Para.InterType = YOKAWAR;
+  // Para.InterType = PWAVE_ON_EF;
+
+  // Para.SelfEnergyType = FOCK;
+  Para.SelfEnergyType = BARE;
+
+  Para.UseVer4 = false;
+  // Para.UseVer4 = true;
 
   // diagram file path: groups/DiagPolar1.dat
   Para.DiagFileFormat = "groups/DiagPolar{}.txt";
@@ -51,11 +57,6 @@ void InitPara() {
   Para.GroupName = {"1", "2", "3"};
   // Para.GroupName = {"1", "2"};
   Para.ReWeight = {1.0, 1.0, 5.0, 1.0, 0.1};
-  // Para.SelfEnergyType = FOCK;
-  Para.SelfEnergyType = BARE;
-
-  // Para.InterType=YOKAWAR;
-  Para.InterType = PWAVE_ON_EF;
 
   //// initialize the global parameter //////////////////////
   double Kf;
@@ -76,9 +77,13 @@ void InitPara() {
   Para.UVCoupling = 1.0 * Para.Ef;
   Para.UVScale = 8.0 * Para.Kf;
 
-  Para.Scales[0] = Para.UVScale;
-  for (int i = 1; i < ScaleBinSize; ++i) {
-    Para.Scales[i] = Para.Scales[i - 1] / 2.0;
+  if (Para.Type == RG) {
+    Para.Scales[0] = Para.UVScale;
+    for (int i = 1; i < ScaleBinSize + 1; ++i) {
+      Para.Scales[i] = Para.Scales[i - 1] / 2.0;
+    }
+  } else {
+    Para.Scales.fill(Para.Kf);
   }
 
   LOG_INFO("Inverse Temperature: " << Para.Beta << "\n"

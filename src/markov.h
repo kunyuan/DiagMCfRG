@@ -50,13 +50,13 @@ private:
   // MC updates
 
   double ShiftExtK(const int &, int &);
-  double ShiftK(const momentum &, momentum &);
+  double ShiftK(const momentum &, momentum &, int Scale);
   double ShiftTau(const double &, double &);
 
   double GetNewTau(double &);
-  double GetNewK(momentum &);
+  double GetNewK(momentum &, int Scale);
   double RemoveOldTau(double &);
-  double RemoveOldK(momentum &);
+  double RemoveOldK(momentum &, int Scale);
 
   // MC updates information
   std::string UpdatesName[MCUpdates];
