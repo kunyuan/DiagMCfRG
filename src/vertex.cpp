@@ -21,19 +21,24 @@ extern parameter Para;
 // double norm2(const momentum &Mom) { return sqrt(sum2(Mom)); }
 
 double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
-  if (VerType >= 0) {
-    double interaction = 8.0 * PI / (Mom.squaredNorm() + Para.Mass2);
-    if (VerType > 0) {
-      // the interaction contains counter-terms
-      interaction *=
-          pow(Para.Mass2 / (Mom.squaredNorm() + Para.Mass2), VerType);
-      interaction *= pow(-1, VerType);
+  if (Para.InterType == YOKAWAR) {
+    // yokawar interaction
+    if (VerType >= 0) {
+      double interaction = 8.0 * PI / (Mom.squaredNorm() + Para.Mass2);
+      if (VerType > 0) {
+        // the interaction contains counter-terms
+        interaction *=
+            pow(Para.Mass2 / (Mom.squaredNorm() + Para.Mass2), VerType);
+        interaction *= pow(-1, VerType);
+      }
+      return interaction;
+    } else if (VerType == -1) {
+      return 1.0;
+    } else {
+      ABORT("VerType can not be " << VerType);
     }
-    return interaction;
-  } else if (VerType == -1) {
-    return 1.0;
   } else {
-    ABORT("VerType can not be " << VerType);
+    ABORT("Interaction Type is not implemented!");
   }
 }
 
@@ -190,8 +195,8 @@ double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
     // equal time green's function
     green = PhyGreen(-1.0e-10, Mom);
   } else if (GType == -1) {
-    green = PhyGreen(Tau, Mom);
-    // green = 1.0;
+    // green = PhyGreen(Tau, Mom);
+    green = 1.0;
   } else {
     ABORT("GType " << GType << " has not yet been implemented!");
     // return FakeGreen(Tau, Mom);
@@ -238,24 +243,30 @@ void verfunc::Vertex4(double &Direct, double &Exchange, const momentum &InL,
                       const momentum &InR, const momentum &OutL,
                       const momentum &OutR, int Ver4TypeDirect,
                       int Ver4TypeExchange, int Scale) {
-  if (Ver4TypeDirect != 0 || Ver4TypeExchange != 0)
-    ABORT("Ver4Type is only implemented for 0!");
 
   /**************   Yokawar Interaction ************************/
   if (Para.InterType == YOKAWAR) {
     Direct = 8.0 * PI / ((OutL - InL).squaredNorm() + Para.Mass2);
     Exchange = 8.0 * PI / ((OutR - InL).squaredNorm() + Para.Mass2);
   } else if (Para.InterType == PWAVE_ON_EF) {
-    double AngleInIn = Angle2D(InL, InR);
-    double AngleInOut = Angle2D(InL, OutL);
-    int InInIndex = Angle2Index(AngleInIn, InInAngBinSize);
-    int InOutIndex = Angle2Index(AngleInOut, InOutAngBinSize);
 
-    Direct = Ver4AtUV[Scale][InInIndex][InOutIndex];
+    if (Ver4TypeDirect == 0 && Ver4TypeExchange == 0) {
+      double AngleInIn = Angle2D(InL, InR);
+      double AngleInOut = Angle2D(InL, OutL);
+      int InInIndex = Angle2Index(AngleInIn, InInAngBinSize);
+      int InOutIndex = Angle2Index(AngleInOut, InOutAngBinSize);
 
-    Exchange = Direct;
-    // Note that InL/|InL|, InR/|InR|, OutL/|OutL|, OutR/|OutR| do not obey
-    // conservation law!
+      Direct = Ver4AtUV[Scale][InInIndex][InOutIndex];
+
+      Exchange = Direct;
+      // Note that InL/|InL|, InR/|InR|, OutL/|OutL|, OutR/|OutR| do not obey
+      // conservation law!
+    } else if (Ver4TypeDirect == -1 && Ver4TypeExchange == -1) {
+      // double KScale = Para.Scales[Scale];
+      Direct = 1.0;
+      Exchange = 1.0;
+    } else
+      ABORT("Ver4Type is only implemented for 0!");
   } else {
     ABORT("Interaction Type is not implemented!");
   }

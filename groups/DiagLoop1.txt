@@ -29,7 +29,7 @@
 # Ver4Legs(InL,OutL,InR,OutR)
 1 2 0 3 
 # WType(Direct,Exchange)
- 0  0
+-1 -1
 # SpinFactor
 -1  1 
 
@@ -52,6 +52,6 @@
 # Ver4Legs(InL,OutL,InR,OutR)
 1 2 0 3 
 # WType(Direct,Exchange)
- 0  0
+-1 -1
 # SpinFactor
 -1  1 
