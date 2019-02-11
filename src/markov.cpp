@@ -292,18 +292,20 @@ void markov::ChangeScale() {
   if (Para.Type != RG)
     return;
 
-  int NewScale;
+  int OldScale = Var.CurrScale;
   if (Random.urn() < 0.5)
-    NewScale = Var.CurrScale - 1;
+    Var.CurrScale -= 1;
   else
-    NewScale = Var.CurrScale + 1;
+    Var.CurrScale += 1;
 
-  if (NewScale < 0 || NewScale >= ScaleBinSize)
+  if (Var.CurrScale < 0 || Var.CurrScale >= ScaleBinSize) {
+    Var.CurrScale = OldScale;
     return;
+  }
 
   double Prop = 1.0;
   for (int i = 0; i < 3; i++) {
-    Var.LoopMom[i] *= Para.Scales[NewScale] / Para.Scales[Var.CurrScale];
+    Var.LoopMom[i] *= Para.Scales[Var.CurrScale] / Para.Scales[OldScale];
     Var.LoopMom[i + 3] *=
         Para.Scales[NewScale + 1] / Para.Scales[Var.CurrScale + 1];
   }
