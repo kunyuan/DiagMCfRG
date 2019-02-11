@@ -1,71 +1,57 @@
 #Type: RG
-#DiagNum: 1
+#DiagNum: 2
 #Order: 1
 #GNum: 4
 #Ver4Num: 1
 #LoopNum: 6
-#ExtLoop: 0
-#DummyLoop: 3 4 5
+#ExtLoopIndex: 0
+#DummyLoopIndex: 3 4 5
 #TauNum: 3
-#ExtTau: 0 1
-#DummyTau:
+#ExtTauIndex: 0 1
+#DummyTauIndex:
 
-#Topology
+# Permutation
  3  2  1  0 
-#Symmetry Factor
+# SymFactor
 1.0
-#Propagator Type
+# GType
 -1 -1 -1 -1
-#Ver Basis
+# VertexBasis
  0  1  2  2 
  2  2  1  0 
-#Loop Basis
+# LoopBasis
  1  0  1  0 
  0  1  1  0 
  1  0  0  1 
  0  0  0  0
  0  0  0  0
  0  0  0  0
-#Ver4 Legs: InLeft OutLeft InRight OutRight
+# Ver4Legs(InL,OutL,InR,OutR)
 1 2 0 3 
-#Interaction Type
+# WType(Direct,Exchange)
  0  0
-#Ver Loop Bases
--1  0 
- 0  1 
- 0 -1 
- 0  0
- 0  0
- 0  0
-#SpinFactor
+# SpinFactor
 -1  1 
 
-#Topology
+# Permutation
  3  2  1  0 
-#Symmetry Factor
+# SymFactor
 -1.0
-#Propagator Type
+# GType
 -1 -1 -1 -1
-#Ver Basis
+# VertexBasis
  0  1  2  2 
  2  2  1  0 
-#Loop Basis
+# LoopBasis
  0  0  0  0
  0  0  0  0
  0  0  0  0
  1  0  1  0 
  0  1  1  0 
  1  0  0  1 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
+# Ver4Legs(InL,OutL,InR,OutR)
 1 2 0 3 
-#Interaction Type
+# WType(Direct,Exchange)
  0  0
-#Ver Loop Bases
- 0  0
- 0  0
- 0  0
--1  0 
- 0  1 
- 0 -1 
-#SpinFactor
+# SpinFactor
 -1  1 

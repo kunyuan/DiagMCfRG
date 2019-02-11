@@ -1,29 +1,32 @@
+#Type: Polarization
 #DiagNum: 1
 #Order: 2
 #GNum: 4
 #Ver4Num: 1
 #LoopNum: 3
-#ExtLoopNum: 1
-#Type: Normal
+#ExtLoopIndex: 0
+#DummyLoopIndex: 
+#TauNum: 3
+#ExtTauIndex: 0 1
+#DummyTauIndex: 
 
-#Topology
+# Permutation
  3  2  1  0 
-#Propagator Type
- 0  0  0  0 
-#Symmetry Factor
+# SymFactor
 -1.0
-# Loop Basis
+# GType
+ 0  0  0  0 
+# VertexBasis
+ 0  1  2  2 
+ 2  2  1  0 
+# LoopBasis
  1  0  1  0 
  0  1  1  0 
  1  0  0  1 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
-1 2 0 3 
-# Interaction Type
- 0  0 
-#Ver Loop Basis
--1  0 
- 0  1 
- 0 -1 
-#SpinFactor
- 4 -2 
+# Ver4Legs(InL,OutL,InR,OutR)
+ 1  2  0  3 |
+# WType(Direct,Exchange)
+ 0  0 |
+# SpinFactor
+ 0 -2 
 

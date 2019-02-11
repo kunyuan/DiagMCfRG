@@ -33,20 +33,6 @@ struct green {
   bool Excited;
 };
 
-struct vertex {
-  // Ver pool to store all basis for interaction lines
-  // There two elements, one for direct interaction, another for exchange
-  // interaction
-  long long int Version;    // keep track of the version
-  array<int, 2> Type;       // type of each vertex function
-  array<loop, 2> LoopBasis; // loop basis for momentum transfer
-  // array<tau, 2> TauBasis;   //tau basis (in and out)
-  tau TauBasis;               // tau basis, In and Out
-  array<double, 2> Weight;    // weight of each green's function
-  array<double, 2> NewWeight; // weight of each green's function
-  array<bool, 2> Excited;     // weight of each green's function
-};
-
 // Ver pool to store all basis for 4-vertex functions
 struct vertex4 {
   long long int Version; // keep track of the version
@@ -64,12 +50,10 @@ struct vertex4 {
 };
 
 struct pool {
-  std::array<green, MaxGPoolSize> GPool;      // array to store indepdent G
-  std::array<vertex, MaxVerPoolSize> VerPool; // array to store indepdent vertex
+  std::array<green, MaxGPoolSize> GPool; // array to store indepdent G
   std::array<vertex4, MaxVerPoolSize>
       Ver4Pool; // array to store indepdent vertex4
   int GPoolSize;
-  int VerPoolSize;
   int Ver4PoolSize;
 };
 
@@ -79,8 +63,7 @@ struct diagram {
   double SymFactor;                       // the symmetry factor of a diagram
   array<double, MaxBranchNum> SpinFactor; // the spin factor of a diagram
   array<green *, 2 * MaxOrder> G;         // the index of all indepdent G
-  array<vertex *, 2 * MaxOrder> Ver;   // the index of all indepdent interaction
-  array<vertex4 *, 2 * MaxOrder> Ver4; // the index of all indepdent 4-vertex
+  array<vertex4 *, 2 * MaxOrder> Ver4;    // the index of all indepdent 4-vertex
   double Weight;
   double NewWeight;
 };
@@ -125,7 +108,6 @@ void Test(group &);
 std::string ToString(const diag::diagram &);
 std::string ToString(const diag::group &);
 std::string ToString(const diag::green &);
-std::string ToString(const diag::vertex &);
 std::string ToString(const diag::vertex4 &);
 
 #endif

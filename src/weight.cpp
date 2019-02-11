@@ -11,7 +11,6 @@ using namespace std;
 
 void weight::ReadDiagrams() {
   Pool.GPoolSize = 0;
-  Pool.VerPoolSize = 0;
   Pool.Ver4PoolSize = 0;
 
   int ID = 0;
@@ -31,7 +30,6 @@ void weight::ReadDiagrams() {
     ID++;
   }
   LOG_INFO("Find " << Pool.GPoolSize << " indepdent green's function.");
-  LOG_INFO("Find " << Pool.VerPoolSize << " indepdent interactions.");
   LOG_INFO("Find " << Pool.Ver4PoolSize << " indepdent 4-vertex.");
 
   // cout << "After read" << endl;
@@ -49,11 +47,6 @@ void weight::Initialization() {
         diag.G[i]->Excited = false;
         diag.G[i]->Version = -1;
         diag.G[i]->Weight = 1.0e-10;
-      }
-      for (int i = 0; i < group.Ver4Num; i++) {
-        diag.Ver[i]->Excited = {false, false};
-        diag.Ver[i]->Version = -1;
-        diag.Ver[i]->Weight = {1.0e-10, 1.0e-10};
       }
       for (int i = 0; i < group.Ver4Num; i++) {
         diag.Ver4[i]->Excited = {false, false};
@@ -140,8 +133,8 @@ void weight::ChangeGroup(group &Group, bool Forced) {
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
       // cout << "Ver: " << i << endl;
+      vertex4 *Ver4 = d.Ver4[i];
       if (Para.UseVer4) {
-        vertex4 *Ver4 = d.Ver4[i];
         if (Forced || Ver4->Version < Var.CurrVersion) {
           Ver4->Excited = {true, true};
           GetMom(Ver4->LoopBasis[INL], Group.LoopNum, _InL);
@@ -150,49 +143,14 @@ void weight::ChangeGroup(group &Group, bool Forced) {
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
           VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, 0,
                           Ver4->NewWeight[DIRECT], Ver4->NewWeight[EXCHANGE]);
-          /************************** Test ****************************/
-          vertex *Ver = d.Ver[i];
-          GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
-          double dirweight = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
-          ASSERT_ALLWAYS(abs(dirweight - Ver4->NewWeight[DIRECT]) < 1.0e-8,
-                         "Step: " << Para.Counter
-                                  << ", direct interaction should be equal."
-                                  << dirweight << " vs "
-                                  << Ver4->NewWeight[DIRECT]);
-          GetMom(Ver->LoopBasis[OUT], Group.LoopNum, _Mom);
-          double exchweight = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
-          ASSERT_ALLWAYS(abs(exchweight - Ver4->NewWeight[EXCHANGE]) < 1.0e-8,
-                         "Step: " << Para.Counter
-                                  << ", exchange interaction should be equal."
-                                  << exchweight << " vs "
-                                  << Ver4->NewWeight[EXCHANGE]);
-
-          /***********  Reducibility Check ******************/
-          if (IsInteractionReducible(Ver4->LoopBasis[INL],
-                                     Ver4->LoopBasis[OUTL], Group.LoopNum)) {
-            Ver4->NewWeight[DIRECT] = 0.0;
-          }
-          if (IsInteractionReducible(Ver4->LoopBasis[INL],
-                                     Ver4->LoopBasis[OUTR], Group.LoopNum)) {
-            Ver4->NewWeight[EXCHANGE] = 0.0;
-          }
         }
       } else {
-        vertex *Ver = d.Ver[i];
-        if (Forced || Ver->Version < Var.CurrVersion) {
-          Ver->Excited = {true, true};
-          if (!IsInteractionReducible(Ver->LoopBasis[IN], Group.LoopNum)) {
-            GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
-            Ver->NewWeight[IN] = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
-          } else {
-            Ver->NewWeight[IN] = 0.0;
-          }
-          if (!IsInteractionReducible(Ver->LoopBasis[OUT], Group.LoopNum)) {
-            GetMom(Ver->LoopBasis[OUT], Group.LoopNum, _Mom);
-            Ver->NewWeight[OUT] = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
-          } else {
-            Ver->NewWeight[OUT] = 0.0;
-          }
+        if (Forced || Ver4->Version < Var.CurrVersion) {
+          Ver4->Excited = {true, true};
+          GetMom(Ver4->IntLoopBasis[IN], Group.LoopNum, _Mom);
+          Ver4->NewWeight[IN] = Bose.Interaction(0.0, _Mom, Ver4->Type[IN]);
+          GetMom(Ver4->IntLoopBasis[OUT], Group.LoopNum, _Mom);
+          Ver4->NewWeight[OUT] = Bose.Interaction(0.0, _Mom, Ver4->Type[OUT]);
         }
       }
     }
@@ -211,8 +169,9 @@ void weight::ChangeMom(group &Group, int MomIndex) {
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
+      vertex4 *Ver4 = d.Ver4[i];
+
       if (Para.UseVer4) {
-        vertex4 *Ver4 = d.Ver4[i];
         if (Ver4->LoopBasis[INL][MomIndex] != 0 ||
             Ver4->LoopBasis[INR][MomIndex] != 0 ||
             Ver4->LoopBasis[OUTL][MomIndex] != 0 ||
@@ -224,51 +183,19 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
           VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, 0,
                           Ver4->NewWeight[DIRECT], Ver4->NewWeight[EXCHANGE]);
-          /************************** Test ****************************/
-          vertex *Ver = d.Ver[i];
-          GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
-          double dirweight = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
-          ASSERT_ALLWAYS(abs(dirweight - Ver4->NewWeight[DIRECT]) < 1.0e-8,
-                         "Step: " << Para.Counter
-                                  << ", direct interaction should be equal."
-                                  << dirweight << " vs "
-                                  << Ver4->NewWeight[DIRECT]);
-          GetMom(Ver->LoopBasis[OUT], Group.LoopNum, _Mom);
-          double exchweight = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
-          ASSERT_ALLWAYS(abs(exchweight - Ver4->NewWeight[EXCHANGE]) < 1.0e-8,
-                         "Step: " << Para.Counter
-                                  << ", exchange interaction should be equal."
-                                  << exchweight << " vs "
-                                  << Ver4->NewWeight[EXCHANGE]);
-          /***********  Reducibility Check ******************/
-          if (IsInteractionReducible(Ver4->LoopBasis[INL],
-                                     Ver4->LoopBasis[OUTL], Group.LoopNum)) {
-            Ver4->NewWeight[DIRECT] = 0.0;
-          }
-          if (IsInteractionReducible(Ver4->LoopBasis[INL],
-                                     Ver4->LoopBasis[OUTR], Group.LoopNum)) {
-            Ver4->NewWeight[EXCHANGE] = 0.0;
-          }
         }
       } else {
-        vertex *Ver = d.Ver[i];
-        if (Ver->LoopBasis[IN][MomIndex] != 0) {
-          Ver->Excited[IN] = true;
-          if (!IsInteractionReducible(Ver->LoopBasis[IN], Group.LoopNum)) {
-            GetMom(Ver->LoopBasis[IN], Group.LoopNum, _Mom);
-            Ver->NewWeight[IN] = Bose.Interaction(0.0, _Mom, Ver->Type[IN]);
-          } else {
-            Ver->NewWeight[IN] = 0.0;
-          }
+        if (Ver4->IntLoopBasis[DIRECT][MomIndex] != 0) {
+          Ver4->Excited[DIRECT] = true;
+          GetMom(Ver4->IntLoopBasis[IN], Group.LoopNum, _Mom);
+          Ver4->NewWeight[DIRECT] =
+              Bose.Interaction(0.0, _Mom, Ver4->Type[DIRECT]);
         }
-        if (Ver->LoopBasis[OUT][MomIndex] != 0) {
-          Ver->Excited[OUT] = true;
-          if (!IsInteractionReducible(Ver->LoopBasis[OUT], Group.LoopNum)) {
-            GetMom(Ver->LoopBasis[OUT], Group.LoopNum, _Mom);
-            Ver->NewWeight[OUT] = Bose.Interaction(0.0, _Mom, Ver->Type[OUT]);
-          } else {
-            Ver->NewWeight[OUT] = 0.0;
-          }
+        if (Ver4->IntLoopBasis[EXCHANGE][MomIndex] != 0) {
+          Ver4->Excited[EXCHANGE] = true;
+          GetMom(Ver4->IntLoopBasis[EXCHANGE], Group.LoopNum, _Mom);
+          Ver4->NewWeight[EXCHANGE] =
+              Bose.Interaction(0.0, _Mom, Ver4->Type[OUT]);
         }
       }
     }
@@ -309,83 +236,50 @@ double weight::GetNewWeight(group &Group) {
     }
 
     double VerWeight;
-    if (Para.UseVer4) {
-      if (Group.Ver4Num == 0) {
-        VerWeight = d.SpinFactor[0];
-        // cout << "spin factor: " << d.SpinFactor[0] << endl;
-      } else {
-        vertex4 *Ver4 = d.Ver4[0];
-
-        _Tree[0][0] = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
-                                            : Ver4->Weight[DIRECT];
-        _Tree[0][1] = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
-                                              : Ver4->Weight[EXCHANGE];
-
-        int BlockNum = 2;
-        for (int level = 1; level < Group.Ver4Num; level++) {
-
-          vertex4 *Ver4 = d.Ver4[level];
-          VIn = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
-                                      : Ver4->Weight[DIRECT];
-          VOut = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
-                                         : Ver4->Weight[EXCHANGE];
-
-          for (int j = 0; j < BlockNum; j++) {
-            _Tree[level][2 * j] = _Tree[level - 1][j] * VIn;
-            _Tree[level][2 * j + 1] = _Tree[level - 1][j] * VOut;
-          }
-          BlockNum *= 2;
-        }
-
-        VerWeight = 0.0;
-        for (int j = 0; j < BlockNum; j++)
-          VerWeight += _Tree[Group.Ver4Num - 1][j] * d.SpinFactor[j];
-      }
+    if (Group.Ver4Num == 0) {
+      VerWeight = d.SpinFactor[0];
+      // cout << "spin factor: " << d.SpinFactor[0] << endl;
     } else {
-      if (Group.Ver4Num == 0) {
-        VerWeight = d.SpinFactor[0];
-        // cout << "spin factor: " << d.SpinFactor[0] << endl;
-      } else {
+      vertex4 *Ver4 = d.Ver4[0];
 
-        vertex *Ver = d.Ver[0];
-        _Tree[0][0] = Ver->Excited[IN] ? Ver->NewWeight[IN] : Ver->Weight[IN];
-        _Tree[0][1] =
-            Ver->Excited[OUT] ? Ver->NewWeight[OUT] : Ver->Weight[OUT];
+      _Tree[0][0] = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
+                                          : Ver4->Weight[DIRECT];
+      _Tree[0][1] = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
+                                            : Ver4->Weight[EXCHANGE];
 
-        int BlockNum = 2;
-        for (int level = 1; level < Group.Ver4Num; level++) {
+      int BlockNum = 2;
+      for (int level = 1; level < Group.Ver4Num; level++) {
 
-          vertex *Ver = d.Ver[level];
-          VIn = Ver->Excited[IN] ? Ver->NewWeight[IN] : Ver->Weight[IN];
-          VOut = Ver->Excited[OUT] ? Ver->NewWeight[OUT] : Ver->Weight[OUT];
+        vertex4 *Ver4 = d.Ver4[level];
+        VIn = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
+                                    : Ver4->Weight[DIRECT];
+        VOut = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
+                                       : Ver4->Weight[EXCHANGE];
 
-          for (int j = 0; j < BlockNum; j++) {
-            _Tree[level][2 * j] = _Tree[level - 1][j] * VIn;
-            _Tree[level][2 * j + 1] = _Tree[level - 1][j] * VOut;
-          }
-          BlockNum *= 2;
+        for (int j = 0; j < BlockNum; j++) {
+          _Tree[level][2 * j] = _Tree[level - 1][j] * VIn;
+          _Tree[level][2 * j + 1] = _Tree[level - 1][j] * VOut;
         }
-
-        // cout << BlockNum << endl;
-        // cout << d.SpinFactor[0] << ", " << d.SpinFactor[1] << endl;
-
-        VerWeight = 0.0;
-        for (int j = 0; j < BlockNum; j++)
-          VerWeight += _Tree[Group.Ver4Num - 1][j] * d.SpinFactor[j];
-
-        //============= for spin case ===========================//
-
-        // double TempWeightIn, TempWeightOut;
-        // for (int i = 0; i < Group.Ver4Num; i++) {
-        //   //=========== for spinless case ===========================//
-        //   vertex *Ver = d.Ver[i];
-        //   TempWeightIn =
-        //       Ver->Excited[IN] ? Ver->NewWeight[IN] : Ver->Weight[IN];
-        //   TempWeightOut =
-        //       Ver->Excited[OUT] ? Ver->NewWeight[OUT] : Ver->Weight[OUT];
-        //   VerWeight *= TempWeightIn - TempWeightOut;
+        BlockNum *= 2;
       }
+
+      VerWeight = 0.0;
+      for (int j = 0; j < BlockNum; j++)
+        VerWeight += _Tree[Group.Ver4Num - 1][j] * d.SpinFactor[j];
+
+      //============= for spin case ===========================//
+
+      // double TempWeightIn, TempWeightOut;
+      // for (int i = 0; i < Group.Ver4Num; i++) {
+      //   //=========== for spinless case ===========================//
+      //   vertex *Ver4 = d.Ver4[i];
+      //   TempWeightIn =
+      //       Ver4->Excited[IN] ? Ver4->NewWeight[IN] : Ver4->Weight[IN];
+      //   TempWeightOut =
+      //       Ver4->Excited[OUT] ? Ver4->NewWeight[OUT] : Ver4->Weight[OUT];
+      //   VerWeight *= TempWeightIn - TempWeightOut;
     }
+
     d.NewWeight = GWeight * VerWeight / pow(2 * PI, D * Group.InternalLoopNum);
 
     // Group Weight= sum of all diagram weight in the group
@@ -409,30 +303,18 @@ void weight::AcceptChange(group &Group) {
         G->Weight = G->NewWeight;
       }
     }
-    for (int i = 0; i < Group.Ver4Num; i++)
-      if (Para.UseVer4) {
-        vertex4 *Ver4 = d.Ver4[i];
-        Ver4->Version = Var.CurrVersion;
-        if (Ver4->Excited[DIRECT]) {
-          Ver4->Excited[DIRECT] = false;
-          Ver4->Weight[DIRECT] = Ver4->NewWeight[DIRECT];
-        }
-        if (Ver4->Excited[EXCHANGE]) {
-          Ver4->Excited[EXCHANGE] = false;
-          Ver4->Weight[EXCHANGE] = Ver4->NewWeight[EXCHANGE];
-        }
-      } else {
-        vertex *Ver = d.Ver[i];
-        Ver->Version = Var.CurrVersion;
-        if (Ver->Excited[IN]) {
-          Ver->Excited[IN] = false;
-          Ver->Weight[IN] = Ver->NewWeight[IN];
-        }
-        if (Ver->Excited[OUT]) {
-          Ver->Excited[OUT] = false;
-          Ver->Weight[OUT] = Ver->NewWeight[OUT];
-        }
+    for (int i = 0; i < Group.Ver4Num; i++) {
+      vertex4 *Ver4 = d.Ver4[i];
+      Ver4->Version = Var.CurrVersion;
+      if (Ver4->Excited[DIRECT]) {
+        Ver4->Excited[DIRECT] = false;
+        Ver4->Weight[DIRECT] = Ver4->NewWeight[DIRECT];
       }
+      if (Ver4->Excited[EXCHANGE]) {
+        Ver4->Excited[EXCHANGE] = false;
+        Ver4->Weight[EXCHANGE] = Ver4->NewWeight[EXCHANGE];
+      }
+    }
   }
 }
 
@@ -442,17 +324,10 @@ void weight::RejectChange(group &Group) {
       if (d.G[i]->Excited)
         d.G[i]->Excited = false;
       for (int i = 0; i < Group.Ver4Num; i++) {
-        if (Para.UseVer4) {
-          if (d.Ver4[i]->Excited[0])
-            d.Ver4[i]->Excited[0] = false;
-          if (d.Ver4[i]->Excited[1])
-            d.Ver4[i]->Excited[1] = false;
-        } else {
-          if (d.Ver[i]->Excited[0])
-            d.Ver[i]->Excited[0] = false;
-          if (d.Ver[i]->Excited[1])
-            d.Ver[i]->Excited[1] = false;
-        }
+        if (d.Ver4[i]->Excited[0])
+          d.Ver4[i]->Excited[0] = false;
+        if (d.Ver4[i]->Excited[1])
+          d.Ver4[i]->Excited[1] = false;
       }
     }
   }
@@ -486,16 +361,16 @@ bool weight::IsInteractionReducible(loop &LoopBasisVer, int LoopNum) {
   return Flag;
 };
 
-bool weight::IsInteractionReducible(loop &LoopBasisVer1, loop &LoopBasisVer2,
+bool weight::IsInteractionReducible(loop &LoopBasisG1, loop &LoopBasisG2,
                                     int LoopNum) {
   // check if an interaction is reducible
-  if ((!Equal(LoopBasisVer1[0] - LoopBasisVer2[0], 1.0)) &&
-      (!Equal(LoopBasisVer1[0] - LoopBasisVer2[0], -1.0)))
+  if ((!Equal(LoopBasisG1[0] - LoopBasisG2[0], 1.0)) &&
+      (!Equal(LoopBasisG1[0] - LoopBasisG2[0], -1.0)))
     return false;
 
   bool Flag = true;
   for (int i = 1; i < LoopNum; i++) {
-    if (!Equal(LoopBasisVer1[i] - LoopBasisVer2[i], 0.0)) {
+    if (!Equal(LoopBasisG1[i] - LoopBasisG2[i], 0.0)) {
       Flag = false;
       break;
     }

@@ -1,25 +1,25 @@
 #Type: RG
-#DiagNum:    3
-#DiagOrder:  2
+#DiagNum:    6
+#Order:  2
 #GNum: 6
 #Ver4Num: 2
 #LoopNum: 7
-#ExtLoop: 0
-#DummyLoop: 3 4 5
+#ExtLoopIndex: 0
+#DummyLoopIndex: 3 4 5
 #TauNum: 4
-#ExtTau: 0 1
-#DummyTau:
+#ExtTauIndex: 0 1
+#DummyTauIndex:
 
-# Topology
+# Permutation
  4  3  1  5  2  0 
-# Symmetry Factor
+# SymFactor
 -1.0
-# Propagator Type
+# GType
 -1 -1 -1  0  0 -1
-# Ver Basis
+# VertexBasis
  0  1  2  2  3  3
  3  2  1  3  2  0
-# Loop Basis
+# LoopBasis
  1  0  1  0  1  0 
  0  1  1  0  0  0 
  1  0  0  0  0  1 
@@ -27,31 +27,23 @@
  0  0  0  0  0  0
  0  0  0  0  0  0
  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
+# Ver4Legs(InL,OutL,InR,OutR)
 4 2 1 3 0 4 3 5 
-# Interaction Type
+# WType(Direct,Exchange)
  0  0  0  0
-#Ver Loop Bases
- 0  1  0  1 
--1  0  0  0 
- 0  0  1  0 
- 0  0  0  0
- 0  0  0  0
- 0  0  0  0
- 1  0 -1  0 
-#SpinFactor
+# SpinFactor
  1 -1 -1  1 
 
-# Topology
+# Permutation
  3  2  5  4  1  0 
-# Symmetry Factor
+# SymFactor
 -0.5
-# Propagator Type
+# GType
 -1 -1  0  0 -1 -1
-# Ver Basis
+# VertexBasis
  0  1  2  2  3  3
  2  2  3  3  1  0
-# Loop Bases
+# LoopBasis
  1  0  1  0  1  0 
  0  1  1  0  1  0 
  1  0  1  0  0  1 
@@ -59,31 +51,23 @@
  0  0  0  0  0  0
  0  0  0  0  0  0
  0  0 -1  1  0  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
+# Ver4Legs(InL,OutL,InR,OutR)
 1 2 0 3 3 4 2 5 
-# Interaction Type
+# WType(Direct,Exchange)
  0  0  0  0
-#Ver Loop Bases
--1  0 -1  0 
- 0  1 -1  0 
--1  0  0 -1 
- 0  0  0  0
- 0  0  0  0
- 0  0  0  0
- 1 -1  1  1 
-#SpinFactor
+# SpinFactor
  1 -1 -1  1 
 
-# Topology
+# Permutation
  4  2  5  0  1  3 
-# Symmetry Factor
+# SymFactor
 -1.0
-# Propagator Type
+# GType
 -1 -1  0 -1 -1  0
-# Ver Basis
+# VertexBasis
  0  1  2  2  3  3
  3  2  3  0  1  2
-# Loop Bases
+# LoopBasis
  1  0  0  0  1  0 
  0  1  0  0  1 -1 
  1  0  0  1  0  1 
@@ -91,31 +75,23 @@
  0  0  0  0  0  0
  0  0  0  0  0  0
  0  0  1  0  0  1 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
+# Ver4Legs(InL,OutL,InR,OutR)
 1 2 5 3 0 4 2 5 
-# Interaction Type
+# WType(Direct,Exchange)
  0  0  0  0
-#Ver Loop Bases
- 0  0  0  1 
- 1  1 -1  1 
- 0 -1  1  0 
- 0  0  0  0
- 0  0  0  0
- 0  0  0  0
--1  0  0 -1 
 #SpinFactor
  1 -1 -1  1 
 
-# Topology
+# Permutation
  4  3  1  5  2  0 
-# Symmetry Factor
+# SymFactor
  1.0
-# Propagator Type
+# GType
 -1 -1 -1  0  0 -1
-# Ver Basis
+# VertexBasis
  0  1  2  2  3  3
  3  2  1  3  2  0
-# Loop Bases
+# LoopBasis
  0  0  0  0  0  0
  0  0  0  0  0  0
  0  0  0  0  0  0
@@ -123,31 +99,23 @@
  0  1  1  0  0  0 
  1  0  0  0  0  1 
  0  0  0  1  1  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
+# Ver4Legs(InL,OutL,InR,OutR)
 4 2 1 3 0 4 3 5 
-# Interaction Type
+# WType(Direct,Exchange)
  0  0  0  0
-#Ver Loop Bases
- 0  0  0  0
- 0  0  0  0
- 0  0  0  0
- 0  1  0  1 
--1  0  0  0 
- 0  0  1  0 
- 1  0 -1  0 
 #SpinFactor
  1 -1 -1  1 
 
-# Topology
+# Permutation
  3  2  5  4  1  0 
-# Symmetry Factor
+# SymFactor
 -0.5
-# Propagator Type
+# GType
 -1 -1  0  0 -1 -1
-# Ver Basis
+# VertexBasis
  0  1  2  2  3  3
  2  2  3  3  1  0
-# Loop Bases
+# LoopBasis
  0  0  0  0  0  0
  0  0  0  0  0  0
  0  0  0  0  0  0
@@ -155,31 +123,23 @@
  0  1  1  0  1  0 
  1  0  1  0  0  1 
  0  0 -1  1  0  0 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
+# Ver4Legs(InL,OutL,InR,OutR)
 1 2 0 3 3 4 2 5 
-# Interaction Type
+# WType(Direct,Exchange)
  0  0  0  0
-#Ver Loop Bases
- 0  0  0  0
- 0  0  0  0
- 0  0  0  0
--1  0 -1  0 
- 0  1 -1  0 
--1  0  0 -1 
- 1 -1  1  1 
-#SpinFactor
+# SpinFactor
  1 -1 -1  1 
 
-# Topology
+# Permutation
  4  2  5  0  1  3 
-# Symmetry Factor
+# SymFactor
  1.0
-# Propagator Type
+# GType
 -1 -1  0 -1 -1  0
-# Ver Basis
+# VertexBasis
  0  1  2  2  3  3
  3  2  3  0  1  2
-# Loop Bases
+# LoopBasis
  0  0  0  0  0  0
  0  0  0  0  0  0
  0  0  0  0  0  0
@@ -187,17 +147,9 @@
  0  1  0  0  1 -1 
  1  0  0  1  0  1 
  0  0  1  0  0  1 
-#Ver4 Legs: InLeft OutLeft InRight OutRight
+# Ver4Legs(InL,OutL,InR,OutR)
 1 2 5 3 0 4 2 5 
-# Interaction Type
+# WType(Direct,Exchange)
  0  0  0  0
-#Ver Loop Bases
- 0  0  0  0
- 0  0  0  0
- 0  0  0  0
- 0  0  0  1 
- 1  1 -1  1 
- 0 -1  1  0 
--1  0  0 -1 
-#SpinFactor
+# SpinFactor
  1 -1 -1  1 

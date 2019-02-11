@@ -72,8 +72,8 @@ void markov::PrintDeBugMCInfo() {
 
   msg += "VerWeight: \n";
   for (int i = 0; i < Var.CurrGroup->Ver4Num; i++) {
-    msg += ToString(Var.CurrGroup->Diag[0].Ver[i]->Weight[0]) + ", ";
-    msg += ToString(Var.CurrGroup->Diag[0].Ver[i]->Weight[1]) + "; ";
+    msg += ToString(Var.CurrGroup->Diag[0].Ver4[i]->Weight[0]) + ", ";
+    msg += ToString(Var.CurrGroup->Diag[0].Ver4[i]->Weight[1]) + "; ";
   }
   msg += "\n";
 

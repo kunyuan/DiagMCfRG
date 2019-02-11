@@ -56,11 +56,6 @@ private:
   } NewG;
   struct {
     int Num;
-    array<double, MaxVer4Num * 2> Weight;
-    array<vertex *, MaxVer4Num * 2> Index;
-  } NewVer;
-  struct {
-    int Num;
     array<double, MaxVer4Num> Weight;
     array<vertex4 *, MaxVer4Num> Index;
   } NewVer4;
