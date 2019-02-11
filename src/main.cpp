@@ -54,6 +54,9 @@ void InitPara() {
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 
+  // Para.InterType=YOKAWAR;
+  Para.InterType = PWAVE_ON_EF;
+
   //// initialize the global parameter //////////////////////
   double Kf;
   if (D == 3) {
@@ -70,8 +73,13 @@ void InitPara() {
 
   // scale all energy with E_F
   Para.Beta /= Para.Ef;
-  Para.UVScale = 8.0 * Para.Ef;
   Para.UVCoupling = 1.0 * Para.Ef;
+  Para.UVScale = 8.0 * Para.Kf;
+
+  Para.Scales[0] = Para.UVScale;
+  for (int i = 1; i < ScaleBinSize; ++i) {
+    Para.Scales[i] = Para.Scales[i - 1] / 2.0;
+  }
 
   LOG_INFO("Inverse Temperature: " << Para.Beta << "\n"
                                    << "UV Energy Scale: " << Para.UVScale

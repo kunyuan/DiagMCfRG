@@ -64,6 +64,13 @@ public:
     return v;
   }
 
+  Vec operator/(const double &x) const {
+    Vec v;
+    for (int j = 0; j < D; ++j)
+      v[j] = _Array[j] / x;
+    return v;
+  }
+
   Vec operator+(const Vec &v2) const {
     Vec v;
     for (int j = 0; j < D; j++)

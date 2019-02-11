@@ -99,8 +99,8 @@ double fermi::BuildFockSigma() {
   }
 };
 
-double fermi::FockSigma(const momentum &Mom) {
-  double k = Mom.norm(); // bare propagator
+double fermi::FockSigma(double k) {
+  // double k = Mom.norm(); // bare propagator
   double fock;
   if (k >= LowerBound2 && k < UpperBound2) {
     int i = (k - LowerBound2) / DeltaK2;
@@ -122,7 +122,7 @@ double fermi::FockSigma(const momentum &Mom) {
 
 double fermi::PhyGreen(double Tau, const momentum &Mom) {
   // if tau is exactly zero, set tau=0^-
-  double green, Ek;
+  double green, Ek, KK;
   if (Tau == 0.0) {
     return EPS;
   }
@@ -136,18 +136,19 @@ double fermi::PhyGreen(double Tau, const momentum &Mom) {
     s = -s;
   }
 
-  if (Para.SelfEnergyType == BARE)
-    Ek = Mom.squaredNorm(); // bare propagator
-  else if (Para.SelfEnergyType == FOCK)
-    Ek = FockSigma(Mom); // Fock diagram dressed propagator
-  else
-    ABORT("Green function is not implemented!");
+  KK = Mom.norm();
 
   //// enforce an UV cutoff for the Green's function ////////
-  // if(Ek>8.0*EF) then
-  //   PhyGreen=0.0
-  //   return
-  // endif
+  if (KK < Para.UVScale) {
+    return 0.0;
+  }
+
+  if (Para.SelfEnergyType == BARE)
+    Ek = KK * KK; // bare propagator
+  else if (Para.SelfEnergyType == FOCK)
+    Ek = FockSigma(KK); // Fock diagram dressed propagator
+  else
+    ABORT("Green function is not implemented!");
 
   double x = Para.Beta * (Ek - Para.Mu) / 2.0;
   double y = 2.0 * Tau / Para.Beta - 1.0;
@@ -209,28 +210,55 @@ verfunc::verfunc() {
   _TestAngleIndex();
 
   // initialize UV ver4 table
-  momentum KInL = {1.0, 0.0};
-  for (int inin = 0; inin < InInAngBinSize; ++inin)
-    for (int inout = 0; inout < InOutAngBinSize; ++inout) {
-      double AngleInIn = Index2Angle(inin, InInAngBinSize);
-      double AngleInOut = Index2Angle(inout, InOutAngBinSize);
-      momentum KInR = {cos(AngleInIn), sin(AngleInIn)};
-      momentum KOutL = {cos(AngleInOut), sin(AngleInOut)};
-      momentum KOutR = KInL + KInR - KOutL;
-      Ver4AtUV[inin][inout] = (KInL - KInR).dot(KOutL - KOutR);
-    }
+  if (Para.InterType == PWAVE_ON_EF) {
+    momentum KInL = {1.0, 0.0};
+    for (int scale = 0; scale < ScaleBinSize; scale++)
+      for (int inin = 0; inin < InInAngBinSize; ++inin)
+        for (int inout = 0; inout < InOutAngBinSize; ++inout) {
+          double AngleInIn = Index2Angle(inin, InInAngBinSize);
+          double AngleInOut = Index2Angle(inout, InOutAngBinSize);
+          momentum KInR = {cos(AngleInIn), sin(AngleInIn)};
+          momentum KOutL = {cos(AngleInOut), sin(AngleInOut)};
+          momentum KOutR = KInL + KInR - KOutL;
+
+          ASSERT_ALLWAYS(abs(Angle2D(KInL, KInR) - AngleInIn) < 1.e-2,
+                         fmt::format("Angle different! {0} vs {1} ",
+                                     Angle2D(KInL, KInR), AngleInIn));
+          ASSERT_ALLWAYS(abs(Angle2D(KInL, KOutL) - AngleInOut) < 1.e-2,
+                         fmt::format("Angle different! {0} vs {1} ",
+                                     Angle2D(KInL, KOutL), AngleInOut));
+
+          Ver4AtUV[scale][inin][inout] =
+              Para.UVCoupling * (KInL - KInR).dot(KOutL - KOutR);
+        }
+  }
 }
 
-void verfunc::Vertex4(const momentum &InL, const momentum &InR,
-                      const momentum &OutL, const momentum &OutR,
-                      int Ver4TypeDirect, int Ver4TypeExchange, double &Direct,
-                      double &Exchange) {
+void verfunc::Vertex4(double &Direct, double &Exchange, const momentum &InL,
+                      const momentum &InR, const momentum &OutL,
+                      const momentum &OutR, int Ver4TypeDirect,
+                      int Ver4TypeExchange, int Scale) {
   if (Ver4TypeDirect != 0 || Ver4TypeExchange != 0)
     ABORT("Ver4Type is only implemented for 0!");
 
   /**************   Yokawar Interaction ************************/
-  Direct = 8.0 * PI / ((OutL - InL).squaredNorm() + Para.Mass2);
-  Exchange = 8.0 * PI / ((OutR - InL).squaredNorm() + Para.Mass2);
+  if (Para.InterType == YOKAWAR) {
+    Direct = 8.0 * PI / ((OutL - InL).squaredNorm() + Para.Mass2);
+    Exchange = 8.0 * PI / ((OutR - InL).squaredNorm() + Para.Mass2);
+  } else if (Para.InterType == PWAVE_ON_EF) {
+    double AngleInIn = Angle2D(InL, InR);
+    double AngleInOut = Angle2D(InL, OutL);
+    int InInIndex = Angle2Index(AngleInIn, InInAngBinSize);
+    int InOutIndex = Angle2Index(AngleInOut, InOutAngBinSize);
+
+    Direct = Ver4AtUV[Scale][InInIndex][InOutIndex];
+
+    Exchange = Direct;
+    // Note that InL/|InL|, InR/|InR|, OutL/|OutL|, OutR/|OutR| do not obey
+    // conservation law!
+  } else {
+    ABORT("Interaction Type is not implemented!");
+  }
 
   /**************   Generic Interaction ************************/
 }
@@ -267,6 +295,13 @@ void verfunc::_TestAngle2D() {
   ASSERT_ALLWAYS(
       abs(Angle2D(K1, K2)) < 1.e-7,
       fmt::format("Angle between K1 and K2 are not zero! It is {:.13f}",
+                  Angle2D(K1, K2)));
+
+  K1 = {1.0, 0.0};
+  K2 = {0.0, 1.0};
+  ASSERT_ALLWAYS(
+      abs(Angle2D(K1, K2) - PI / 2.0) < 1.e-7,
+      fmt::format("Angle between K1 and K2 are not Pi! Instead, it is {:.13f}",
                   Angle2D(K1, K2)));
 
   K1 = {1.0, 0.0};

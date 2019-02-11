@@ -1,8 +1,8 @@
 #ifndef vertex_H
 #define vertex_H
 
-// #include "utility/vector.h"
 #include "global.h"
+#include "utility/vector.h"
 
 double sum2(const momentum &);
 double norm2(const momentum &);
@@ -22,7 +22,7 @@ private:
   double UpperBound2, LowerBound2; // lower upbound for better sigma
   double DeltaK2;
   double PhyGreen(double Tau, const momentum &Mom);
-  double FockSigma(const momentum &Mom);
+  double FockSigma(double KK);
   double BuildFockSigma();
   double Fock(double k);
   // warning: this function only works for T=0 and 3D!!!!
@@ -39,12 +39,12 @@ public:
 class verfunc {
 public:
   verfunc();
-  void Vertex4(const momentum &InL, const momentum &InR, const momentum &OutL,
-               const momentum &OutR, int Ver4TypeDirect, int Ver4TypeExchange,
-               double &Direct, double &Exchange);
+  void Vertex4(double &Direct, double &Exchange, const momentum &InL,
+               const momentum &InR, const momentum &OutL, const momentum &OutR,
+               int Ver4TypeDirect, int Ver4TypeExchange, int Scale = 0);
 
 private:
-  double Ver4AtUV[InInAngBinSize][InOutAngBinSize];
+  double Ver4AtUV[ScaleBinSize][InInAngBinSize][InOutAngBinSize];
   double Angle2D(const momentum &K1, const momentum &K2);
   double Index2Angle(const int &Index, const int &AngleNum);
   int Angle2Index(const double &Angle, const int &AngleNum);

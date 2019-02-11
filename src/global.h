@@ -2,6 +2,7 @@
 #define FeynCalc_global_h
 
 #include "utility/vector.h"
+#include <array>
 #include <math.h>
 #include <string>
 #include <vector>
@@ -14,8 +15,13 @@ const bool DEBUGMODE = true;
 // array.h
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
+enum intertype { YOKAWAR, PWAVE_ON_EF }; // interaction type
 enum type { RG, POLAR };
 enum obstype { FREQ, EQUALTIME };
+
+// number of energy scales, only useful in RG approach
+const int ScaleBinSize = 8;
+
 /////////// Global Parameter ////////////////////
 struct parameter {
   // physical parameters
@@ -30,6 +36,7 @@ struct parameter {
 
   // MC inputs
   type Type;             // polarization, RG
+  intertype InterType;   // type of interaction
   obstype ObsType;       // 0: static polarization, 1: equal-time polarization
   bool UseVer4;          // use vertex4 to calculate weight or not
   int TotalStep;         // total steps of the Monte Carlo
@@ -39,6 +46,9 @@ struct parameter {
   int Sweep;             // how many MC steps between two measuring
   std::vector<std::string> GroupName; // ID for each group
   std::vector<double> ReWeight;       // reweight factor for each group
+
+  // RG
+  array<double, ScaleBinSize> Scales; // energy scales in RG
 
   // others
   int PrinterTimer;  // how many seconds between to printing to screen
@@ -54,11 +64,9 @@ const int D = 2;
 // number of q bins of the external momentum
 const int ExtMomBinSize = 64;
 // number of bins for the angle between InL and InR legs
-const int InInAngBinSize = 32;
+const int InInAngBinSize = 128;
 // number of bins for the angle between InL and OutL legs
-const int InOutAngBinSize = 32;
-// number of energy scales, only useful in RG approach
-const int ScaleBinSize = 32;
+const int InOutAngBinSize = 128;
 
 //////////   Diagram  ////////////////////////////
 const int MaxOrder = 8;        // Max diagram order

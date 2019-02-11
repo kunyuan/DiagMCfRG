@@ -101,6 +101,8 @@ void weight::Initialization() {
 
   // initialize group
 
+  Var.CurrScale = 0;
+
   Var.CurrVersion = 0;
   //   Var.CurrGroup = &Groups[0];
 
@@ -141,8 +143,8 @@ void weight::ChangeGroup(group &Group, bool Forced) {
           GetMom(Ver4->LoopBasis[OUTL], Group.LoopNum, _OutL);
           GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
-          VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, 0,
-                          Ver4->NewWeight[DIRECT], Ver4->NewWeight[EXCHANGE]);
+          VerFunc.Vertex4(Ver4->NewWeight[DIRECT], Ver4->NewWeight[EXCHANGE],
+                          _InL, _InR, _OutL, _OutR, 0, 0, Var.CurrScale);
         }
       } else {
         if (Forced || Ver4->Version < Var.CurrVersion) {
@@ -181,8 +183,8 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           GetMom(Ver4->LoopBasis[OUTL], Group.LoopNum, _OutL);
           GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
           GetMom(Ver4->LoopBasis[OUTR], Group.LoopNum, _OutR);
-          VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, 0,
-                          Ver4->NewWeight[DIRECT], Ver4->NewWeight[EXCHANGE]);
+          VerFunc.Vertex4(Ver4->NewWeight[DIRECT], Ver4->NewWeight[EXCHANGE],
+                          _InL, _InR, _OutL, _OutR, 0, 0, Var.CurrScale);
         }
       } else {
         if (Ver4->IntLoopBasis[DIRECT][MomIndex] != 0) {

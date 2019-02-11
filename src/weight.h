@@ -12,6 +12,7 @@ using namespace std;
 struct variable {
   group *CurrGroup;
   long int CurrVersion;
+  int CurrScale;
   int CurrExtMomBin;                   // current bin of the external momentum
   double CurrTau;                      // current external tau
   array<momentum, MaxLoopNum> LoopMom; // all momentum loop variables
