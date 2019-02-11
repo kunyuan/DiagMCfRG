@@ -299,6 +299,10 @@ double weight::GetNewWeight(group &Group) {
     // Group Weight= sum of all diagram weight in the group
     Group.NewWeight += d.NewWeight;
   }
+  if (Para.Type == RG) {
+    Group.NewWeight *=
+        1.0 / (Para.Scales[Var.CurrScale] - Para.Scales[Var.CurrScale + 1]);
+  }
   return Group.NewWeight;
 }
 

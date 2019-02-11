@@ -36,6 +36,8 @@ markov::markov() : Var(Weight.Var), Groups(Weight.Groups) {
   UpdatesName[CHANGE_GROUP] = NAME(CHANGE_GROUP);
   UpdatesName[CHANGE_MOM] = NAME(CHANGE_MOM);
   UpdatesName[CHANGE_TAU] = NAME(CHANGE_TAU);
+  UpdatesName[ROTATE_EXTK] = NAME(ROTATE_EXTK);
+  UpdatesName[CHANGE_SCALE] = NAME(CHANGE_SCALE);
 
   // for(int i=0;i<MCUpdates;i++)
   // UpdatesName[(Updates)i]=NAME((Updates))
@@ -258,12 +260,15 @@ void markov::ChangeMomentum() {
   CurrMom = Var.LoopMom[LoopIndex];
 
   if (Var.CurrGroup->IsExtLoop[LoopIndex]) {
-    Prop = ShiftExtK(Var.CurrExtMomBin, NewExtMomBin);
-    Var.LoopMom[LoopIndex] = Var.ExtMomTable[NewExtMomBin];
-    if (Var.LoopMom[LoopIndex].norm() > Para.MaxExtMom) {
-      Var.LoopMom[LoopIndex] = CurrMom;
+    if (Para.Type == POLAR) {
+      Prop = ShiftExtK(Var.CurrExtMomBin, NewExtMomBin);
+      Var.LoopMom[LoopIndex] = Var.ExtMomTable[NewExtMomBin];
+      if (Var.LoopMom[LoopIndex].norm() > Para.MaxExtMom) {
+        Var.LoopMom[LoopIndex] = CurrMom;
+        return;
+      }
+    } else
       return;
-    }
   } else {
     Prop = ShiftK(CurrMom, Var.LoopMom[LoopIndex], Var.CurrScale);
   }
@@ -281,6 +286,90 @@ void markov::ChangeMomentum() {
     Weight.RejectChange(*Var.CurrGroup);
   }
 };
+
+void markov::ChangeScale() {
+  // for RG only
+  if (Para.Type != RG)
+    return;
+
+  int NewScale;
+  if (Random.urn() < 0.5)
+    NewScale = Var.CurrScale - 1;
+  else
+    NewScale = Var.CurrScale + 1;
+
+  if (NewScale < 0 || NewScale >= ScaleBinSize)
+    return;
+
+  double Prop = 1.0;
+  for (int i = 0; i < 3; i++) {
+    Var.LoopMom[i] *= Para.Scales[NewScale] / Para.Scales[Var.CurrScale];
+    Var.LoopMom[i + 3] *=
+        Para.Scales[NewScale + 1] / Para.Scales[Var.CurrScale + 1];
+  }
+
+  Proposed[CHANGE_SCALE][Var.CurrGroup->ID]++;
+
+  // Weight.ChangeMom(*Var.CurrGroup, LoopIndex, LoopIndex + 3);
+  // force to change the entire group, not efficient
+  // TODO: improve the efficiency
+  Weight.ChangeGroup(*Var.CurrGroup, true);
+  double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
+  if (Random.urn() < R) {
+    Var.CurrScale = NewScale;
+    Accepted[CHANGE_SCALE][Var.CurrGroup->ID]++;
+    Weight.AcceptChange(*Var.CurrGroup);
+  } else {
+    for (int i = 0; i < 3; i++) {
+      Var.LoopMom[i] *= Para.Scales[Var.CurrScale] / Para.Scales[NewScale];
+      Var.LoopMom[i + 3] *=
+          Para.Scales[Var.CurrScale + 1] / Para.Scales[NewScale + 1];
+    }
+    Weight.RejectChange(*Var.CurrGroup);
+  }
+};
+
+void markov::RotateExtMom() {
+  // for RG only
+  if (Para.Type != RG)
+    return;
+  int LoopIndex = Random.irn(0, Var.CurrGroup->LoopNum - 1);
+  // if loopIndex is a locked loop, skip
+  if (Var.CurrGroup->IsLockedLoop[LoopIndex])
+    return;
+
+  if (Var.CurrGroup->IsExtLoop[LoopIndex] == false)
+    return;
+
+  static momentum CurrMom;
+
+  CurrMom = Var.LoopMom[LoopIndex];
+
+  double Prop = GetNewExtK(Var.LoopMom[LoopIndex], Var.CurrScale);
+  Var.LoopMom[LoopIndex + 3] =
+      Var.LoopMom[LoopIndex] *
+      (Para.Scales[Var.CurrScale + 1] / Para.Scales[Var.CurrScale]);
+
+  Proposed[ROTATE_EXTK][Var.CurrGroup->ID]++;
+
+  // Weight.ChangeMom(*Var.CurrGroup, LoopIndex, LoopIndex + 3);
+  // force to change the entire group, not efficient
+  // TODO: improve the efficiency
+  Weight.ChangeGroup(*Var.CurrGroup, true);
+  double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
+  if (Random.urn() < R) {
+    Accepted[ROTATE_EXTK][Var.CurrGroup->ID]++;
+    Weight.AcceptChange(*Var.CurrGroup);
+  } else {
+    Var.LoopMom[LoopIndex] = CurrMom;
+    Var.LoopMom[LoopIndex + 3] =
+        Var.LoopMom[LoopIndex] *
+        (Para.Scales[Var.CurrScale + 1] / Para.Scales[Var.CurrScale]);
+    Weight.RejectChange(*Var.CurrGroup);
+  }
+}
 
 double markov::GetNewTau(double &NewTau) {
   NewTau = Random.urn() * Para.Beta;
@@ -351,6 +440,14 @@ double markov::RemoveOldK(momentum &OldMom, int Scale) {
   // return 1.0 / pow(2.0 * Para.Kf, D);
   //============================================//
 }
+
+double markov::GetNewExtK(momentum &NewMom, int Scale) {
+  double theta = Random.urn() * 2.0 * PI;
+  NewMom = 0.0;
+  NewMom[0] = Para.Scales[Scale] * cos(theta);
+  NewMom[1] = Para.Scales[Scale] * sin(theta);
+  return 1.0;
+};
 
 double markov::ShiftK(const momentum &OldMom, momentum &NewMom, int Scale) {
   double x = Random.urn();

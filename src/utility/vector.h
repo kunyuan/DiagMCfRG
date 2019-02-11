@@ -64,6 +64,18 @@ public:
     return v;
   }
 
+  Vec operator*=(const double &x) {
+    for (int j = 0; j < D; ++j)
+      _Array[j] *= x;
+    return _Array;
+  }
+
+  Vec operator/=(const double &x) {
+    for (int j = 0; j < D; ++j)
+      _Array[j] /= x;
+    return _Array;
+  }
+
   Vec operator/(const double &x) const {
     Vec v;
     for (int j = 0; j < D; ++j)

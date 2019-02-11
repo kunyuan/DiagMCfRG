@@ -10,7 +10,7 @@
 
 namespace mc {
 using namespace std;
-const int MCUpdates = 5;
+const int MCUpdates = 7;
 
 typedef array<double, ExtMomBinSize> polar;
 
@@ -29,6 +29,10 @@ public:
   void IncreaseOrder();
   void DecreaseOrder();
   void ChangeGroup();
+
+  // for RG only
+  void RotateExtMom();
+  void ChangeScale();
 
   void Measure();
   void SaveToFile();
@@ -53,6 +57,7 @@ private:
   double ShiftK(const momentum &, momentum &, int Scale);
   double ShiftTau(const double &, double &);
 
+  double GetNewExtK(momentum &, int Scale);
   double GetNewTau(double &);
   double GetNewK(momentum &, int Scale);
   double RemoveOldTau(double &);
@@ -69,6 +74,8 @@ private:
     CHANGE_GROUP,
     CHANGE_TAU,
     CHANGE_MOM,
+    ROTATE_EXTK,
+    CHANGE_SCALE,
     END
   };
   std::string _DetailBalanceStr(Updates op);
