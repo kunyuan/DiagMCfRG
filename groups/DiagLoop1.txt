@@ -3,17 +3,17 @@
 #Order: 1
 #GNum: 4
 #Ver4Num: 1
-#LoopNum: 6
+#LoopNum: 3
 #ExtLoopIndex: 0 1 2
-#DummyLoopIndex: 3 4 5
-#TauNum: 3
+#DummyLoopIndex:
+#TauNum: 4
 #ExtTauIndex: 0 1
 #DummyTauIndex:
 
 # Permutation
  3  2  1  0 
 # SymFactor
--1.0
+ 1.0
 # GType
 -1 -1 -1 -1
 # VertexBasis
@@ -23,12 +23,9 @@
  1  0  1  0 
  0  1  1  0 
  1  0  0  1 
- 0  0  0  0
- 0  0  0  0
- 0  0  0  0
 # Ver4Legs(InL,OutL,InR,OutR)
 1 2 0 3 
 # WType(Direct,Exchange)
 -1 -1
 # SpinFactor
--1  1 
+ 1  0 

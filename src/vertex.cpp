@@ -325,12 +325,15 @@ void verfunc::Vertex4(double &Direct, double &Exchange, const momentum &InL,
       double AngleInOut = Angle2D(InL, OutL);
       int InInIndex = Angle2Index(AngleInIn, InInAngBinSize);
       int InOutIndex = Angle2Index(AngleInOut, InOutAngBinSize);
-
       Direct = Ver4AtUV[Scale][InInIndex][InOutIndex];
 
-      Exchange = Direct;
+      AngleInOut = Angle2D(InL, OutR);
+      InOutIndex = Angle2Index(AngleInOut, InOutAngBinSize);
+      Exchange = Ver4AtUV[Scale][InInIndex][InOutIndex];
+      Exchange *= -1.0; // spin factor already carries a minus sign
       // Note that InL/|InL|, InR/|InR|, OutL/|OutL|, OutR/|OutR| do not obey
       // conservation law!
+      // Therefore, direct does not equal to exchange
     } else if (Ver4TypeDirect == -1 && Ver4TypeExchange == -1) {
       // double KScale = Para.Scales[Scale];
       // make the total weight scale invariant
