@@ -335,9 +335,7 @@ void verfunc::Vertex4(double &Direct, double &Exchange, const momentum &InL,
       // conservation law!
       // Therefore, direct does not equal to exchange
     } else if (Ver4TypeDirect == -1 && Ver4TypeExchange == -1) {
-      // double KScale = Para.Scales[Scale];
-      // make the total weight scale invariant
-      Direct = Para.UVCoupling * (Para.Scales[Scale] - Para.Scales[Scale + 1]);
+      Direct = Para.UVCoupling;
       Exchange = Direct;
     } else
       ABORT("Ver4Type is only implemented for 0!");
