@@ -22,6 +22,7 @@ private:
   double UpperBound2, LowerBound2; // lower upbound for better sigma
   double DeltaK2;
   double PhyGreen(double Tau, const momentum &Mom);
+  double PhyGreenDerivative(double Tau, const momentum &Mom);
   double FockSigma(double KK);
   double BuildFockSigma();
   double Fock(double k);
@@ -29,6 +30,8 @@ private:
   double GetSigma(double k);
   double Sigma[MAXSIGMABIN];
   double Sigma2[MAXSIGMABIN];
+
+  enum gtype { FREE, FREEDERIVATIVE, EQUALTIME, UNITY };
 };
 
 class bose {

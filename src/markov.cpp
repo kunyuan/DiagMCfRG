@@ -293,6 +293,7 @@ void markov::ChangeScale() {
     return;
 
   int OldScale = Var.CurrScale;
+
   if (Random.urn() < 0.5)
     Var.CurrScale -= 1;
   else
@@ -307,7 +308,7 @@ void markov::ChangeScale() {
   for (int i = 0; i < 3; i++) {
     Var.LoopMom[i] *= Para.Scales[Var.CurrScale] / Para.Scales[OldScale];
     Var.LoopMom[i + 3] *=
-        Para.Scales[NewScale + 1] / Para.Scales[Var.CurrScale + 1];
+        Para.Scales[Var.CurrScale + 1] / Para.Scales[OldScale + 1];
   }
 
   Proposed[CHANGE_SCALE][Var.CurrGroup->ID]++;
@@ -319,15 +320,15 @@ void markov::ChangeScale() {
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
-    Var.CurrScale = NewScale;
     Accepted[CHANGE_SCALE][Var.CurrGroup->ID]++;
     Weight.AcceptChange(*Var.CurrGroup);
   } else {
     for (int i = 0; i < 3; i++) {
-      Var.LoopMom[i] *= Para.Scales[Var.CurrScale] / Para.Scales[NewScale];
+      Var.LoopMom[i] *= Para.Scales[OldScale] / Para.Scales[Var.CurrScale];
       Var.LoopMom[i + 3] *=
-          Para.Scales[Var.CurrScale + 1] / Para.Scales[NewScale + 1];
+          Para.Scales[OldScale + 1] / Para.Scales[Var.CurrScale + 1];
     }
+    Var.CurrScale = OldScale;
     Weight.RejectChange(*Var.CurrGroup);
   }
 };

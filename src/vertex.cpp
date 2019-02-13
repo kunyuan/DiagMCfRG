@@ -187,11 +187,81 @@ double fermi::PhyGreen(double Tau, const momentum &Mom) {
   return green;
 }
 
+double fermi::PhyGreenDerivative(double Tau, const momentum &Mom) {
+  // if tau is exactly zero, set tau=0^-
+  double green, Ek, KK;
+  if (Tau == 0.0) {
+    return EPS;
+  }
+
+  double s = 1.0;
+  if (Tau < 0.0) {
+    Tau += Para.Beta;
+    s = -s;
+  } else if (Tau >= Para.Beta) {
+    Tau -= Para.Beta;
+    s = -s;
+  }
+
+  KK = Mom.norm();
+
+  //// enforce an UV cutoff for the Green's function ////////
+  if (KK > Para.UVScale) {
+    return 0.0;
+  }
+
+  if (Para.SelfEnergyType == BARE)
+    Ek = KK * KK; // bare propagator
+  else
+    ABORT("Green function is not implemented!");
+
+  double Factor = 0.0;
+
+  double x = Para.Beta * (Ek - Para.Mu) / 2.0;
+  double y = 2.0 * Tau / Para.Beta - 1.0;
+  if (x > 100.0) {
+    green = exp(-x * (y + 1.0));
+    Factor = -Tau;
+  } else if (x < -100.0) {
+    green = exp(x * (1.0 - y));
+    Factor = Para.Beta - Tau;
+  } else {
+    green = exp(-x * y) / (2.0 * cosh(x));
+    Factor = Para.Beta / (1.0 + exp(2.0 * x)) - Tau;
+  }
+
+  green *= s;
+  green *= Factor * 2.0 * KK;
+
+  // if (Debug) { //   cout << "Tau=" << Tau << endl;
+  //   cout << "Counter" << Para.Counter << endl;
+  //   cout << "Tau=" << Tau << endl;
+  //   cout << "Mom=(" << Mom[0] << ", " << Mom[1] << ")" << endl;
+  //   cout << "Mom2=" << Mom[0] * Mom[0] + Mom[1] * Mom[1] << endl;
+  //   cout << "Ek=" << Ek << endl;
+  //   cout << "x=" << x << endl;
+  //   cout << "y=" << y << endl;
+  //   cout << "Green=" << green << endl << endl;
+  // }
+
+  // cout << "x: " << x << ", y: " << y << ", G: " << green << endl;
+  // cout << "G: " << green << endl;
+
+  if (std::isnan(green))
+    ABORT("Step:" << Para.Counter << ", Green is too large! Tau=" << Tau
+                  << ", Ek=" << Ek << ", Green=" << green << ", Mom"
+                  << ToString(Mom));
+  return green;
+}
+
 double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
   double green;
   if (GType == 0) {
     green = PhyGreen(Tau, Mom);
   } else if (GType == 1) {
+    // k-derivative of green's function
+    green = PhyGreenDerivative(Tau, Mom);
+  } else if (GType == -2) {
     // equal time green's function
     green = PhyGreen(-1.0e-10, Mom);
   } else if (GType == -1) {
