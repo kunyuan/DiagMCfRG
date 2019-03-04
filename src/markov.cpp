@@ -411,7 +411,8 @@ double markov::GetNewK(momentum &NewMom, int Scale) {
 };
 
 double markov::RemoveOldK(momentum &OldMom, int Scale) {
-  double KScale = Para.Scales[Scale];
+  double KScale = Para.Kf;
+  // double KScale = Para.Scales[Scale];
   //====== The hard Way ======================//
   double dK = KScale / sqrt(Para.Beta) / 4.0;
   if (dK > KScale / 2)
@@ -447,7 +448,8 @@ double markov::GetNewExtK(momentum &NewMom, int Scale) {
 
 double markov::ShiftK(const momentum &OldMom, momentum &NewMom, int Scale) {
   double x = Random.urn();
-  double KScale = Para.Scales[Scale];
+  double KScale = Para.Kf;
+  // double KScale = Para.Scales[Scale];
   double Prop;
   if (x < 1.0 / 3) {
     // COPYFROMTO(OldMom, NewMom);
