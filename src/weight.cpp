@@ -351,6 +351,11 @@ void weight::RejectChange(group &Group) {
   }
 }
 
+void weight::Measure(group &Group) {
+  VerFunc.Measure(Var.LoopMom[INL], Var.LoopMom[INR], Var.LoopMom[OUTL],
+                  Var.CurrScale);
+}
+
 void weight::GetMom(const loop &LoopBasis, const int &LoopNum, momentum &Mom) {
   // In C++11, because of the move semantics, there is no additional cost by
   // returning an array

@@ -51,6 +51,10 @@ private:
   // polarizatoin for each group at the zero momentumr;
   unordered_map<int, double> PolarStatic;
 
+  // beta function for 4-vertex
+  double Ver4Flow[ScaleBinSize][InInAngBinSize][InOutAngBinSize];
+  double Partition;
+
   // MC updates
 
   double ShiftExtK(const int &, int &);

@@ -26,6 +26,11 @@ public:
   vector<group> Groups;
   variable Var; // The variable of the integral
 
+  // vertex functions
+  fermi Fermi;
+  bose Bose;
+  verfunc VerFunc;
+
   // initialization, read diagrams, then initialize variables
   void ReadDiagrams();
 
@@ -39,6 +44,8 @@ public:
   double GetNewWeight(group &);          // return the current weight
   void AcceptChange(group &);
   void RejectChange(group &);
+
+  void Measure(group &);
 
   // run test in MC updates
   int DynamicTest();
@@ -78,10 +85,6 @@ private:
   bool IsInteractionReducible(loop &, loop &, int LoopNum);
 
   template <typename... TS> string ERR(string format, TS... args);
-
-  fermi Fermi;
-  bose Bose;
-  verfunc VerFunc;
 };
 
 }; // namespace diag

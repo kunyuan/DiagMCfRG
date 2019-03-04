@@ -50,6 +50,7 @@ markov::markov() : Var(Weight.Var), Groups(Weight.Groups) {
     Polar[g.ID].fill(1.0e-10);
     PolarStatic[g.ID] = 1.0e-10;
   }
+
   ///=== Do all kinds of test  =======================//
   Weight.StaticTest();
   Weight.DynamicTest();
@@ -109,6 +110,10 @@ void markov::Measure() {
 
   Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
   PolarStatic[Var.CurrGroup->ID] += WeightFactor;
+
+  if (Para.Type == RG) {
+    Weight.Measure(*Var.CurrGroup);
+  }
 };
 
 void markov::SaveToFile() {
@@ -305,11 +310,9 @@ void markov::ChangeScale() {
   }
 
   double Prop = 1.0;
-  for (int i = 0; i < 3; i++) {
-    Var.LoopMom[i] *= Para.Scales[Var.CurrScale] / Para.Scales[OldScale];
-    Var.LoopMom[i + 3] *=
-        Para.Scales[Var.CurrScale + 1] / Para.Scales[OldScale + 1];
-  }
+
+  // change temperature
+  Para.Beta = Para.Scales[Var.CurrScale];
 
   Proposed[CHANGE_SCALE][Var.CurrGroup->ID]++;
 
@@ -323,12 +326,8 @@ void markov::ChangeScale() {
     Accepted[CHANGE_SCALE][Var.CurrGroup->ID]++;
     Weight.AcceptChange(*Var.CurrGroup);
   } else {
-    for (int i = 0; i < 3; i++) {
-      Var.LoopMom[i] *= Para.Scales[OldScale] / Para.Scales[Var.CurrScale];
-      Var.LoopMom[i + 3] *=
-          Para.Scales[OldScale + 1] / Para.Scales[Var.CurrScale + 1];
-    }
     Var.CurrScale = OldScale;
+    Para.Beta = Para.Scales[Var.CurrScale];
     Weight.RejectChange(*Var.CurrGroup);
   }
 };
@@ -350,9 +349,6 @@ void markov::RotateExtMom() {
   CurrMom = Var.LoopMom[LoopIndex];
 
   double Prop = GetNewExtK(Var.LoopMom[LoopIndex], Var.CurrScale);
-  Var.LoopMom[LoopIndex + 3] =
-      Var.LoopMom[LoopIndex] *
-      (Para.Scales[Var.CurrScale + 1] / Para.Scales[Var.CurrScale]);
 
   Proposed[ROTATE_EXTK][Var.CurrGroup->ID]++;
 
@@ -367,9 +363,6 @@ void markov::RotateExtMom() {
     Weight.AcceptChange(*Var.CurrGroup);
   } else {
     Var.LoopMom[LoopIndex] = CurrMom;
-    Var.LoopMom[LoopIndex + 3] =
-        Var.LoopMom[LoopIndex] *
-        (Para.Scales[Var.CurrScale + 1] / Para.Scales[Var.CurrScale]);
     Weight.RejectChange(*Var.CurrGroup);
   }
 }
@@ -381,7 +374,7 @@ double markov::GetNewTau(double &NewTau) {
 double markov::RemoveOldTau(double &OldTau) { return 1.0 / Para.Beta; }
 
 double markov::GetNewK(momentum &NewMom, int Scale) {
-  double KScale = Para.Scales[Scale];
+  double KScale = Para.Kf;
   //====== The hard Way ======================//
   double dK = KScale / sqrt(Para.Beta) / 4.0;
   if (dK > KScale / 2)
@@ -447,8 +440,8 @@ double markov::RemoveOldK(momentum &OldMom, int Scale) {
 double markov::GetNewExtK(momentum &NewMom, int Scale) {
   double theta = Random.urn() * 2.0 * PI;
   NewMom = 0.0;
-  NewMom[0] = Para.Scales[Scale] * cos(theta);
-  NewMom[1] = Para.Scales[Scale] * sin(theta);
+  NewMom[0] = Para.Kf * cos(theta);
+  NewMom[1] = Para.Kf * sin(theta);
   return 1.0;
 };
 

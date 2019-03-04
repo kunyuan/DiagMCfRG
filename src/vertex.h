@@ -46,7 +46,14 @@ public:
                const momentum &InR, const momentum &OutL, const momentum &OutR,
                int Ver4TypeDirect, int Ver4TypeExchange, int Scale = 0);
 
+  void Measure(const momentum &InL, const momentum &InR, const momentum &OutL,
+               int Scale = 0);
+
 private:
+  // beta function for 4-vertex
+  double Ver4Flow[ScaleBinSize][InInAngBinSize][InOutAngBinSize];
+  double Partition;
+
   double Ver4AtUV[ScaleBinSize][InInAngBinSize][InOutAngBinSize];
   double Angle2D(const momentum &K1, const momentum &K2);
   double Index2Angle(const int &Index, const int &AngleNum);

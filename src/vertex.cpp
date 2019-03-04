@@ -190,18 +190,6 @@ double fermi::PhyGreen(double Tau, const momentum &Mom) {
 double fermi::PhyGreenDerivative(double Tau, const momentum &Mom) {
   // if tau is exactly zero, set tau=0^-
   double green, Ek, KK;
-  if (Tau == 0.0) {
-    return EPS;
-  }
-
-  double s = 1.0;
-  if (Tau < 0.0) {
-    Tau += Para.Beta;
-    s = -s;
-  } else if (Tau >= Para.Beta) {
-    Tau -= Para.Beta;
-    s = -s;
-  }
 
   KK = Mom.norm();
 
@@ -215,23 +203,10 @@ double fermi::PhyGreenDerivative(double Tau, const momentum &Mom) {
   else
     ABORT("Green function is not implemented!");
 
-  double Factor = 0.0;
+  double e = Para.Beta * (Ek - Para.Mu);
+  double t = Tau / Para.Beta;
 
-  double x = Para.Beta * (Ek - Para.Mu) / 2.0;
-  double y = 2.0 * Tau / Para.Beta - 1.0;
-  if (x > 100.0) {
-    green = exp(-x * (y + 1.0));
-    Factor = -Tau;
-  } else if (x < -100.0) {
-    green = exp(x * (1.0 - y));
-    Factor = Para.Beta - Tau;
-  } else {
-    green = exp(-x * y) / (2.0 * cosh(x));
-    Factor = Para.Beta / (1.0 + exp(2.0 * x)) - Tau;
-  }
-
-  green *= s;
-  green *= Factor * 2.0 * KK;
+  green = -e * exp(-e * t) / (2.0 + 2.0 * cosh(e));
 
   // if (Debug) { //   cout << "Tau=" << Tau << endl;
   //   cout << "Counter" << Para.Counter << endl;
@@ -283,6 +258,11 @@ verfunc::verfunc() {
 
   _TestAngle2D();
   _TestAngleIndex();
+
+  // initialize observables
+  Partition = 1.0e-10;
+  InitialArray(&Ver4Flow[0][0][0], 1.0e-10,
+               ScaleBinSize * InInAngBinSize * InOutAngBinSize);
 
   // initialize UV ver4 table
   if (Para.InterType == PWAVE_ON_EF) {
@@ -344,6 +324,16 @@ void verfunc::Vertex4(double &Direct, double &Exchange, const momentum &InL,
   }
 
   /**************   Generic Interaction ************************/
+}
+
+void verfunc::Measure(const momentum &InL, const momentum &InR,
+                      const momentum &OutL, int Scale) {
+  Partition++;
+  double AngleInIn = Angle2D(InL, InR);
+  double AngleInOut = Angle2D(InL, OutL);
+  int InInIndex = Angle2Index(AngleInIn, InInAngBinSize);
+  int InOutIndex = Angle2Index(AngleInOut, InOutAngBinSize);
+  Ver4Flow[Scale][InInIndex][InOutIndex]++;
 }
 
 double verfunc::Angle2D(const momentum &K1, const momentum &K2) {

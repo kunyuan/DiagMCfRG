@@ -80,7 +80,7 @@ void InitPara() {
     Para.UVScale = 8.0 * Para.Kf;
     Para.Scales[0] = Para.UVScale;
     for (int i = 1; i < ScaleBinSize + 1; ++i) {
-      Para.Scales[i] = Para.Scales[i - 1] / 2.0;
+      Para.Scales[i] = Para.Scales[i - 1] / 1.1;
     }
   } else {
     Para.UVScale = 10000.0 * Para.Kf;
