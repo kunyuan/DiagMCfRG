@@ -1,5 +1,5 @@
 #Type: Polarization
-#DiagNum: 14
+#DiagNum: 5
 #Order: 3
 #GNum: 6
 #Ver4Num: 2
@@ -50,7 +50,7 @@
 # WType(Direct,Exchange)
  0  0 | 0  0 |
 # SpinFactor
- 4 -2 -2  4 
+ 4 -2 -2  0 
 
 # Permutation
  2  0  5  4  3  1 
@@ -92,7 +92,7 @@
 # WType(Direct,Exchange)
  0  0 | 0  0 |
 # SpinFactor
- 4 -2 -2  4 
+ 0 -2 -2  0 
 
 # Permutation
  1  4  5  0  3  2 

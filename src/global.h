@@ -50,7 +50,7 @@ struct parameter {
 
 ///////////  Global Constants ////////////////////
 // D=2 or D=3
-const int D = 2;
+const int D = 3;
 // number of q bins of the external momentum
 const int ExtMomBinSize = 64;
 // number of bins for the angle between InL and InR legs

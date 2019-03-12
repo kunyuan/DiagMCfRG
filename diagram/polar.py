@@ -179,8 +179,31 @@ class polar():
         if len(PolarHugenList) == 0:
             return
 
+        IrreDiagList = []
+        for Diag in PolarHugenList:
+            Permutation = Diag.GetPermu()
+            Mom = Diag.LoopBasis
+
+            FeynList = self.HugenToFeyn(Diag.GetPermu())
+            FactorList = []
+
+            for FeynPermu in FeynList:
+                if self.__IsReducibile(FeynPermu, Diag.LoopBasis):
+                    FactorList.append(0)
+                else:
+                    FactorList.append(1)
+
+            if np.all(np.array(FactorList) == 0):
+                print "Reducible diagram: ", Permutation
+                continue
+
+            IrreDiagList.append([Diag, FeynList, FactorList])
+
+        print yellow(
+            "Irreducible Polar Diag Num: {0}".format(len(IrreDiagList)))
+
         Title = "#Type: {0}\n".format("Polarization")
-        Title += "#DiagNum: {0}\n".format(len(PolarHugenList))
+        Title += "#DiagNum: {0}\n".format(len(IrreDiagList))
         Title += "#Order: {0}\n".format(self.Order)
         Title += "#GNum: {0}\n".format(self.GNum)
         Title += "#Ver4Num: {0}\n".format(self.Ver4Num)
@@ -193,26 +216,11 @@ class polar():
         Title += "\n"
 
         Body = ""
-        IrreDiagNum = 0
-        for Diag in PolarHugenList:
+        for Diag, FeynList, FactorList in IrreDiagList:
             Permutation = Diag.GetPermu()
             Mom = Diag.LoopBasis
 
-            FeynList = self.HugenToFeyn(Diag.GetPermu())
-            FactorList = []
-            for FeynPermu in FeynList:
-                if self.__IsReducibile(FeynPermu, Diag.LoopBasis):
-                    FactorList.append(0)
-                else:
-                    FactorList.append(1)
-
-            if np.all(np.array(FactorList) == 0):
-                print "Reducible diagram: ", Permutation
-                continue
-
             print "Save {0}".format(Permutation)
-
-            IrreDiagNum += 1
 
             Body += "# Permutation\n"
             for i in Permutation:
@@ -274,24 +282,24 @@ class polar():
                 # make sure the sign of the Spin factor of the first diagram is positive
 
                 ########### for spin susceptibility   #####################
-                # Flag = False
-                # for p in Path:
-                #     if 0 in p and 1 in p:
-                #         Flag = True
+                Flag = False
+                for p in Path:
+                    if 0 in p and 1 in p:
+                        Flag = True
 
-                # if Flag == False:
-                #     Body += "{0:2d} ".format(0)
-                # else:
-                #     Body += "{0:2d} ".format(-(-2)**nloop*(-1)**self.Order*Factor)
+                if Flag == False:
+                    Body += "{0:2d} ".format(0)
+                else:
+                    Body += "{0:2d} ".format(2**nloop *
+                                             int(Sign)*FactorList[idx])
                 #####################################################
 
-                Body += "{0:2d} ".format(2**nloop*int(Sign)*FactorList[idx])
+                # Body += "{0:2d} ".format(2**nloop*int(Sign)*FactorList[idx])
             #   Body += "{0:2d} ".format(-(-1)**nloop*Factor)
 
             Body += "\n"
             Body += "\n"
 
-        print yellow("Irreducible Polar Diag Num: {0}".format(IrreDiagNum))
         return Title+Body
 
     def HugenToFeyn(self, HugenPermu):

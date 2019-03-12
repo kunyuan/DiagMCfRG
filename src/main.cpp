@@ -51,8 +51,8 @@ void InitPara() {
   Para.GroupName = {"1", "2", "3"};
   // Para.GroupName = {"1", "2"};
   Para.ReWeight = {1.0, 1.0, 5.0, 1.0, 0.1};
-  // Para.SelfEnergyType = FOCK;
-  Para.SelfEnergyType = BARE;
+  Para.SelfEnergyType = FOCK;
+  // Para.SelfEnergyType = BARE;
 
   //// initialize the global parameter //////////////////////
   double Kf;
