@@ -311,3 +311,36 @@ def HasFock(permutation, reference):
         if abs(i-end) == 1 and min(i, end) % 2 == 0:
             return True
     return False
+
+
+def FindIndependentK(permutation, reference, InteractionPairs):
+    # kList=[(random.randint(0, Nmax), random.randint(0,Nmax)) for i in range(len(InteractionPairs)+1)]
+    N = len(InteractionPairs)
+    Matrix = np.zeros((2*N, 3*N))
+    for i in range(2*N):
+        interaction = int(i/2)+2*N
+        sign = i % 2
+        Matrix[i, interaction] = -(-1)**sign
+        Matrix[i, i] = -1
+        Matrix[i, permutation.index(i)] = 1
+    # print Matrix
+    vectors = nullspace(Matrix)
+    # print len(vectors)
+    # print vectors
+    freedoms = vectors.shape[1]
+    print "Freedom: ", freedoms
+    if freedoms != N+1:
+        print "Warning! Rank is wrong for {0} with \n{1}".format(
+            permutation, vectors)
+        print N, freedoms, InteractionPairs
+    return vectors
+
+
+def AssignMomentums(permutation, reference, InteractionPairs):
+    N = len(InteractionPairs)
+    vectors = FindIndependentK(permutation, reference, InteractionPairs)
+    freedoms = vectors.shape[1]
+    karray = np.array([random.random() for _ in range(freedoms)])
+    kVector = np.dot(vectors, karray)
+    # kVector=vectors[:,0]
+    return kVector[:2*N], kVector[2*N:]

@@ -30,15 +30,15 @@ if __name__ == "__main__":
         print "Attach two external vertexes ..."
         OptPolarHugenDiagDict = Polar.AttachExtVer(d)
 
-        print "Check Tadpole..."
-        for p in OptPolarHugenDiagDict.keys():
-            if diag.HasTadpole(p, Polar.GetReference()):
-                del OptPolarHugenDiagDict[p]
+        # print "Check Tadpole..."
+        # for p in OptPolarHugenDiagDict.keys():
+        #     if diag.HasTadpole(p, Polar.GetReference()):
+        #         del OptPolarHugenDiagDict[p]
 
-        print "Check Fock..."
-        for p in OptPolarHugenDiagDict.keys():
-            if diag.HasFock(p, Polar.GetReference()):
-                del OptPolarHugenDiagDict[p]
+        # print "Check Fock..."
+        # for p in OptPolarHugenDiagDict.keys():
+        #     if diag.HasFock(p, Polar.GetReference()):
+        #         del OptPolarHugenDiagDict[p]
 
         print "Group polarization diagrams from the same LnZ diagram..."
         UnLabelDiagDeformList = Polar.Group(

@@ -32,6 +32,8 @@ double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
     return interaction;
   } else if (VerType == -1) {
     return 1.0;
+  } else if (VerType == -2) {
+    return 0.0;
   } else {
     ABORT("VerType can not be " << VerType);
   }

@@ -15,8 +15,11 @@ class polar():
 
         self.LoopNum = self.Order+self.ExtLoopNum
 
-    def GetInteractionPairs(self):
-        return tuple([(2*i, 2*i+1) for i in range(1, self.Ver4Num+1)])
+    def GetInteractionPairs(self, WithMeasuring=False):
+        if WithMeasuring:
+            return tuple([(2*i, 2*i+1) for i in range(0, self.Ver4Num+1)])
+        else:
+            return tuple([(2*i, 2*i+1) for i in range(1, self.Ver4Num+1)])
 
     def GetReference(self):
         return tuple(range(self.GNum))
@@ -190,10 +193,26 @@ class polar():
         Title += "\n"
 
         Body = ""
+        IrreDiagNum = 0
         for Diag in PolarHugenList:
             Permutation = Diag.GetPermu()
+            Mom = Diag.LoopBasis
+
+            FeynList = self.HugenToFeyn(Diag.GetPermu())
+            FactorList = []
+            for FeynPermu in FeynList:
+                if self.__IsReducibile(FeynPermu, Diag.LoopBasis):
+                    FactorList.append(0)
+                else:
+                    FactorList.append(1)
+
+            if np.all(np.array(FactorList) == 0):
+                print "Reducible diagram: ", Permutation
+                continue
 
             print "Save {0}".format(Permutation)
+
+            IrreDiagNum += 1
 
             Body += "# Permutation\n"
             for i in Permutation:
@@ -231,23 +250,28 @@ class polar():
                     start1, end1, start2, end2)
             Body += "\n"
 
+            # Get interaction Momemtnum list
+            InterMom = self.__GetInteractionMom(Permutation, Mom)
+
             Body += "# WType(Direct,Exchange)\n"
             for i in range(1, self.Ver4Num+1):
+                # type1, type2 = 0, 0
+                # if np.all(InterMom[2*i-2] == 0):
+                #     type1 = -2
+                # if np.all(InterMom[2*i-1] == 0):
+                #     type2 = -2
                 Body += "{0:2d} {1:2d} |".format(0, 0)
             Body += "\n"
 
             Body += "# SpinFactor\n"
-            for FeynPermu in self.HugenToFeyn(Diag.GetPermu()):
+
+            for idx, FeynPermu in enumerate(FeynList):
                 Path = diag.FindAllLoops(FeynPermu)
                 nloop = len(Path)
 
                 Sign = (-1)**nloop*(-1)**(self.Order-1) / \
                     (Diag.SymFactor/abs(Diag.SymFactor))
                 # make sure the sign of the Spin factor of the first diagram is positive
-
-                Factor = 1
-                if self.__IsReducibile(FeynPermu, Diag.LoopBasis):
-                    Factor = 0
 
                 ########### for spin susceptibility   #####################
                 # Flag = False
@@ -261,12 +285,13 @@ class polar():
                 #     Body += "{0:2d} ".format(-(-2)**nloop*(-1)**self.Order*Factor)
                 #####################################################
 
-                Body += "{0:2d} ".format(2**nloop*int(Sign)*Factor)
+                Body += "{0:2d} ".format(2**nloop*int(Sign)*FactorList[idx])
             #   Body += "{0:2d} ".format(-(-1)**nloop*Factor)
 
             Body += "\n"
             Body += "\n"
 
+        print yellow("Irreducible Polar Diag Num: {0}".format(IrreDiagNum))
         return Title+Body
 
     def HugenToFeyn(self, HugenPermu):
@@ -304,44 +329,75 @@ class polar():
             # start2 = Permutation.index(end2)
             VerLoopBasis = LoopBasis[:, start1]-LoopBasis[:, end1]
             # print Permutation, 2*i,  VerLoopBasis
+
+            ####### Check Polarization diagram ##################
             if(np.array_equal(VerLoopBasis, ExterLoop) or
                np.array_equal(-VerLoopBasis, ExterLoop)):
                 return True
+
+            # remove any hartree insertion
+            if(np.all(VerLoopBasis == 0)):
+                # print "Contain high-order Hartree: ", Permutation
+                return True
+
+        if diag.HasFock(Permutation, self.GetReference()):
+            return True
+
+        ###### Check High order Hatree ######################
+        # kG, kW = diag.AssignMomentums(
+        #     Permutation, self.GetReference(), self.GetInteractionPairs(True))
+
+        # for i in range(len(kW)):
+        #     if abs(kW[i]) < 1e-12:
+        #             # print "k=0 on W {0}: {1}".format(p, kW[i])
+        #         print "Contain high-order Hartree: ", Permutation
+        #         return True
+
         return False
 
-# def get_Unique_Permutation(self, permutationList, TimeRotation=True):
-#     Order = self.Order
-#     PermutationDict = {}
-#     for p in permutationList:
-#         PermutationDict[tuple(p)] = None
-#     for per in permutationList:
-#         if not PermutationDict.has_key(tuple(per)):
-#             continue
-#         Deformation = [per]
+    def __GetInteractionMom(self, Permutation, Mom):
+        InteractionMom = []
+        for j in range(1, self.Order):
+            end1, end2 = 2*j, 2*j+1
+            start1 = Permutation.index(end1)
+            start2 = Permutation.index(end2)
+            InteractionMom.append(Mom[:, start1]-Mom[:, end1])
+            InteractionMom.append(Mom[:, start1]-Mom[:, end2])
+        return InteractionMom
 
-#         if TimeRotation:
-#             for idx in range(1, Order):
-#                 for i in range(len(Deformation)):
-#                     for j in range(1, idx):
-#                         Deformation.append(diag.SwapTwoInteraction(
-#                             Deformation[i], idx*2, idx*2+1, j*2, j*2+1))
+        # def get_Unique_Permutation(self, permutationList, TimeRotation=True):
+        #     Order = self.Order
+        #     PermutationDict = {}
+        #     for p in permutationList:
+        #         PermutationDict[tuple(p)] = None
+        #     for per in permutationList:
+        #         if not PermutationDict.has_key(tuple(per)):
+        #             continue
+        #         Deformation = [per]
 
-#         for idx in range(1, Order):
-#             for i in range(len(Deformation)):
-#                 Deformation.append(diag.SwapTwoVertex(
-#                     Deformation[i], idx*2, idx*2+1))
+        #         if TimeRotation:
+        #             for idx in range(1, Order):
+        #                 for i in range(len(Deformation)):
+        #                     for j in range(1, idx):
+        #                         Deformation.append(diag.SwapTwoInteraction(
+        #                             Deformation[i], idx*2, idx*2+1, j*2, j*2+1))
 
-#         # for idx in range(1,Order):
-#             # for i in range(len(Deformation)):
-#                 # Deformation.append(swap_LR_Hugen(Deformation[i], idx*2, idx*2+1))
+        #         for idx in range(1, Order):
+        #             for i in range(len(Deformation)):
+        #                 Deformation.append(diag.SwapTwoVertex(
+        #                     Deformation[i], idx*2, idx*2+1))
 
-#         Deformation = set(Deformation)
-#         for p in Deformation:
-#             if tuple(p) == tuple(per):
-#                 continue
-#             if p in permutationList:
-#                 del PermutationDict[p]
+        #         # for idx in range(1,Order):
+        #             # for i in range(len(Deformation)):
+        #                 # Deformation.append(swap_LR_Hugen(Deformation[i], idx*2, idx*2+1))
 
-#     print "remaining length of permutation dictionary:", len(
-#         PermutationDict)
-#     return PermutationDict.keys()
+        #         Deformation = set(Deformation)
+        #         for p in Deformation:
+        #             if tuple(p) == tuple(per):
+        #                 continue
+        #             if p in permutationList:
+        #                 del PermutationDict[p]
+
+        #     print "remaining length of permutation dictionary:", len(
+        #         PermutationDict)
+        #     return PermutationDict.keys()
