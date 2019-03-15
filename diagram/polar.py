@@ -282,19 +282,19 @@ class polar():
                 # make sure the sign of the Spin factor of the first diagram is positive
 
                 ########### for spin susceptibility   #####################
-                Flag = False
-                for p in Path:
-                    if 0 in p and 1 in p:
-                        Flag = True
+                # Flag = False
+                # for p in Path:
+                #     if 0 in p and 1 in p:
+                #         Flag = True
 
-                if Flag == False:
-                    Body += "{0:2d} ".format(0)
-                else:
-                    Body += "{0:2d} ".format(2**nloop *
-                                             int(Sign)*FactorList[idx])
+                # if Flag == False:
+                #     Body += "{0:2d} ".format(0)
+                # else:
+                #     Body += "{0:2d} ".format(2**nloop *
+                #                              int(Sign)*FactorList[idx])
                 #####################################################
 
-                # Body += "{0:2d} ".format(2**nloop*int(Sign)*FactorList[idx])
+                Body += "{0:2d} ".format(2**nloop*int(Sign)*FactorList[idx])
             #   Body += "{0:2d} ".format(-(-1)**nloop*Factor)
 
             Body += "\n"
