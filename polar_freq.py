@@ -29,7 +29,7 @@ Bubble, Density = 0.088883, 0.2387  # 3D, Beta=0.1, rs=1, Lambda=1.0
 # Bubble=0.11635  #2D, Beta=0.5, rs=1
 # Bubble=0.15916  #2D, Beta=10, rs=1
 
-ScanOrder = [1, 2, 3, 4]
+ScanOrder = [1, 2, 3]
 Name = ["1", "2", "3", "4"]
 # ScanOrder=[3]
 Index = {}
