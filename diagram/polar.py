@@ -351,6 +351,11 @@ class polar():
         if diag.HasFock(Permutation, self.GetReference()):
             return True
 
+        ###### Check ladder vertex correction on the right #########
+        if Permutation[1]/2 == Permutation.index(1)/2:
+            print "vertex correction: ", Permutation
+            return True
+
         ###### Check High order Hatree ######################
         # kG, kW = diag.AssignMomentums(
         #     Permutation, self.GetReference(), self.GetInteractionPairs(True))

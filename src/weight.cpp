@@ -280,7 +280,20 @@ double weight::GetNewWeight(group &Group) {
       //   VerWeight *= TempWeightIn - TempWeightOut;
     }
 
+    GetMom(d.G[1]->LoopBasis, Group.LoopNum, _Mom);
+    double k = _Mom.norm();
+    double P = -0.088883;
+    double Gamma =
+        1.0 /
+        (1.0 + PI * P / Para.Kf / Para.Kf *
+                   log((Para.Mass2 + 4.0 * Para.Kf * Para.Kf) / Para.Mass2));
+
+    double VerCorr = 1.0 - PI * P * Gamma / k / Para.Kf *
+                               log((pow(k + Para.Kf, 2.0) + Para.Mass2) /
+                                   (pow(k - Para.Kf, 2.0) + Para.Mass2));
+
     d.NewWeight = GWeight * VerWeight / pow(2 * PI, D * Group.InternalLoopNum);
+    d.NewWeight *= VerCorr;
 
     // Group Weight= sum of all diagram weight in the group
     Group.NewWeight += d.NewWeight;
