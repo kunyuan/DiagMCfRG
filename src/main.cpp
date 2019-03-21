@@ -50,7 +50,7 @@ void InitPara() {
   // Para.DiagFileFormat = "groups/DiagLoop{}.txt";
   Para.GroupName = {"1", "2", "3"};
   // Para.GroupName = {"1", "2"};
-  Para.ReWeight = {1.0, 1.0, 5.0, 10.0, 0.1};
+  Para.ReWeight = {1.0, 1.0, 10.0, 10.0, 0.1};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 
@@ -72,6 +72,12 @@ void InitPara() {
   Para.Beta /= Para.Ef;
   Para.UVScale = 8.0 * Para.Ef;
   Para.UVCoupling = 1.0 * Para.Ef;
+
+  // annealing temperature
+  Para.DoAnnealing = true;
+  Para.LowerBeta = Para.Beta / 4.0;
+  Para.UpperBeta = Para.Beta;
+  Para.AnnealStep = 2.0;
 
   LOG_INFO("Inverse Temperature: " << Para.Beta << "\n"
                                    << "UV Energy Scale: " << Para.UVScale
@@ -111,15 +117,18 @@ void MonteCarlo() {
       // }
 
       double x = Random.urn();
-      if (x < 1.0 / 3.0) {
+      if (x < 1.0 / 4.0) {
         Markov.ChangeGroup();
         // ;
-      } else if (x < 2.0 / 3.0) {
+      } else if (x < 2.0 / 4.0) {
         Markov.ChangeMomentum();
         // ;
-      } else if (x < 3.0 / 3.0) {
+      } else if (x < 3.0 / 4.0) {
         Markov.ChangeTau();
         // ;
+      } else if (x < 4.0 / 4.0) {
+        if (Para.DoAnnealing)
+          Markov.ChangeTemp();
       }
 
       // if (Para.Counter == 8831001) {

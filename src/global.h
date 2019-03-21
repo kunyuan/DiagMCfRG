@@ -39,6 +39,10 @@ struct parameter {
   int Sweep;             // how many MC steps between two measuring
   std::vector<std::string> GroupName; // ID for each group
   std::vector<double> ReWeight;       // reweight factor for each group
+  bool DoAnnealing;                   // annealing temperature or not
+  double LowerBeta;
+  double UpperBeta;
+  double AnnealStep;
 
   // others
   int PrinterTimer;  // how many seconds between to printing to screen
@@ -52,7 +56,7 @@ struct parameter {
 // D=2 or D=3
 const int D = 2;
 // number of q bins of the external momentum
-const int ExtMomBinSize = 64;
+const int ExtMomBinSize = 32;
 // number of bins for the angle between InL and InR legs
 const int InInAngBinSize = 32;
 // number of bins for the angle between InL and OutL legs

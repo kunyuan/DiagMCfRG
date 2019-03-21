@@ -11,6 +11,8 @@ string weight::DebugInfo(group &Group) {
   string msg;
   msg = string(80, '=') + "\n";
   msg += fmt::format("\nMC Counter: {} \n", Para.Counter);
+  msg += "Current Beta:\n";
+  msg += ToString(Para.Beta) + "\n";
   msg += "Current Group Info:\n ";
   msg += ToString(Group);
 

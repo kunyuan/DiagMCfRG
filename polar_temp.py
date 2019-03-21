@@ -11,7 +11,9 @@ size = 12
 
 rs = 1.0
 Lambda = 1.0
-Beta = 20
+Beta = 40
+
+BetaList = [20, 10, 5]
 
 ##############   3D    ##################################
 # kF = (9.0*np.pi/4.0)**(1.0/3.0)/rs  # 3D
@@ -25,9 +27,9 @@ Beta = 20
 
 ##############   2D    ##################################
 ###### Bare Green's function    #########################
-kF=np.sqrt(2.0)/rs #2D
+kF = np.sqrt(2.0)/rs  # 2D
 # Bubble=0.11635  #2D, Beta=0.5, rs=1
-Bubble=0.15916  #2D, Beta=10, rs=1
+Bubble = 0.15916  # 2D, Beta=10, rs=1
 
 ScanOrder = [1, 2, 3]
 Name = ["1", "2", "3", "4"]
@@ -40,6 +42,7 @@ Index[4] = []
 # Index[5]=[1,]
 DataAll = {}
 Data = {}
+DataTemp = {}
 DataOrderByOrder = {}
 DataAtOrder = {}
 Normalization = 1
@@ -70,31 +73,51 @@ for order in ScanOrder:
 
     DataAll[order] = np.array(data0)
 
-Data[order] = []
-for i in Index[order]:
-    Num = 0
-    data = None
-    # for f in glob.glob("Diag"+str(order)+"_*_"+str(i)+".dat"):
-    for f in files:
-        if re.match("group"+str(order-1)+"_diag"+str(i)+"_pid[0-9]+.dat", f):
-            print f
-            Num += 1
-            d = np.loadtxt(folder+f)
-            # print f, d[0,1]
-            if data is None:
-                data = d
-            else:
-                data[:, 1:] += d[:, 1:]
+    Data[order] = []
+    for i in Index[order]:
+        Num = 0
+        data = None
+        # for f in glob.glob("Diag"+str(order)+"_*_"+str(i)+".dat"):
+        for f in files:
+            if re.match("group"+str(order-1)+"_diag"+str(i)+"_pid[0-9]+.dat", f):
+                print f
+                Num += 1
+                d = np.loadtxt(folder+f)
+                # print f, d[0,1]
+                if data is None:
+                    data = d
+                else:
+                    data[:, 1:] += d[:, 1:]
 
-        print "Found {0} files.".format(Num)
-        data[:, 1:] /= Num
-        # print data
-        Data[order].append(np.array(data))
+            print "Found {0} files.".format(Num)
+            data[:, 1:] /= Num
+            # print data
+            Data[order].append(np.array(data))
 
 Normalization = DataAll[1][0, 1]/Bubble
 
 for key in DataAll.keys():
     DataAll[key][:, 1] /= Normalization
+
+for beta in BetaList:
+    Num = 0
+    data0 = None
+    for f in files:
+        if re.match("Temp"+str(beta)+"_pid[0-9]+.dat", f):
+            print "beta", f
+            Num += 1
+            d = np.loadtxt(folder+f)
+            if data0 is None:
+                data0 = d
+            else:
+                data0[:, 1:] += d[:, 1:]
+
+    print "Found {0} files.".format(Num)
+    data0[:, 1:] /= Num
+    DataTemp[beta] = np.array(data0)
+    DataTemp[beta][:, 1] /= Normalization*(beta*1.0/BetaList[0])
+    # DataTemp[beta][:, 1] /= Normalization
+
 
 # for i in range(len(Data[key])):
 #     Data[key][i][:, 1] /= Normalization
@@ -112,7 +135,7 @@ for i in range(len(ScanOrder)):
 
 
 def ErrorPlot(p, d, color, marker, label=None, size=4, shift=False):
-    shift=True
+    shift = True
     data = np.array(d)
     data[:, 0] /= kF
     if shift:
@@ -136,7 +159,12 @@ for i in range(0, len(ScanOrder)):
     o = ScanOrder[i]
     ErrorPlot(ax, DataOrderByOrder[o],
               ColorList[i], 's', "Order {0}".format(o))
-    # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
+# ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
+
+for i in range(0, len(BetaList)):
+    beta = BetaList[i]
+    ErrorPlot(ax, DataTemp[beta],
+              ColorList[i+3], 's', "Beta {0}".format(beta))
 
 # ErrorPlot(ax, Data[1][0], 'k', 's', "Diag 1")
 # ErrorPlot(ax, tmp, 'm', 's', "Diag 3+c 1")

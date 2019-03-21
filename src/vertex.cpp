@@ -23,6 +23,12 @@ extern parameter Para;
 double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
   if (VerType >= 0) {
     double interaction = 8.0 * PI / (Mom.squaredNorm() + Para.Mass2);
+
+    // double interaction = 0.0;
+    // double k = Mom.squaredNorm();
+    // if (k > 2.0 * Para.Kf * 0.8 && k < 2.0 * Para.Kf * 1.2)
+    //   interaction = 8.0 * PI / Para.Mass2;
+
     if (VerType > 0) {
       // the interaction contains counter-terms
       interaction *=
@@ -179,7 +185,7 @@ double fermi::PhyGreen(double Tau, const momentum &Mom) {
   if (std::isnan(green))
     ABORT("Step:" << Para.Counter << ", Green is too large! Tau=" << Tau
                   << ", Ek=" << Ek << ", Green=" << green << ", Mom"
-                  << ToString(Mom));
+                  << ToString(Mom) << ", Beta=" << Para.Beta);
   return green;
 }
 

@@ -36,6 +36,7 @@ markov::markov() : Var(Weight.Var), Groups(Weight.Groups) {
   UpdatesName[CHANGE_GROUP] = NAME(CHANGE_GROUP);
   UpdatesName[CHANGE_MOM] = NAME(CHANGE_MOM);
   UpdatesName[CHANGE_TAU] = NAME(CHANGE_TAU);
+  UpdatesName[CHANGE_TEMP] = NAME(CHANGE_TEMP);
 
   // for(int i=0;i<MCUpdates;i++)
   // UpdatesName[(Updates)i]=NAME((Updates))
@@ -48,6 +49,13 @@ markov::markov() : Var(Weight.Var), Groups(Weight.Groups) {
     Polar[g.ID].fill(1.0e-10);
     PolarStatic[g.ID] = 1.0e-10;
   }
+
+  double beta = Para.LowerBeta;
+  while (beta <= Para.UpperBeta) {
+    PolarTemp[int(beta / Para.LowerBeta)].fill(1.0e-10);
+    beta *= Para.AnnealStep;
+  }
+
   ///=== Do all kinds of test  =======================//
   Weight.StaticTest();
   Weight.DynamicTest();
@@ -105,11 +113,29 @@ void markov::Measure() {
   double MCWeight = fabs(Var.CurrGroup->Weight) * Var.CurrGroup->ReWeight;
   double WeightFactor = Var.CurrGroup->Weight / MCWeight;
 
-  Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
-  PolarStatic[Var.CurrGroup->ID] += WeightFactor;
+  // Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
+  // PolarStatic[Var.CurrGroup->ID] += WeightFactor;
+
+  if (Para.DoAnnealing) {
+    if (Var.CurrGroup->Order == 3)
+      PolarTemp[int(Para.Beta / Para.LowerBeta)][Var.CurrExtMomBin] +=
+          WeightFactor;
+
+    // if do annealing, then only measure for the lowerest beta
+    if (abs(Para.Beta - Para.UpperBeta) < 1.0e-6) {
+      Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
+      PolarStatic[Var.CurrGroup->ID] += WeightFactor;
+    }
+  } else {
+    Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
+    PolarStatic[Var.CurrGroup->ID] += WeightFactor;
+  }
 };
 
 void markov::SaveToFile() {
+
+  double Beta = Para.DoAnnealing ? Para.UpperBeta : Para.Beta;
+
   for (auto &group : Groups) {
     ofstream PolarFile;
     string FileName = fmt::format("group{0}_pid{1}.dat", group.Name, Para.PID);
@@ -117,7 +143,7 @@ void markov::SaveToFile() {
     if (PolarFile.is_open()) {
       PolarFile << fmt::sprintf(
           "#PID:%d, Type:%d, rs:%.3f, Beta: %.3f, Group: %s, Step: %d\n",
-          Para.PID, Para.ObsType, Para.Rs, Para.Beta, group.Name, Para.Counter);
+          Para.PID, Para.ObsType, Para.Rs, Beta, group.Name, Para.Counter);
 
       for (int j = 0; j < Polar[group.ID].size(); j++)
         PolarFile << fmt::sprintf("%13.6f\t%13.6f\n", Var.ExtMomTable[j][0],
@@ -136,13 +162,36 @@ void markov::SaveToFile() {
       StaticPolarFile << fmt::sprintf(
           "PID:%-4d  Type:%-2d  Group:%-4s  rs:%-.3f  "
           "Beta:%-.3f  Lambda:%-.3f  Polar: % 13.6f\n",
-          Para.PID, Para.ObsType, group.Name, Para.Rs, Para.Beta, Para.Mass2,
+          Para.PID, Para.ObsType, group.Name, Para.Rs, Beta, Para.Mass2,
           PolarStatic[group.ID]);
     }
     StaticPolarFile.close();
   } else {
     LOG_WARNING("Static Polarization for PID " << Para.PID
                                                << " fails to save!");
+  }
+
+  if (Para.DoAnnealing) {
+    double beta = Para.LowerBeta;
+    while (beta <= Para.UpperBeta) {
+      int index = int(beta / Para.LowerBeta);
+      ofstream PolarFile;
+      string FileName = fmt::format("Temp{0}_pid{1}.dat", beta, Para.PID);
+      PolarFile.open(FileName, ios::out | ios::trunc);
+      if (PolarFile.is_open()) {
+        PolarFile << fmt::sprintf(
+            "#PID:%d, Type:%d, rs:%.3f, Beta: %.3f, Step: %d\n", Para.PID,
+            Para.ObsType, Para.Rs, beta, Para.Counter);
+
+        for (int j = 0; j < PolarTemp[index].size(); j++)
+          PolarFile << fmt::sprintf("%13.6f\t%13.6f\n", Var.ExtMomTable[j][0],
+                                    PolarTemp[index][j]);
+        PolarFile.close();
+      } else {
+        LOG_WARNING("Polarization for PID " << Para.PID << " fails to save!");
+      }
+      beta *= Para.AnnealStep;
+    }
   }
 };
 
@@ -281,6 +330,51 @@ void markov::ChangeMomentum() {
     Weight.RejectChange(*Var.CurrGroup);
   }
 };
+
+void markov::ChangeTemp() {
+  Proposed[CHANGE_TEMP][Var.CurrGroup->ID]++;
+  double OldBeta = Para.Beta;
+  double Prop = ShiftTemperature(Para.Beta);
+  if (Prop < 1.0e-10)
+    return;
+
+  for (int i = 0; i < Var.CurrGroup->TauNum; i++)
+    Var.Tau[i] *= Para.Beta / OldBeta;
+  Var.CurrTau = Para.Beta / OldBeta;
+
+  Weight.ChangeGroup(*Var.CurrGroup, true);
+  double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) *
+             pow(Para.Beta / OldBeta, Var.CurrGroup->TauNum);
+  if (Random.urn() < R) {
+    Accepted[CHANGE_TEMP][Var.CurrGroup->ID]++;
+    Weight.AcceptChange(*Var.CurrGroup);
+  } else {
+    for (int i = 0; i < MaxTauNum; i++)
+      Var.Tau[i] *= OldBeta / Para.Beta;
+    Var.CurrTau = OldBeta / Para.Beta;
+
+    Para.Beta = OldBeta;
+    Weight.RejectChange(*Var.CurrGroup);
+  }
+}
+
+double markov::ShiftTemperature(double &OldBeta) {
+  double Prop = 0.0;
+  double NewBeta;
+  if (Random.urn() < 0.5) {
+    NewBeta = Para.Beta / Para.AnnealStep;
+    if (NewBeta < Para.LowerBeta) {
+      return Prop;
+    }
+  } else {
+    NewBeta = Para.Beta * Para.AnnealStep;
+    if (NewBeta > Para.UpperBeta)
+      return Prop;
+  }
+  OldBeta = NewBeta;
+  return 1.0;
+}
 
 double markov::GetNewTau(double &NewTau) {
   NewTau = Random.urn() * Para.Beta;
