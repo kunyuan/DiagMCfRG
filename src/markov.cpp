@@ -120,7 +120,7 @@ void markov::SaveToFile() {
           Para.PID, Para.ObsType, Para.Rs, Para.Beta, group.Name, Para.Counter);
 
       for (int j = 0; j < Polar[group.ID].size(); j++)
-        PolarFile << fmt::sprintf("%13.6f\t%13.6f\n", Var.ExtMomTable[j][0],
+        PolarFile << fmt::sprintf("%13.6f\t%13.6f\n", Para.ExtMomTable[j][0],
                                   Polar[group.ID][j]);
       PolarFile.close();
     } else {
@@ -259,7 +259,7 @@ void markov::ChangeMomentum() {
 
   if (Var.CurrGroup->IsExtLoop[LoopIndex]) {
     Prop = ShiftExtK(Var.CurrExtMomBin, NewExtMomBin);
-    Var.LoopMom[LoopIndex] = Var.ExtMomTable[NewExtMomBin];
+    Var.LoopMom[LoopIndex] = Para.ExtMomTable[NewExtMomBin];
     if (Var.LoopMom[LoopIndex].norm() > Para.MaxExtMom) {
       Var.LoopMom[LoopIndex] = CurrMom;
       return;

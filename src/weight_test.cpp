@@ -108,10 +108,10 @@ int weight::DynamicTest() {
   //================== External Variable
   //=========================================//
   // ASSERT_ALLWAYS(Equal(Var.Tau[0], 0.0, 1.0e-10), ERR("Tau 0 is not zero!"));
-  ASSERT_ALLWAYS(Equal(Var.ExtMomTable[Var.CurrExtMomBin].data(),
+  ASSERT_ALLWAYS(Equal(Para.ExtMomTable[Var.CurrExtMomBin].data(),
                        Var.LoopMom[0].data(), D, 1.0e-8),
                  ERR("ExtMom is inconsistent! Bin: {0}; Mom: {1} vs {2}\n",
-                     Var.CurrExtMomBin, Var.ExtMomTable[Var.CurrExtMomBin][0],
+                     Var.CurrExtMomBin, Para.ExtMomTable[Var.CurrExtMomBin][0],
                      Var.LoopMom[0][0]));
 
   //=================== check NaN and Excited in weight ======================//

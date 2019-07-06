@@ -10,6 +10,7 @@ double norm2(const momentum &);
 namespace diag {
 
 const int MAXSIGMABIN = 100000;
+
 class fermi {
 public:
   fermi();
@@ -35,7 +36,8 @@ private:
 class bose {
 public:
   bose();
-  double Interaction(double Tau, const momentum &Momentum, int VerType);
+  double Interaction(double Tau, const momentum &Momentum, int VerType,
+                     int Scale = 0);
 
   double Interaction(const momentum &InL, const momentum &InR,
                      const momentum &Transfer, int VerType, int Scale = 0);

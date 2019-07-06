@@ -2,6 +2,7 @@
 #define FeynCalc_global_h
 
 #include "utility/vector.h"
+#include <array>
 #include <math.h>
 #include <string>
 #include <vector>
@@ -12,10 +13,24 @@ const bool DEBUGMODE = true;
 //#define NDEBUG
 // define NDEBUG will turn off debug checking, including the boundary check in
 // array.h
+///////////  Global Constants ////////////////////
+// D=2 or D=3
+const int D = 2;
+// number of q bins of the external momentum
+const int ExtMomBinSize = 64;
+// number of bins for the angle between InL and InR legs
+const int AngBinSize = 32;
+// number of energy scales, only useful in RG approach
+const int ScaleBinSize = 32;
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
 enum type { RG, POLAR };
 enum obstype { FREQ, EQUALTIME };
+enum ver4 { POINT, FULL, MOM, MOM_ANGLE };
+
+typedef Vec<double, D> momentum;
+// typedef std::array<double, D> momentum;
+
 /////////// Global Parameter ////////////////////
 struct parameter {
   // physical parameters
@@ -27,6 +42,7 @@ struct parameter {
   double Mass2;      // screening length^2
   double MaxExtMom;  // the maximum external momentum
   selfenergy SelfEnergyType;
+  ver4 Vertex4Type;
 
   // MC inputs
   type Type;             // polarization, RG
@@ -46,17 +62,12 @@ struct parameter {
   int MessageTimer;  // how many secondes between two checking for message
   int ReweightTimer; // how many secondes between two reweighting
   std::string DiagFileFormat; // the diagram file needs to be loaded
-};
 
-///////////  Global Constants ////////////////////
-// D=2 or D=3
-const int D = 2;
-// number of q bins of the external momentum
-const int ExtMomBinSize = 64;
-// number of bins for the angle between InL and InR legs
-const int AngBinSize = 32;
-// number of energy scales, only useful in RG approach
-const int ScaleBinSize = 32;
+  std::array<momentum, ExtMomBinSize>
+      ExtMomTable; // external bosonic Momentum (transfer momentum)
+  std::array<int, ScaleBinSize + 1> ScaleTable;
+  std::array<double, AngBinSize> AngleTable;
+};
 
 //////////   Diagram  ////////////////////////////
 const int MaxOrder = 8;        // Max diagram order
@@ -96,10 +107,6 @@ const int DIRECT = 0, EXCHANGE = 1;
 
 #define FLIP(x) (1 - x)
 //////////////////////////////////////////////////////
-
-typedef Vec<double, D> momentum;
-
-// typedef std::array<double, D> momentum;
 
 #define FMT_HEADER_ONLY
 

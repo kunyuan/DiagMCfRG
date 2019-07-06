@@ -1,4 +1,5 @@
 #include "weight.h"
+#include "global.h"
 #include "utility/abort.h"
 #include "utility/fmt/format.h"
 #include "utility/vector.h"
@@ -82,15 +83,15 @@ void weight::Initialization() {
   // initialize external momentum
   for (int i = 0; i < ExtMomBinSize; i++) {
     // the external momentum only has x component
-    Var.ExtMomTable[i][0] = i * Para.MaxExtMom / ExtMomBinSize;
+    Para.ExtMomTable[i][0] = i * Para.MaxExtMom / ExtMomBinSize;
     for (int j = 1; j < D; j++)
-      Var.ExtMomTable[i][j] = 0.0;
+      Para.ExtMomTable[i][j] = 0.0;
   }
   Var.CurrExtMomBin = 0;
   // Var.LoopMom[0].fill(0.0);
   // for (int i = 0; i < D; i++)
   //   Var.LoopMom[0][i] = Var.ExtMomTable[Var.CurrExtMomBin][i];
-  Var.LoopMom[0] = Var.ExtMomTable[Var.CurrExtMomBin];
+  Var.LoopMom[0] = Para.ExtMomTable[Var.CurrExtMomBin];
 
   // initialize external tau
   Var.Tau[0] = 0.0;
@@ -105,6 +106,10 @@ void weight::Initialization() {
   //   Var.CurrGroup = &Groups[0];
 
   Var.CurrGroup = &Groups[0];
+
+  // initialize RG staff
+  Var.CurrScale = ScaleBinSize - 1;
+
   LOG_INFO("Calculating the weights of all objects...")
 
   ChangeGroup(*Var.CurrGroup, true);
@@ -128,13 +133,13 @@ void weight::ChangeGroup(group &Group, bool Forced) {
         double Tau = Var.Tau[G->TauBasis[OUT]] - Var.Tau[G->TauBasis[IN]];
         G->Excited = true;
         GetMom(G->LoopBasis, Group.LoopNum, _Mom);
-        G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type);
+        G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type, Var.CurrScale);
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
       // cout << "Ver: " << i << endl;
       vertex4 *Ver4 = d.Ver4[i];
-      if (Para.UseVer4) {
+      if (Para.Vertex4Type == FULL) {
         if (Forced || Ver4->Version < Var.CurrVersion) {
           Ver4->Excited = {true, true};
           GetMom(Ver4->LoopBasis[INL], Group.LoopNum, _InL);
@@ -144,7 +149,7 @@ void weight::ChangeGroup(group &Group, bool Forced) {
           VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, 0,
                           Ver4->NewWeight[DIRECT], Ver4->NewWeight[EXCHANGE]);
         }
-      } else {
+      } else if (Para.Vertex4Type == MOM) {
         if (Forced || Ver4->Version < Var.CurrVersion) {
           Ver4->Excited = {true, true};
           GetMom(Ver4->IntLoopBasis[IN], Group.LoopNum, _Mom);
@@ -152,6 +157,21 @@ void weight::ChangeGroup(group &Group, bool Forced) {
           GetMom(Ver4->IntLoopBasis[OUT], Group.LoopNum, _Mom);
           Ver4->NewWeight[OUT] = Bose.Interaction(0.0, _Mom, Ver4->Type[OUT]);
         }
+      } else if (Para.Vertex4Type == MOM_ANGLE) {
+        if (Forced || Ver4->Version < Var.CurrVersion) {
+          Ver4->Excited = {true, true};
+          GetMom(Ver4->LoopBasis[INL], Group.LoopNum, _InL);
+          GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
+
+          GetMom(Ver4->IntLoopBasis[DIRECT], Group.LoopNum, _Mom);
+          Ver4->NewWeight[DIRECT] =
+              Bose.Interaction(_InL, _InR, _Mom, Ver4->Type[DIRECT]);
+          GetMom(Ver4->IntLoopBasis[EXCHANGE], Group.LoopNum, _Mom);
+          Ver4->NewWeight[EXCHANGE] =
+              Bose.Interaction(_InL, _InR, _Mom, Ver4->Type[EXCHANGE]);
+        }
+      } else {
+        ABORT("Vertex4Type is not implemented!");
       }
     }
   }
@@ -165,13 +185,13 @@ void weight::ChangeMom(group &Group, int MomIndex) {
         double Tau = Var.Tau[G->TauBasis[OUT]] - Var.Tau[G->TauBasis[IN]];
         G->Excited = true;
         GetMom(G->LoopBasis, Group.LoopNum, _Mom);
-        G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type);
+        G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type, Var.CurrScale);
       }
     }
     for (int i = 0; i < Group.Ver4Num; i++) {
       vertex4 *Ver4 = d.Ver4[i];
 
-      if (Para.UseVer4) {
+      if (Para.Vertex4Type == FULL) {
         if (Ver4->LoopBasis[INL][MomIndex] != 0 ||
             Ver4->LoopBasis[INR][MomIndex] != 0 ||
             Ver4->LoopBasis[OUTL][MomIndex] != 0 ||
@@ -184,7 +204,7 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           VerFunc.Vertex4(_InL, _InR, _OutL, _OutR, 0, 0,
                           Ver4->NewWeight[DIRECT], Ver4->NewWeight[EXCHANGE]);
         }
-      } else {
+      } else if (Para.Vertex4Type == MOM) {
         if (Ver4->IntLoopBasis[DIRECT][MomIndex] != 0) {
           Ver4->Excited[DIRECT] = true;
           GetMom(Ver4->IntLoopBasis[IN], Group.LoopNum, _Mom);
@@ -195,8 +215,27 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           Ver4->Excited[EXCHANGE] = true;
           GetMom(Ver4->IntLoopBasis[EXCHANGE], Group.LoopNum, _Mom);
           Ver4->NewWeight[EXCHANGE] =
-              Bose.Interaction(0.0, _Mom, Ver4->Type[OUT]);
+              Bose.Interaction(0.0, _Mom, Ver4->Type[EXCHANGE]);
         }
+
+      } else if (Para.Vertex4Type == MOM_ANGLE) {
+        GetMom(Ver4->LoopBasis[INL], Group.LoopNum, _InL);
+        GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
+
+        if (Ver4->IntLoopBasis[DIRECT][MomIndex] != 0) {
+          Ver4->Excited[DIRECT] = true;
+          GetMom(Ver4->IntLoopBasis[IN], Group.LoopNum, _Mom);
+          Ver4->NewWeight[DIRECT] =
+              Bose.Interaction(_InL, _InR, _Mom, Ver4->Type[DIRECT]);
+        }
+        if (Ver4->IntLoopBasis[EXCHANGE][MomIndex] != 0) {
+          Ver4->Excited[EXCHANGE] = true;
+          GetMom(Ver4->IntLoopBasis[EXCHANGE], Group.LoopNum, _Mom);
+          Ver4->NewWeight[EXCHANGE] =
+              Bose.Interaction(_InL, _InR, _Mom, Ver4->Type[EXCHANGE]);
+        }
+      } else {
+        ABORT("Vertex4Type is not implemented!");
       }
     }
   }
@@ -216,7 +255,7 @@ void weight::ChangeTau(group &Group, int TauIndex) {
         double Tau = Var.Tau[TauOut] - Var.Tau[TauIn];
         G->Excited = true;
         GetMom(G->LoopBasis, Group.LoopNum, _Mom);
-        G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type);
+        G->NewWeight = Fermi.Green(Tau, _Mom, UP, G->Type, Var.CurrScale);
       }
     }
   }

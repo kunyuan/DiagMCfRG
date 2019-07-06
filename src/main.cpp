@@ -55,6 +55,8 @@ void InitPara() {
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 
+  Para.Vertex4Type = MOM_ANGLE;
+
   //// initialize the global parameter //////////////////////
   double Kf;
   if (D == 3) {
@@ -73,6 +75,15 @@ void InitPara() {
   Para.Beta /= Para.Ef;
   Para.UVScale = 8.0 * Para.Ef;
   Para.UVCoupling = 1.0 * Para.Ef;
+
+  double dScale = Para.UVScale / ScaleBinSize;
+  for (int i = 0; i < ScaleBinSize + 1; i++) {
+    Para.ScaleTable[i] = i * dScale;
+  }
+
+  for (int i = 0; i < AngBinSize; i++) {
+    Para.AngleTable[i] = diag::Index2Angle(i, AngBinSize);
+  }
 
   LOG_INFO("Inverse Temperature: " << Para.Beta << "\n"
                                    << "UV Energy Scale: " << Para.UVScale

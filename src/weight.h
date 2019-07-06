@@ -12,12 +12,12 @@ using namespace std;
 struct variable {
   group *CurrGroup;
   long int CurrVersion;
-  int CurrExtMomBin;                   // current bin of the external momentum
-  double CurrTau;                      // current external tau
+  int CurrExtMomBin; // current bin of the external momentum
+  double CurrTau;    // current external tau
+  int CurrScale;     // Current (Reference) Scale: Index=1, ..., ScaleBinSize
   array<momentum, MaxLoopNum> LoopMom; // all momentum loop variables
   array<double, MaxTauNum> Tau;        // all tau variables
   array<int, MaxLoopNum> LoopSpin;     // all spin variables
-  array<momentum, ExtMomBinSize> ExtMomTable;
 };
 
 class weight {

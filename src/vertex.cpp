@@ -39,7 +39,8 @@ bose::bose() {
   }
 }
 
-double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
+double bose::Interaction(double Tau, const momentum &Mom, int VerType,
+                         int Scale) {
   if (VerType >= 0) {
     double interaction = 8.0 * PI / (Mom.squaredNorm() + Para.Mass2);
     if (VerType > 0) {
@@ -157,7 +158,7 @@ double fermi::FockSigma(const momentum &Mom) {
 
 double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
   // if tau is exactly zero, set tau=0^-
-  double green, Ek;
+  double green, Ek, kk;
   if (Tau == 0.0) {
     return EPS;
   }
@@ -171,8 +172,9 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
     s = -s;
   }
 
+  kk = Mom.squaredNorm();
   if (Para.SelfEnergyType == BARE)
-    Ek = Mom.squaredNorm(); // bare propagator
+    Ek = kk; // bare propagator
   else if (Para.SelfEnergyType == FOCK)
     Ek = FockSigma(Mom); // Fock diagram dressed propagator
   else
@@ -213,6 +215,11 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
     ABORT("Step:" << Para.Counter << ", Green is too large! Tau=" << Tau
                   << ", Ek=" << Ek << ", Green=" << green << ", Mom"
                   << ToString(Mom));
+
+  if (Para.Type == RG) {
+    double kScale = Para.ScaleTable[Scale];
+    green *= (1 - exp(-kk / kScale / kScale));
+  }
   return green;
 }
 
@@ -220,13 +227,18 @@ double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType,
                     int Scale) {
   double green;
   if (GType == 0) {
-    green = PhyGreen(Tau, Mom);
+    green = PhyGreen(Tau, Mom, Scale);
   } else if (GType == 1) {
     // equal time green's function
-    green = PhyGreen(-1.0e-10, Mom);
+    green = PhyGreen(-1.0e-10, Mom, Scale);
   } else if (GType == -1) {
+    // green = PhyGreen(Tau, Mom, Scale);
+    green = 1.0;
+
+  } else if (GType == -2) {
+    // Lower Scale Green's function
+    Scale -= 1;
     green = PhyGreen(Tau, Mom, Scale);
-    // green = 1.0;
   } else {
     ABORT("GType " << GType << " has not yet been implemented!");
     // return FakeGreen(Tau, Mom);
