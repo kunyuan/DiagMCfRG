@@ -1,5 +1,5 @@
-# FeynCalc
-A general purpose calculator for Feynman diagrams
+# DiagMC RG
+A DiagMC approach to condensed matter field theory
 
 # Diagram generation
 
