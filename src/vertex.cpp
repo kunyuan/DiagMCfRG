@@ -19,6 +19,26 @@ extern parameter Para;
 // }
 
 // double norm2(const momentum &Mom) { return sqrt(sum2(Mom)); }
+bose::bose() {
+
+  if (D == 3)
+    return;
+
+  _TestAngle2D();
+  _TestAngleIndex();
+
+  // initialize UV ver4 table
+  momentum KInL = {1.0, 0.0};
+  for (int scale = 0; scale < ScaleBinSize; ++scale)
+    for (int inin = 0; inin < AngBinSize; ++inin)
+      for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
+        double k = (qIndex + 0.5) / ExtMomBinSize * Para.MaxExtMom;
+        EffInteraction[scale][qIndex][inin] = 8.0 * PI / (k * k + Para.Mass2);
+        DiffInteraction[scale][qIndex][inin] = 0.0;
+      }
+
+  Normalization = 1.0e-10;
+}
 
 double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
   if (VerType >= 0) {
@@ -122,7 +142,7 @@ double fermi::FockSigma(const momentum &Mom) {
   return fock + k * k;
 }
 
-double fermi::PhyGreen(double Tau, const momentum &Mom) {
+double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
   // if tau is exactly zero, set tau=0^-
   double green, Ek;
   if (Tau == 0.0) {
@@ -183,7 +203,8 @@ double fermi::PhyGreen(double Tau, const momentum &Mom) {
   return green;
 }
 
-double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
+double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType,
+                    int Scale) {
   double green;
   if (GType == 0) {
     green = PhyGreen(Tau, Mom);
@@ -191,7 +212,7 @@ double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType) {
     // equal time green's function
     green = PhyGreen(-1.0e-10, Mom);
   } else if (GType == -1) {
-    green = PhyGreen(Tau, Mom);
+    green = PhyGreen(Tau, Mom, Scale);
     // green = 1.0;
   } else {
     ABORT("GType " << GType << " has not yet been implemented!");
@@ -207,20 +228,20 @@ verfunc::verfunc() {
   if (D == 3)
     return;
 
-  _TestAngle2D();
-  _TestAngleIndex();
+  // _TestAngle2D();
+  // _TestAngleIndex();
 
-  // initialize UV ver4 table
-  momentum KInL = {1.0, 0.0};
-  for (int inin = 0; inin < InInAngBinSize; ++inin)
-    for (int inout = 0; inout < InOutAngBinSize; ++inout) {
-      double AngleInIn = Index2Angle(inin, InInAngBinSize);
-      double AngleInOut = Index2Angle(inout, InOutAngBinSize);
-      momentum KInR = {cos(AngleInIn), sin(AngleInIn)};
-      momentum KOutL = {cos(AngleInOut), sin(AngleInOut)};
-      momentum KOutR = KInL + KInR - KOutL;
-      Ver4AtUV[inin][inout] = (KInL - KInR).dot(KOutL - KOutR);
-    }
+  // // initialize UV ver4 table
+  // momentum KInL = {1.0, 0.0};
+  // for (int inin = 0; inin < InInAngBinSize; ++inin)
+  //   for (int inout = 0; inout < InOutAngBinSize; ++inout) {
+  //     double AngleInIn = Index2Angle(inin, InInAngBinSize);
+  //     double AngleInOut = Index2Angle(inout, InOutAngBinSize);
+  //     momentum KInR = {cos(AngleInIn), sin(AngleInIn)};
+  //     momentum KOutL = {cos(AngleInOut), sin(AngleInOut)};
+  //     momentum KOutR = KInL + KInR - KOutL;
+  //     Ver4AtUV[inin][inout] = (KInL - KInR).dot(KOutL - KOutR);
+  //   }
 }
 
 void verfunc::Vertex4(const momentum &InL, const momentum &InR,
@@ -237,7 +258,7 @@ void verfunc::Vertex4(const momentum &InL, const momentum &InR,
   /**************   Generic Interaction ************************/
 }
 
-double verfunc::Angle2D(const momentum &K1, const momentum &K2) {
+double diag::Angle2D(const momentum &K1, const momentum &K2) {
   // Returns the angle in radians between vectors 'K1' and 'K2'
   double dotp = K1.dot(K2);
   double det = K1[0] * K2[1] - K1[1] * K2[0];
@@ -247,12 +268,12 @@ double verfunc::Angle2D(const momentum &K1, const momentum &K2) {
   return Angle2D;
 }
 
-double verfunc::Index2Angle(const int &Index, const int &AngleNum) {
+double diag::Index2Angle(const int &Index, const int &AngleNum) {
   // Map index [0...AngleNum-1] to the theta range [0.0, 2*pi)
   return Index * 2.0 * PI / AngleNum;
 }
 
-int verfunc::Angle2Index(const double &Angle, const int &AngleNum) {
+int diag::Angle2Index(const double &Angle, const int &AngleNum) {
   // Map theta range  [0.0, 2*pi) to index [0...AngleNum-1]
   double dAngle = 2.0 * PI / AngleNum;
   if (Angle >= 2.0 * PI - dAngle / 2.0 || Angle < dAngle / 2.0)
@@ -261,7 +282,7 @@ int verfunc::Angle2Index(const double &Angle, const int &AngleNum) {
     return int(Angle / dAngle + 0.5);
 }
 
-void verfunc::_TestAngle2D() {
+void diag::_TestAngle2D() {
   // Test Angle functions
   momentum K1 = {1.0, 0.0};
   momentum K2 = {1.0, 0.0};
@@ -286,7 +307,7 @@ void verfunc::_TestAngle2D() {
                   Angle2D(K1, K2)));
 }
 
-void verfunc::_TestAngleIndex() {
+void diag::_TestAngleIndex() {
   // Test Angle functions
   int AngleNum = 64;
   ASSERT_ALLWAYS(abs(Index2Angle(0, AngleNum) - 0.0) < 1.0e-10,

@@ -13,7 +13,8 @@ const int MAXSIGMABIN = 100000;
 class fermi {
 public:
   fermi();
-  double Green(double Tau, const momentum &Momentum, spin Spin, int GType);
+  double Green(double Tau, const momentum &Momentum, spin Spin, int GType,
+               int Scale);
 
 private:
   // beyond which the expense sigma function will be called
@@ -21,7 +22,7 @@ private:
   double DeltaK;
   double UpperBound2, LowerBound2; // lower upbound for better sigma
   double DeltaK2;
-  double PhyGreen(double Tau, const momentum &Mom);
+  double PhyGreen(double Tau, const momentum &Mom, int Scale = 0);
   double FockSigma(const momentum &Mom);
   double BuildFockSigma();
   double Fock(double k);
@@ -33,7 +34,12 @@ private:
 
 class bose {
 public:
+  bose();
   double Interaction(double Tau, const momentum &Momentum, int VerType);
+
+  double EffInteraction[ScaleBinSize][ExtMomBinSize][AngBinSize];
+  double DiffInteraction[ScaleBinSize][ExtMomBinSize][AngBinSize];
+  double Normalization;
 };
 
 class verfunc {
@@ -43,14 +49,20 @@ public:
                const momentum &OutR, int Ver4TypeDirect, int Ver4TypeExchange,
                double &Direct, double &Exchange);
 
-private:
-  double Ver4AtUV[InInAngBinSize][InOutAngBinSize];
-  double Angle2D(const momentum &K1, const momentum &K2);
-  double Index2Angle(const int &Index, const int &AngleNum);
-  int Angle2Index(const double &Angle, const int &AngleNum);
-  void _TestAngleIndex();
-  void _TestAngle2D();
+  // private:
+  //   double Ver4AtUV[InInAngBinSize][InOutAngBinSize];
+  //   double Angle2D(const momentum &K1, const momentum &K2);
+  //   double Index2Angle(const int &Index, const int &AngleNum);
+  //   int Angle2Index(const double &Angle, const int &AngleNum);
+  //   void _TestAngleIndex();
+  //   void _TestAngle2D();
 };
+
+double Angle2D(const momentum &K1, const momentum &K2);
+double Index2Angle(const int &Index, const int &AngleNum);
+int Angle2Index(const double &Angle, const int &AngleNum);
+void _TestAngleIndex();
+void _TestAngle2D();
 
 }; // namespace diag
 #endif

@@ -39,16 +39,17 @@ void InitPara() {
   string LogFile = "_" + to_string(Para.PID) + ".log";
   LOGGER_CONF(LogFile, "MC", Logger::file_on | Logger::screen_on, INFO, INFO);
 
-  Para.Type = POLAR;
+  // Para.Type = POLAR;
+  Para.Type = RG;
   Para.ObsType = FREQ;
 
   Para.UseVer4 = false;
   // Para.UseVer4 = true;
 
   // diagram file path: groups/DiagPolar1.dat
-  Para.DiagFileFormat = "groups/DiagPolar{}.txt";
-  // Para.DiagFileFormat = "groups/DiagLoop{}.txt";
-  Para.GroupName = {"1", "2", "3"};
+  // Para.DiagFileFormat = "groups/DiagPolar{}.txt";
+  Para.DiagFileFormat = "groups/DiagLoop{}.txt";
+  Para.GroupName = {"1", "2"};
   // Para.GroupName = {"1", "2"};
   Para.ReWeight = {1.0, 1.0, 5.0, 10.0, 0.1};
   // Para.SelfEnergyType = FOCK;
