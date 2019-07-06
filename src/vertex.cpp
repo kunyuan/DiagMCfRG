@@ -67,7 +67,7 @@ double bose::Interaction(const momentum &InL, const momentum &InR,
   } else if (VerType == -1) {
     return 1.0;
   } else if (VerType == -2) {
-    return 0.0;
+    return exp(-Transfer.squaredNorm() / Para.Kf / Para.Kf);
   } else {
     ABORT("VerType can not be " << VerType);
   }

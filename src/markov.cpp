@@ -257,13 +257,15 @@ void markov::ChangeMomentum() {
 
   CurrMom = Var.LoopMom[LoopIndex];
 
-  if (Var.CurrGroup->IsExtLoop[LoopIndex]) {
-    Prop = ShiftExtK(Var.CurrExtMomBin, NewExtMomBin);
+  if (Var.CurrGroup->IsExtTransferLoop[LoopIndex]) {
+    Prop = ShiftExtTransferK(Var.CurrExtMomBin, NewExtMomBin);
     Var.LoopMom[LoopIndex] = Para.ExtMomTable[NewExtMomBin];
     if (Var.LoopMom[LoopIndex].norm() > Para.MaxExtMom) {
       Var.LoopMom[LoopIndex] = CurrMom;
       return;
     }
+  } else if (Var.CurrGroup->IsExtLegLoop[LoopIndex]) {
+    Prop = ShiftExtLegK(CurrMom, Var.LoopMom[LoopIndex]);
   } else {
     Prop = ShiftK(CurrMom, Var.LoopMom[LoopIndex]);
   }
@@ -407,9 +409,20 @@ double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
   return Prop;
 };
 
-double markov::ShiftExtK(const int &OldExtMomBin, int &NewExtMomBin) {
+double markov::ShiftExtTransferK(const int &OldExtMomBin, int &NewExtMomBin) {
   NewExtMomBin = Random.irn(0, ExtMomBinSize - 1);
   return 1.0;
+};
+
+double markov::ShiftExtLegK(const momentum &OldExtMom, momentum &NewExtMom) {
+  if (D == 2) {
+    double Theta = Random.irn(0, 2.0 * PI);
+    NewExtMom[0] = Para.Kf * cos(Theta);
+    NewExtMom[1] = Para.Kf * sin(Theta);
+    return 1.0;
+  } else {
+    ABORT("ShiftExtKOnKf for D=3 has not yet been implemented!");
+  }
 };
 
 double markov::ShiftTau(const double &OldTau, double &NewTau) {

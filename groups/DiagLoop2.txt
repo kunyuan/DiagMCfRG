@@ -5,6 +5,8 @@
 #Ver4Num: 2
 #LoopNum: 4
 #ExtLoopIndex: 0 1 2
+#ExtTransferLoopIndex: 0
+#ExtLegLoopIndex: 1 2
 #DummyLoopIndex: 
 #TauNum: 4
 #ExtTauIndex: 0 1

@@ -8,6 +8,8 @@
 using namespace diag;
 using namespace std;
 
+extern parameter Para;
+
 /*Find Case Insensitive Sub String in a given substring */
 size_t _findCaseInsensitive(std::string data, std::string toSearch,
                             size_t pos = 0) {
@@ -362,6 +364,19 @@ group diag::ReadOneGroup(istream &DiagFile, pool &Pool) {
   Group.IsExtLoop.fill(false);
   for (auto index : ExtLoop)
     Group.IsExtLoop[index] = true;
+
+  vector<int> ExtTransferLoop =
+      _ExtractNumbers<int>(DiagFile, "ExtTransferLoopIndex");
+  Group.ExtTransferLoopNum = ExtTransferLoop.size();
+  Group.IsExtTransferLoop.fill(false);
+  for (auto index : ExtTransferLoop)
+    Group.IsExtTransferLoop[index] = true;
+
+  vector<int> ExtLegLoop = _ExtractNumbers<int>(DiagFile, "ExtLegLoopIndex");
+  Group.ExtLegLoopNum = ExtLegLoop.size();
+  Group.IsExtLegLoop.fill(false);
+  for (auto index : ExtLegLoop)
+    Group.IsExtLegLoop[index] = true;
 
   vector<int> LockedLoop = _ExtractNumbers<int>(DiagFile, "DummyLoopIndex");
   Group.IsLockedLoop.fill(false);

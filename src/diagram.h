@@ -74,20 +74,24 @@ struct diagram {
 struct group {
   std::string Name;
   int ID;
-  int HugenNum;        // Number of Hugenholz diagrams in each group
-  int Order;           // diagram order of the group
-  int Ver4Num;         // number of 4-vertex
-  int GNum;            // number of G
-  int LoopNum;         // dimension of loop basis
-  int InternalLoopNum; // dimension of internal loop basis
-  int ExtLoopNum;      // dimension of external loop basis
-  int TauNum;          // dimension of tau basis
-  int ExtTauNum;       // dimension of external tau basis
-  int InternalTauNum;  // dimension of internal tau basis
+  int HugenNum;           // Number of Hugenholz diagrams in each group
+  int Order;              // diagram order of the group
+  int Ver4Num;            // number of 4-vertex
+  int GNum;               // number of G
+  int LoopNum;            // dimension of loop basis
+  int InternalLoopNum;    // dimension of internal loop basis
+  int ExtLoopNum;         // dimension of external loop basis
+  int ExtTransferLoopNum; // dimension of external loop basis
+  int ExtLegLoopNum;      // dimension of external loop basis
+  int TauNum;             // dimension of tau basis
+  int ExtTauNum;          // dimension of external tau basis
+  int InternalTauNum;     // dimension of internal tau basis
   double ReWeight;
   double Weight;
   double NewWeight;
   array<bool, MaxLoopNum> IsExtLoop;
+  array<bool, MaxLoopNum> IsExtTransferLoop;
+  array<bool, MaxLoopNum> IsExtLegLoop;
   array<bool, MaxLoopNum> IsLockedLoop;
   array<bool, MaxTauNum> IsExtTau;
   array<bool, MaxTauNum> IsLockedTau;

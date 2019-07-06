@@ -49,7 +49,8 @@ private:
 
   // MC updates
 
-  double ShiftExtK(const int &, int &);
+  double ShiftExtTransferK(const int &, int &);
+  double ShiftExtLegK(const momentum &, momentum &);
   double ShiftK(const momentum &, momentum &);
   double ShiftTau(const double &, double &);
 

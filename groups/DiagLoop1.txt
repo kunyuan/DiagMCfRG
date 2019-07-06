@@ -5,6 +5,8 @@
 #Ver4Num: 1
 #LoopNum: 3
 #ExtLoopIndex: 0 1 2
+#ExtTransferLoopIndex: 0
+#ExtLegLoopIndex: 1 2
 #DummyLoopIndex:
 #TauNum: 3
 #ExtTauIndex: 0 1
@@ -26,6 +28,6 @@
 # Ver4Legs(InL,OutL,InR,OutR)
 1 2 0 3 
 # WType(Direct,Exchange)
--1 -1
+-2 -2
 # SpinFactor
  1  0 
