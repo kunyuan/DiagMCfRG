@@ -27,17 +27,16 @@ bose::bose() {
   _TestAngle2D();
   _TestAngleIndex();
 
-  // initialize UV ver4 table
-  momentum KInL = {1.0, 0.0};
-  for (int scale = 0; scale < ScaleBinSize; ++scale)
+  // initialize interaction table
+  for (int scale = 0; scale < ScaleBinSize; ++scale) {
+    Normalization[scale] = 1.0e-10;
     for (int inin = 0; inin < AngBinSize; ++inin)
       for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
-        double k = (qIndex + 0.5) / ExtMomBinSize * Para.MaxExtMom;
-        EffInteraction[scale][qIndex][inin] = 8.0 * PI / (k * k + Para.Mass2);
-        DiffInteraction[scale][qIndex][inin] = 0.0;
+        double k = Index2Mom(qIndex);
+        EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
+        DiffInteraction[scale][inin][qIndex] = 0.0;
       }
-
-  Normalization = 1.0e-10;
+  }
 }
 
 double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
@@ -48,8 +47,22 @@ double bose::Interaction(double Tau, const momentum &Mom, int VerType) {
       interaction *=
           pow(Para.Mass2 / (Mom.squaredNorm() + Para.Mass2), VerType);
       interaction *= pow(-1, VerType);
+      return interaction;
     }
-    return interaction;
+  } else if (VerType == -1) {
+    return 1.0;
+  } else if (VerType == -2) {
+    return 0.0;
+  } else {
+    ABORT("VerType can not be " << VerType);
+  }
+}
+
+double bose::Interaction(const momentum &InL, const momentum &InR,
+                         const momentum &Transfer, int VerType, int Scale) {
+  if (VerType >= 0) {
+    int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
+    return EffInteraction[Scale][AngleIndex][Mom2Index(Transfer.norm())];
   } else if (VerType == -1) {
     return 1.0;
   } else if (VerType == -2) {
@@ -257,6 +270,14 @@ void verfunc::Vertex4(const momentum &InL, const momentum &InR,
 
   /**************   Generic Interaction ************************/
 }
+
+double diag::Index2Mom(const int &Index) {
+  return (Index + 0.5) / ExtMomBinSize * Para.MaxExtMom;
+};
+
+int diag::Mom2Index(const double &K) {
+  return int(K / Para.MaxExtMom * ExtMomBinSize);
+};
 
 double diag::Angle2D(const momentum &K1, const momentum &K2) {
   // Returns the angle in radians between vectors 'K1' and 'K2'

@@ -14,7 +14,7 @@ class fermi {
 public:
   fermi();
   double Green(double Tau, const momentum &Momentum, spin Spin, int GType,
-               int Scale);
+               int Scale = 0);
 
 private:
   // beyond which the expense sigma function will be called
@@ -37,9 +37,12 @@ public:
   bose();
   double Interaction(double Tau, const momentum &Momentum, int VerType);
 
-  double EffInteraction[ScaleBinSize][ExtMomBinSize][AngBinSize];
-  double DiffInteraction[ScaleBinSize][ExtMomBinSize][AngBinSize];
-  double Normalization;
+  double Interaction(const momentum &InL, const momentum &InR,
+                     const momentum &Transfer, int VerType, int Scale = 0);
+
+  double EffInteraction[ScaleBinSize][AngBinSize][ExtMomBinSize];
+  double DiffInteraction[ScaleBinSize][AngBinSize][ExtMomBinSize];
+  double Normalization[ScaleBinSize];
 };
 
 class verfunc {
@@ -63,6 +66,9 @@ double Index2Angle(const int &Index, const int &AngleNum);
 int Angle2Index(const double &Angle, const int &AngleNum);
 void _TestAngleIndex();
 void _TestAngle2D();
+
+double Index2Mom(const int &Index);
+int Mom2Index(const double &K);
 
 }; // namespace diag
 #endif
