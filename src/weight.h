@@ -39,6 +39,10 @@ public:
   void AcceptChange(group &);
   void RejectChange(group &);
 
+  void Measure(double WeightFactor);
+  void Update(double Ratio);
+  void Save();
+
   // run test in MC updates
   int DynamicTest();
 
@@ -79,7 +83,8 @@ private:
   template <typename... TS> string ERR(string format, TS... args);
 
   fermi Fermi;
-  bose Bose;
+  verQ VerQ;
+  verQTheta VerQTheta;
   verfunc VerFunc;
 };
 

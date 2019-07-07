@@ -49,7 +49,7 @@ void InitPara() {
   // diagram file path: groups/DiagPolar1.dat
   // Para.DiagFileFormat = "groups/DiagPolar{}.txt";
   Para.DiagFileFormat = "groups/DiagLoop{}.txt";
-  Para.GroupName = {"1", "2"};
+  Para.GroupName = {"0", "1"};
   // Para.GroupName = {"1", "2"};
   Para.ReWeight = {1.0, 1.0, 5.0, 10.0, 0.1};
   // Para.SelfEnergyType = FOCK;
@@ -79,7 +79,9 @@ void InitPara() {
   double dScale = Para.UVScale / ScaleBinSize;
   for (int i = 0; i < ScaleBinSize + 1; i++) {
     Para.ScaleTable[i] = i * dScale;
+    Para.dScaleTable[i] = dScale;
   }
+  Para.dScaleTable[0] = 0.0;
 
   for (int i = 0; i < AngBinSize; i++) {
     Para.AngleTable[i] = diag::Index2Angle(i, AngBinSize);
@@ -123,14 +125,17 @@ void MonteCarlo() {
       // }
 
       double x = Random.urn();
-      if (x < 1.0 / 3.0) {
+      if (x < 1.0 / 4.0) {
         Markov.ChangeGroup();
         // ;
-      } else if (x < 2.0 / 3.0) {
+      } else if (x < 2.0 / 4.0) {
         Markov.ChangeMomentum();
         // ;
       } else if (x < 3.0 / 3.0) {
         Markov.ChangeTau();
+        // ;
+      } else if (x < 4.0 / 4.0) {
+        Markov.ChangeScale();
         // ;
       }
 
@@ -143,6 +148,9 @@ void MonteCarlo() {
       // Markov.DynamicTest();
 
       if (i % 1000 == 0) {
+
+        // Markov.UpdateWeight(1.0);
+
         // Markov.PrintDeBugMCInfo();
         if (PrinterTimer.check(Para.PrinterTimer)) {
           Markov.DynamicTest();

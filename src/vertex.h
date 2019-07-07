@@ -33,18 +33,26 @@ private:
   double Sigma2[MAXSIGMABIN];
 };
 
-class bose {
+class verQTheta {
 public:
-  bose();
-  double Interaction(double Tau, const momentum &Momentum, int VerType,
-                     int Scale = 0);
-
+  verQTheta();
   double Interaction(const momentum &InL, const momentum &InR,
                      const momentum &Transfer, int VerType, int Scale = 0);
 
+  void Measure(const momentum &InL, const momentum &InR, const int QIndex,
+               int Scale, int Order, double WeightFactor);
+  void Update(double Ratio = 1.0);
+  void Save();
   double EffInteraction[ScaleBinSize][AngBinSize][ExtMomBinSize];
-  double DiffInteraction[ScaleBinSize][AngBinSize][ExtMomBinSize];
-  double Normalization[ScaleBinSize];
+  double DiffInteraction[MaxOrder][ScaleBinSize][AngBinSize][ExtMomBinSize];
+  double Normalization;
+  double PhyWeight;
+};
+
+class verQ {
+public:
+  double Interaction(double Tau, const momentum &Momentum, int VerType,
+                     int Scale = 0);
 };
 
 class verfunc {

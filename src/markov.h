@@ -32,6 +32,7 @@ public:
   void ChangeScale();
 
   void Measure();
+  void UpdateWeight(double Ratio);
   void SaveToFile();
 
   int DynamicTest();

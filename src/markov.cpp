@@ -36,6 +36,7 @@ markov::markov() : Var(Weight.Var), Groups(Weight.Groups) {
   UpdatesName[CHANGE_GROUP] = NAME(CHANGE_GROUP);
   UpdatesName[CHANGE_MOM] = NAME(CHANGE_MOM);
   UpdatesName[CHANGE_TAU] = NAME(CHANGE_TAU);
+  UpdatesName[CHANGE_SCALE] = NAME(CHANGE_SCALE);
 
   // for(int i=0;i<MCUpdates;i++)
   // UpdatesName[(Updates)i]=NAME((Updates))
@@ -107,7 +108,11 @@ void markov::Measure() {
 
   Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
   PolarStatic[Var.CurrGroup->ID] += WeightFactor;
+
+  Weight.Measure(WeightFactor);
 };
+
+void markov::UpdateWeight(double Ratio) { Weight.Update(Ratio); }
 
 void markov::SaveToFile() {
   for (auto &group : Groups) {
@@ -144,6 +149,8 @@ void markov::SaveToFile() {
     LOG_WARNING("Static Polarization for PID " << Para.PID
                                                << " fails to save!");
   }
+
+  Weight.Save();
 };
 
 void markov::ChangeGroup() {
@@ -285,7 +292,33 @@ void markov::ChangeMomentum() {
 };
 
 void markov::ChangeScale() {
-  // TODO:
+  if (Para.Type != RG)
+    return;
+  double Prop = 1.0;
+  int NewScale;
+  if (Random.urn() < 0.5)
+    NewScale = Var.CurrScale + 1;
+  else
+    NewScale = Var.CurrScale - 1;
+
+  if (NewScale > ScaleBinSize || NewScale < 1)
+    return;
+
+  Proposed[CHANGE_SCALE][Var.CurrGroup->ID] += 1;
+
+  Weight.ChangeGroup(*(Var.CurrGroup));
+  double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
+  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
+  if (Random.urn() < R) {
+    Accepted[CHANGE_SCALE][Var.CurrGroup->ID]++;
+    Weight.AcceptChange(*Var.CurrGroup);
+  } else {
+    // retore the old Tau if the update is rejected
+    // if TauIndex is external, then its partner can be different
+    Var.CurrScale = NewScale;
+    Weight.RejectChange(*Var.CurrGroup);
+  }
+  return;
 }
 
 double markov::GetNewTau(double &NewTau) {

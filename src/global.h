@@ -21,7 +21,7 @@ const int ExtMomBinSize = 64;
 // number of bins for the angle between InL and InR legs
 const int AngBinSize = 32;
 // number of energy scales, only useful in RG approach
-const int ScaleBinSize = 32;
+const int ScaleBinSize = 8;
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
 enum type { RG, POLAR };
@@ -66,6 +66,7 @@ struct parameter {
   std::array<momentum, ExtMomBinSize>
       ExtMomTable; // external bosonic Momentum (transfer momentum)
   std::array<int, ScaleBinSize + 1> ScaleTable;
+  std::array<int, ScaleBinSize + 1> dScaleTable;
   std::array<double, AngBinSize> AngleTable;
 };
 
@@ -101,7 +102,7 @@ const int OUT = 1;
 const int LEFT = 0;
 const int RIGHT = 1;
 
-const int INL = 0, OUTL = 1, INR = 2, OUTR = 3;
+const int INL = 1, OUTL = 2, INR = 3, OUTR = 4;
 
 const int DIRECT = 0, EXCHANGE = 1;
 

@@ -2,6 +2,7 @@
 #include "global.h"
 #include "utility/abort.h"
 #include "utility/fmt/format.h"
+#include "utility/fmt/printf.h"
 #include "utility/utility.h"
 #include <cmath>
 #include <iostream>
@@ -18,28 +19,7 @@ extern parameter Para;
 //   return Sum2;
 // }
 
-// double norm2(const momentum &Mom) { return sqrt(sum2(Mom)); }
-bose::bose() {
-
-  if (D == 3)
-    return;
-
-  _TestAngle2D();
-  _TestAngleIndex();
-
-  // initialize interaction table
-  for (int scale = 0; scale < ScaleBinSize; ++scale) {
-    Normalization[scale] = 1.0e-10;
-    for (int inin = 0; inin < AngBinSize; ++inin)
-      for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
-        double k = Index2Mom(qIndex);
-        EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
-        DiffInteraction[scale][inin][qIndex] = 0.0;
-      }
-  }
-}
-
-double bose::Interaction(double Tau, const momentum &Mom, int VerType,
+double verQ::Interaction(double Tau, const momentum &Mom, int VerType,
                          int Scale) {
   if (VerType >= 0) {
     double interaction = 8.0 * PI / (Mom.squaredNorm() + Para.Mass2);
@@ -59,18 +39,104 @@ double bose::Interaction(double Tau, const momentum &Mom, int VerType,
   }
 }
 
-double bose::Interaction(const momentum &InL, const momentum &InR,
-                         const momentum &Transfer, int VerType, int Scale) {
+// double norm2(const momentum &Mom) { return sqrt(sum2(Mom)); }
+verQTheta::verQTheta() {
+
+  if (D == 3)
+    return;
+
+  _TestAngle2D();
+  _TestAngleIndex();
+
+  Normalization = 1.0e-10;
+  PhyWeight = Para.Kf * (1.0 - exp(-Para.MaxExtMom / Para.Kf)) * Para.Beta *
+              4.0 * PI * PI;
+
+  // initialize interaction table
+  for (int scale = 0; scale < ScaleBinSize; ++scale) {
+    for (int inin = 0; inin < AngBinSize; ++inin)
+      for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
+        double k = Index2Mom(qIndex);
+        // EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k +
+        // Para.Mass2);
+        EffInteraction[scale][inin][qIndex] = 0.0;
+        for (int order = 0; order < MaxOrder; ++order)
+          DiffInteraction[order][scale][inin][qIndex] = 0.0;
+      }
+  }
+}
+
+double verQTheta::Interaction(const momentum &InL, const momentum &InR,
+                              const momentum &Transfer, int VerType,
+                              int Scale) {
   if (VerType >= 0) {
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
-    return EffInteraction[Scale][AngleIndex][Mom2Index(Transfer.norm())];
-    // return 1.0;
+    // return EffInteraction[Scale][AngleIndex][Mom2Index(Transfer.norm())];
+    return 1.0;
   } else if (VerType == -1) {
     return 1.0;
   } else if (VerType == -2) {
-    return exp(-Transfer.squaredNorm() / Para.Kf / Para.Kf);
+    return exp(-Transfer.norm() / Para.Kf);
   } else {
     ABORT("VerType can not be " << VerType);
+  }
+}
+
+void verQTheta::Measure(const momentum &InL, const momentum &InR,
+                        const int QIndex, int Scale, int Order,
+                        double WeightFactor) {
+  if (Order == 0) {
+    Normalization += WeightFactor;
+    return;
+  }
+  int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
+  DiffInteraction[Order][Scale][AngleIndex][QIndex] += WeightFactor;
+  return;
+}
+
+void verQTheta::Update(double Ratio) {
+  for (int scale = ScaleBinSize - 1; scale >= 0; --scale)
+    for (int angle = 0; angle < AngBinSize; ++angle)
+      for (int qindex = 0; qindex < ExtMomBinSize; ++qindex) {
+        double OldValue = EffInteraction[scale][angle][qindex];
+        double NewValue = EffInteraction[scale + 1][angle][qindex];
+        for (int order = 0; order < MaxOrder; ++order) {
+          NewValue += DiffInteraction[order][scale + 1][angle][qindex] /
+                      Normalization * PhyWeight;
+        }
+        EffInteraction[scale][angle][qindex] =
+            OldValue * (1 - Ratio) + NewValue * Ratio;
+      }
+}
+
+void verQTheta::Save() {
+  string FileName = fmt::format("vertex_pid{0}.dat", Para.PID);
+  ofstream VerFile;
+  VerFile.open(FileName, ios::out | ios::trunc);
+  if (VerFile.is_open()) {
+    VerFile << fmt::sprintf(
+        "#PID:%d, Type:%d, rs:%.3f, Beta: %.3f, Group: %s, Step: %d\n",
+        Para.PID, Para.ObsType, Para.Rs, Para.Beta, Para.Counter);
+    VerFile << "# ScaleTable: ";
+    for (int scale = 0; scale < ScaleBinSize; ++scale)
+      VerFile << Para.ScaleTable[scale] << " ";
+    VerFile << endl;
+    VerFile << "# AngleTable: ";
+    for (int angle = 0; angle < ScaleBinSize; ++angle)
+      VerFile << Para.AngleTable[angle] << " ";
+    VerFile << endl;
+    VerFile << "# ExtMomBinTable: ";
+    for (int qindex = 0; qindex < ExtMomBinSize; ++qindex)
+      VerFile << Para.ExtMomTable[qindex][0] << " ";
+    VerFile << endl;
+
+    for (int scale = 0; scale < ScaleBinSize; ++scale)
+      for (int angle = 0; angle < AngBinSize; ++angle)
+        for (int qindex = 0; qindex < ExtMomBinSize; ++qindex)
+          VerFile << EffInteraction[scale][angle][qindex] << "  ";
+    VerFile.close();
+  } else {
+    LOG_WARNING("Polarization for PID " << Para.PID << " fails to save!");
   }
 }
 

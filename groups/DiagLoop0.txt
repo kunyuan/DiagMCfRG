@@ -1,0 +1,33 @@
+#Type: RG
+#DiagNum: 1
+#Order: 0
+#GNum: 4
+#Ver4Num: 1
+#LoopNum: 3
+#ExtLoopIndex: 0 1 2
+#ExtTransferLoopIndex: 0
+#ExtLegLoopIndex: 1 2
+#DummyLoopIndex:
+#TauNum: 3
+#ExtTauIndex: 0 1
+#DummyTauIndex:
+
+# Permutation
+ 3  2  1  0 
+# SymFactor
+ 1.0
+# GType
+-1 -1 -1 -1
+# VertexBasis
+ 0  1  2  2 
+ 2  2  1  0 
+# LoopBasis
+ 0  0  1 -1
+ 1  0  0  1
+ 0  1  1  0
+# Ver4Legs(InL,OutL,InR,OutR)
+1 2 0 3 
+# WType(Direct,Exchange)
+-2 -2
+# SpinFactor
+ 1  0 
