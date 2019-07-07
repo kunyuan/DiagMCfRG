@@ -284,6 +284,10 @@ void markov::ChangeMomentum() {
   }
 };
 
+void markov::ChangeScale() {
+  // TODO:
+}
+
 double markov::GetNewTau(double &NewTau) {
   NewTau = Random.urn() * Para.Beta;
   return Para.Beta;
