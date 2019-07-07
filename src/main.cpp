@@ -117,9 +117,9 @@ void MonteCarlo() {
   for (int Block = 0; Block < Para.TotalStep; Block++) {
     for (int i = 0; i < 1000000; i++) {
       Para.Counter++;
-      // if (Para.Counter == 9) {
+      // if (Para.Counter == 140737351830544) {
       //   cout << "Before: " << Para.Counter << endl;
-      //   PrintDeBugMCInfo();
+      //   Markov.PrintDeBugMCInfo();
       // }
 
       double x = Random.urn();
@@ -134,9 +134,9 @@ void MonteCarlo() {
         // ;
       }
 
-      // if (Para.Counter == 8831001) {
+      // if (Para.Counter == 140737351830544) {
       //   cout << "After: " << Para.Counter << endl;
-      //   PrintDeBugMCInfo();
+      //   Markov.PrintDeBugMCInfo();
       // }
 
       Markov.Measure();

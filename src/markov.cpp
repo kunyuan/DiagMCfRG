@@ -276,7 +276,7 @@ void markov::ChangeMomentum() {
   if (Random.urn() < R) {
     Accepted[CHANGE_MOM][Var.CurrGroup->ID]++;
     Weight.AcceptChange(*Var.CurrGroup);
-    if (Var.CurrGroup->IsExtLoop[LoopIndex])
+    if (Var.CurrGroup->IsExtTransferLoop[LoopIndex])
       Var.CurrExtMomBin = NewExtMomBin;
   } else {
     Var.LoopMom[LoopIndex] = CurrMom;

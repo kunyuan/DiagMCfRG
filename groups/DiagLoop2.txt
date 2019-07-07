@@ -1,5 +1,5 @@
 #Type: RG
-#DiagNum: 2
+#DiagNum: 1
 #Order: 2
 #GNum: 6
 #Ver4Num: 2

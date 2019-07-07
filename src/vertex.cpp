@@ -64,6 +64,7 @@ double bose::Interaction(const momentum &InL, const momentum &InR,
   if (VerType >= 0) {
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
     return EffInteraction[Scale][AngleIndex][Mom2Index(Transfer.norm())];
+    // return 1.0;
   } else if (VerType == -1) {
     return 1.0;
   } else if (VerType == -2) {
