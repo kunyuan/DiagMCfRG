@@ -73,15 +73,19 @@ void InitPara() {
 
   // scale all energy with E_F
   Para.Beta /= Para.Ef;
-  Para.UVScale = 16.0 * Para.Ef;
+  Para.UVScale = 8.0 * Para.Ef;
   Para.UVCoupling = 1.0 * Para.Ef;
 
   double dScale = Para.UVScale / ScaleBinSize;
-  for (int i = 0; i < ScaleBinSize + 1; i++) {
-    Para.ScaleTable[i] = i * dScale;
-    Para.dScaleTable[i] = dScale;
+  double R = 1.5;
+  Para.ScaleTable[0] = 0.0;
+  Para.ScaleTable[1] = 0.4;
+  Para.dScaleTable[0] = Para.ScaleTable[1] - Para.ScaleTable[0];
+  for (int i = 2; i < ScaleBinSize + 1; i++) {
+    Para.ScaleTable[i] = Para.ScaleTable[i - 1] * R;
+    Para.dScaleTable[i - 1] = Para.ScaleTable[i] - Para.ScaleTable[i - 1];
   }
-  Para.dScaleTable[0] = 0.0;
+  // Para.dScaleTable[0] = 0.0;
 
   for (int i = 0; i < AngBinSize; i++) {
     Para.AngleTable[i] = diag::Index2Angle(i, AngBinSize);

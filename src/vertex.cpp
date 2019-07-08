@@ -105,8 +105,8 @@ void verQTheta::Update(double Ratio) {
     for (int angle = 0; angle < AngBinSize; ++angle)
       for (int qindex = 0; qindex < ExtMomBinSize; ++qindex) {
         double OldValue = EffInteraction[scale][angle][qindex];
-        // double NewValue = EffInteraction[scale + 1][angle][qindex];
-        double NewValue = 0.0;
+        double NewValue = EffInteraction[scale + 1][angle][qindex];
+        // double NewValue = 0.0;
         for (int order = 0; order < MaxOrder; ++order) {
           NewValue += DiffInteraction[order][scale + 1][angle][qindex] /
                       Normalization * PhyWeight;
@@ -290,10 +290,10 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
                   << ", Ek=" << Ek << ", Green=" << green << ", Mom"
                   << ToString(Mom));
 
-  // if (Para.Type == RG) {
-  //   double kScale = Para.ScaleTable[Scale];
-  //   green *= (1 - exp(-kk / kScale / kScale));
-  // }
+  if (Para.Type == RG) {
+    double kScale = Para.ScaleTable[Scale];
+    green *= (1 - exp(-kk / kScale / kScale));
+  }
   return green;
 }
 

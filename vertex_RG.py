@@ -43,7 +43,7 @@ for f in files:
         with open(folder+f, "r") as file:
             line1 = file.readline()
             line2 = file.readline()
-            ScaleBin = np.fromstring(line2.split(":")[1], dtype=int, sep=' ')
+            ScaleBin = np.fromstring(line2.split(":")[1], sep=' ')
             line3 = file.readline()
             AngleBin = np.fromstring(line3.split(":")[1], sep=' ')
             line4 = file.readline()
