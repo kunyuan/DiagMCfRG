@@ -66,7 +66,7 @@ Data /= Num
 Data = Data.reshape((ScaleBinSize+1, AngleBinSize, ExtMomBinSize))
 
 qData = np.array(Data)
-qData = np.mean(qData, axis=1)*2/3.14159*4
+qData = np.mean(qData, axis=1)*2
 
 
 def ErrorPlot(p, x, d, color, marker, label=None, size=4, shift=False):
@@ -88,10 +88,10 @@ ColorList = ColorList*10
 
 # for i in range(ScaleBinSize+1):
 for i in range(8):
-    # ErrorPlot(ax, ExtMomBin, qData[i, :],
-    #           ColorList[i], 's', "Order {0}".format(i))
-    ErrorPlot(ax, AngleBin, Data[i, :, 8],
+    ErrorPlot(ax, ExtMomBin, qData[i, :],
               ColorList[i], 's', "Order {0}".format(i))
+    # ErrorPlot(ax, AngleBin, Data[i, :, 8],
+    #           ColorList[i], 's', "Order {0}".format(i))
     # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
 
 # ErrorPlot(ax, Data[1][0], 'k', 's', "Diag 1")
@@ -120,8 +120,8 @@ x = np.arange(0, 0.2, 0.001)
 y = 0.5*x**w
 # ax.plot(x,y,'k-', lw=2)
 
-# ax.set_xlim([0.0, ExtMomBin[-1]])
-ax.set_xlim([0.0, AngleBin[-1]])
+ax.set_xlim([0.0, ExtMomBin[-1]])
+# ax.set_xlim([0.0, AngleBin[-1]])
 # ax.set_xticks([0.0,0.04,0.08,0.12])
 # ax.set_yticks([0.35,0.4,0.45,0.5])
 # ax.set_ylim([-0.02, 0.125])

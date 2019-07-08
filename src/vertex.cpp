@@ -54,7 +54,7 @@ verQTheta::verQTheta() {
   // PhyWeight = (1.0 - exp(-Para.MaxExtMom / Para.Kf)) /
   //             (1.0 - exp(-Para.MaxExtMom / Para.Kf / ExtMomBinSize)) * 4.0 *
   //             PI * PI;
-  PhyWeight = ExtMomBinSize * 4.0 * PI * PI;
+  PhyWeight = ExtMomBinSize * 2.0 * PI * ScaleBinSize;
 
   // initialize interaction table
   for (int scale = 0; scale < ScaleBinSize + 1; ++scale) {

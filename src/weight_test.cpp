@@ -71,7 +71,8 @@ string weight::DebugInfo(group &Group) {
   msg += string(80, '=') + "\n";
   msg += "LoopMom: \n";
   for (int i = 0; i < Group.LoopNum; i++)
-    msg += ToString(Var.LoopMom[i]) + "\n";
+    msg +=
+        ToString(Var.LoopMom[i]) + "=" + ToString(Var.LoopMom[i].norm()) + "\n";
 
   msg += string(80, '=') + "\n";
   msg += "Tau: \n";
@@ -113,6 +114,16 @@ int weight::DynamicTest() {
                  ERR("ExtMom is inconsistent! Bin: {0}; Mom: {1} vs {2}\n",
                      Var.CurrExtMomBin, Para.ExtMomTable[Var.CurrExtMomBin][0],
                      Var.LoopMom[0][0]));
+
+  // ASSERT_ALLWAYS(
+  //     Equal(Var.LoopMom[1].norm(), Para.Kf, 1.0e-8),
+  //     ERR("ExtLegMom 1 is not on the Fermi surface! {0} not on Kf: {1}\n",
+  //         Var.LoopMom[1].norm(), Para.Kf));
+
+  // ASSERT_ALLWAYS(
+  //     Equal(Var.LoopMom[2].norm(), Para.Kf, 1.0e-8),
+  //     ERR("ExtLegMom 2 is not on the Fermi surface! {0} not on Kf: {1}\n",
+  //         Var.LoopMom[2].norm(), Para.Kf));
 
   //=================== check NaN and Excited in weight ======================//
   for (auto &group : Groups) {

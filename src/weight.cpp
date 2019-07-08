@@ -377,7 +377,7 @@ void weight::RejectChange(group &Group) {
 
 void weight::Measure(double WeightFactor) {
   if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
-    VerQTheta.Measure(Var.LoopMom[INL], Var.LoopMom[INR], Var.CurrExtMomBin,
+    VerQTheta.Measure(Var.LoopMom[1], Var.LoopMom[2], Var.CurrExtMomBin,
                       Var.CurrScale, Var.CurrGroup->Order, WeightFactor);
   }
 }
