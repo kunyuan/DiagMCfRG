@@ -295,27 +295,29 @@ void markov::ChangeScale() {
   if (Para.Type != RG)
     return;
   double Prop = 1.0;
-  int NewScale;
+  int OldScale = Var.CurrScale;
   if (Random.urn() < 0.5)
-    NewScale = Var.CurrScale + 1;
+    Var.CurrScale += 1;
   else
-    NewScale = Var.CurrScale - 1;
+    Var.CurrScale -= 1;
 
-  if (NewScale > ScaleBinSize || NewScale < 1)
+  if (Var.CurrScale > ScaleBinSize || Var.CurrScale < 1) {
+    Var.CurrScale = OldScale;
     return;
+  }
 
   Proposed[CHANGE_SCALE][Var.CurrGroup->ID] += 1;
 
-  Weight.ChangeGroup(*(Var.CurrGroup));
+  // force to change the group weight
+  Weight.ChangeGroup(*(Var.CurrGroup), true);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
+
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
     Accepted[CHANGE_SCALE][Var.CurrGroup->ID]++;
     Weight.AcceptChange(*Var.CurrGroup);
   } else {
-    // retore the old Tau if the update is rejected
-    // if TauIndex is external, then its partner can be different
-    Var.CurrScale = NewScale;
+    Var.CurrScale = OldScale;
     Weight.RejectChange(*Var.CurrGroup);
   }
   return;

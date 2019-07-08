@@ -3,6 +3,7 @@
 
 // #include "utility/vector.h"
 #include "global.h"
+#include <array>
 
 double sum2(const momentum &);
 double norm2(const momentum &);
@@ -43,8 +44,9 @@ public:
                int Scale, int Order, double WeightFactor);
   void Update(double Ratio = 1.0);
   void Save();
-  double EffInteraction[ScaleBinSize][AngBinSize][ExtMomBinSize];
-  double DiffInteraction[MaxOrder][ScaleBinSize][AngBinSize][ExtMomBinSize];
+  double EffInteraction[ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
+  double DiffInteraction[MaxOrder][ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
+
   double Normalization;
   double PhyWeight;
 };

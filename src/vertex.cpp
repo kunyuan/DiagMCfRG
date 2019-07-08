@@ -49,11 +49,15 @@ verQTheta::verQTheta() {
   _TestAngleIndex();
 
   Normalization = 1.0e-10;
-  PhyWeight = Para.Kf * (1.0 - exp(-Para.MaxExtMom / Para.Kf)) * Para.Beta *
-              4.0 * PI * PI;
+  // PhyWeight = Para.Kf * (1.0 - exp(-Para.MaxExtMom / Para.Kf)) * 4.0 * PI *
+  // PI;
+  // PhyWeight = (1.0 - exp(-Para.MaxExtMom / Para.Kf)) /
+  //             (1.0 - exp(-Para.MaxExtMom / Para.Kf / ExtMomBinSize)) * 4.0 *
+  //             PI * PI;
+  PhyWeight = ExtMomBinSize * 4.0 * PI * PI;
 
   // initialize interaction table
-  for (int scale = 0; scale < ScaleBinSize; ++scale) {
+  for (int scale = 0; scale < ScaleBinSize + 1; ++scale) {
     for (int inin = 0; inin < AngBinSize; ++inin)
       for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
         double k = Index2Mom(qIndex);
@@ -76,7 +80,8 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
   } else if (VerType == -1) {
     return 1.0;
   } else if (VerType == -2) {
-    return exp(-Transfer.norm() / Para.Kf);
+    // return exp(-Transfer.norm() / Para.Kf);
+    return 1.0;
   } else {
     ABORT("VerType can not be " << VerType);
   }
@@ -87,10 +92,11 @@ void verQTheta::Measure(const momentum &InL, const momentum &InR,
                         double WeightFactor) {
   if (Order == 0) {
     Normalization += WeightFactor;
-    return;
+  } else {
+    int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
+    DiffInteraction[Order][Scale][AngleIndex][QIndex] +=
+        WeightFactor / Para.dAngleTable[AngleIndex];
   }
-  int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
-  DiffInteraction[Order][Scale][AngleIndex][QIndex] += WeightFactor;
   return;
 }
 
@@ -99,7 +105,8 @@ void verQTheta::Update(double Ratio) {
     for (int angle = 0; angle < AngBinSize; ++angle)
       for (int qindex = 0; qindex < ExtMomBinSize; ++qindex) {
         double OldValue = EffInteraction[scale][angle][qindex];
-        double NewValue = EffInteraction[scale + 1][angle][qindex];
+        // double NewValue = EffInteraction[scale + 1][angle][qindex];
+        double NewValue = 0.0;
         for (int order = 0; order < MaxOrder; ++order) {
           NewValue += DiffInteraction[order][scale + 1][angle][qindex] /
                       Normalization * PhyWeight;
@@ -114,15 +121,15 @@ void verQTheta::Save() {
   ofstream VerFile;
   VerFile.open(FileName, ios::out | ios::trunc);
   if (VerFile.is_open()) {
-    VerFile << fmt::sprintf(
-        "#PID:%d, Type:%d, rs:%.3f, Beta: %.3f, Group: %s, Step: %d\n",
-        Para.PID, Para.ObsType, Para.Rs, Para.Beta, Para.Counter);
+    VerFile << fmt::sprintf("#PID:%d, Type:%d, rs:%.3f, Beta: %.3f, Step: %d\n",
+                            Para.PID, Para.ObsType, Para.Rs, Para.Beta,
+                            Para.Counter);
     VerFile << "# ScaleTable: ";
-    for (int scale = 0; scale < ScaleBinSize; ++scale)
+    for (int scale = 0; scale < ScaleBinSize + 1; ++scale)
       VerFile << Para.ScaleTable[scale] << " ";
     VerFile << endl;
     VerFile << "# AngleTable: ";
-    for (int angle = 0; angle < ScaleBinSize; ++angle)
+    for (int angle = 0; angle < AngBinSize; ++angle)
       VerFile << Para.AngleTable[angle] << " ";
     VerFile << endl;
     VerFile << "# ExtMomBinTable: ";
@@ -130,7 +137,7 @@ void verQTheta::Save() {
       VerFile << Para.ExtMomTable[qindex][0] << " ";
     VerFile << endl;
 
-    for (int scale = 0; scale < ScaleBinSize; ++scale)
+    for (int scale = 0; scale < ScaleBinSize + 1; ++scale)
       for (int angle = 0; angle < AngBinSize; ++angle)
         for (int qindex = 0; qindex < ExtMomBinSize; ++qindex)
           VerFile << EffInteraction[scale][angle][qindex] << "  ";
@@ -283,10 +290,10 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
                   << ", Ek=" << Ek << ", Green=" << green << ", Mom"
                   << ToString(Mom));
 
-  if (Para.Type == RG) {
-    double kScale = Para.ScaleTable[Scale];
-    green *= (1 - exp(-kk / kScale / kScale));
-  }
+  // if (Para.Type == RG) {
+  //   double kScale = Para.ScaleTable[Scale];
+  //   green *= (1 - exp(-kk / kScale / kScale));
+  // }
   return green;
 }
 

@@ -153,9 +153,11 @@ void weight::ChangeGroup(group &Group, bool Forced) {
         if (Forced || Ver4->Version < Var.CurrVersion) {
           Ver4->Excited = {true, true};
           GetMom(Ver4->IntLoopBasis[IN], Group.LoopNum, _Mom);
-          Ver4->NewWeight[IN] = VerQ.Interaction(0.0, _Mom, Ver4->Type[IN]);
+          Ver4->NewWeight[IN] =
+              VerQ.Interaction(0.0, _Mom, Ver4->Type[IN], Var.CurrScale);
           GetMom(Ver4->IntLoopBasis[OUT], Group.LoopNum, _Mom);
-          Ver4->NewWeight[OUT] = VerQ.Interaction(0.0, _Mom, Ver4->Type[OUT]);
+          Ver4->NewWeight[OUT] =
+              VerQ.Interaction(0.0, _Mom, Ver4->Type[OUT], Var.CurrScale);
         }
       } else if (Para.Vertex4Type == MOM_ANGLE) {
         if (Forced || Ver4->Version < Var.CurrVersion) {
@@ -164,11 +166,12 @@ void weight::ChangeGroup(group &Group, bool Forced) {
           GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
 
           GetMom(Ver4->IntLoopBasis[DIRECT], Group.LoopNum, _Mom);
-          Ver4->NewWeight[DIRECT] =
-              VerQTheta.Interaction(_InL, _InR, _Mom, Ver4->Type[DIRECT]);
+          Ver4->NewWeight[DIRECT] = VerQTheta.Interaction(
+              _InL, _InR, _Mom, Ver4->Type[DIRECT], Var.CurrScale);
+
           GetMom(Ver4->IntLoopBasis[EXCHANGE], Group.LoopNum, _Mom);
-          Ver4->NewWeight[EXCHANGE] =
-              VerQTheta.Interaction(_InL, _InR, _Mom, Ver4->Type[EXCHANGE]);
+          Ver4->NewWeight[EXCHANGE] = VerQTheta.Interaction(
+              _InL, _InR, _Mom, Ver4->Type[EXCHANGE], Var.CurrScale);
         }
       } else {
         ABORT("Vertex4Type is not implemented!");
@@ -209,13 +212,13 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           Ver4->Excited[DIRECT] = true;
           GetMom(Ver4->IntLoopBasis[IN], Group.LoopNum, _Mom);
           Ver4->NewWeight[DIRECT] =
-              VerQ.Interaction(0.0, _Mom, Ver4->Type[DIRECT]);
+              VerQ.Interaction(0.0, _Mom, Ver4->Type[DIRECT], Var.CurrScale);
         }
         if (Ver4->IntLoopBasis[EXCHANGE][MomIndex] != 0) {
           Ver4->Excited[EXCHANGE] = true;
           GetMom(Ver4->IntLoopBasis[EXCHANGE], Group.LoopNum, _Mom);
           Ver4->NewWeight[EXCHANGE] =
-              VerQ.Interaction(0.0, _Mom, Ver4->Type[EXCHANGE]);
+              VerQ.Interaction(0.0, _Mom, Ver4->Type[EXCHANGE], Var.CurrScale);
         }
 
       } else if (Para.Vertex4Type == MOM_ANGLE) {
@@ -225,14 +228,14 @@ void weight::ChangeMom(group &Group, int MomIndex) {
         if (Ver4->IntLoopBasis[DIRECT][MomIndex] != 0) {
           Ver4->Excited[DIRECT] = true;
           GetMom(Ver4->IntLoopBasis[IN], Group.LoopNum, _Mom);
-          Ver4->NewWeight[DIRECT] =
-              VerQTheta.Interaction(_InL, _InR, _Mom, Ver4->Type[DIRECT]);
+          Ver4->NewWeight[DIRECT] = VerQTheta.Interaction(
+              _InL, _InR, _Mom, Ver4->Type[DIRECT], Var.CurrScale);
         }
         if (Ver4->IntLoopBasis[EXCHANGE][MomIndex] != 0) {
           Ver4->Excited[EXCHANGE] = true;
           GetMom(Ver4->IntLoopBasis[EXCHANGE], Group.LoopNum, _Mom);
-          Ver4->NewWeight[EXCHANGE] =
-              VerQTheta.Interaction(_InL, _InR, _Mom, Ver4->Type[EXCHANGE]);
+          Ver4->NewWeight[EXCHANGE] = VerQTheta.Interaction(
+              _InL, _InR, _Mom, Ver4->Type[EXCHANGE], Var.CurrScale);
         }
       } else {
         ABORT("Vertex4Type is not implemented!");

@@ -51,7 +51,7 @@ void InitPara() {
   Para.DiagFileFormat = "groups/DiagLoop{}.txt";
   Para.GroupName = {"0", "1"};
   // Para.GroupName = {"1", "2"};
-  Para.ReWeight = {1.0, 1.0, 5.0, 10.0, 0.1};
+  Para.ReWeight = {1.0, 5.0, 5.0, 10.0, 0.1};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 
@@ -73,7 +73,7 @@ void InitPara() {
 
   // scale all energy with E_F
   Para.Beta /= Para.Ef;
-  Para.UVScale = 8.0 * Para.Ef;
+  Para.UVScale = 16.0 * Para.Ef;
   Para.UVCoupling = 1.0 * Para.Ef;
 
   double dScale = Para.UVScale / ScaleBinSize;
@@ -85,6 +85,7 @@ void InitPara() {
 
   for (int i = 0; i < AngBinSize; i++) {
     Para.AngleTable[i] = diag::Index2Angle(i, AngBinSize);
+    Para.dAngleTable[i] = 2.0 * PI / AngBinSize;
   }
 
   LOG_INFO("Inverse Temperature: " << Para.Beta << "\n"
@@ -131,7 +132,7 @@ void MonteCarlo() {
       } else if (x < 2.0 / 4.0) {
         Markov.ChangeMomentum();
         // ;
-      } else if (x < 3.0 / 3.0) {
+      } else if (x < 3.0 / 4.0) {
         Markov.ChangeTau();
         // ;
       } else if (x < 4.0 / 4.0) {
@@ -149,7 +150,7 @@ void MonteCarlo() {
 
       if (i % 1000 == 0) {
 
-        // Markov.UpdateWeight(1.0);
+        Markov.UpdateWeight(1.0);
 
         // Markov.PrintDeBugMCInfo();
         if (PrinterTimer.check(Para.PrinterTimer)) {
