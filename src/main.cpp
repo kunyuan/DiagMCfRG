@@ -86,7 +86,10 @@ void InitPara() {
   //   Para.dScaleTable[i - 1] = Para.ScaleTable[i] - Para.ScaleTable[i - 1];
   // }
 
-  Para.ScaleTable = {0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 8.0};
+  // Para.ScaleTable = {0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 8.0};
+  Para.ScaleTable = {0,   0.005, 0.01, 0.02, 0.04, 0.08, 0.12, 0.16, 0.2,
+                     0.3, 0.5,   0.8,  1.0,  1.2,  1.5,  2.0,  8.0};
+
   for (int i = 0; i < ScaleBinSize + 1; i++) {
     Para.ScaleTable[i] *= Para.Kf;
   }
@@ -98,6 +101,14 @@ void InitPara() {
   for (int i = 0; i < AngBinSize; i++) {
     Para.AngleTable[i] = diag::Index2Angle(i, AngBinSize);
     Para.dAngleTable[i] = 2.0 * PI / AngBinSize;
+  }
+
+  // initialize external momentum
+  for (int i = 0; i < ExtMomBinSize; i++) {
+    // the external momentum only has x component
+    Para.ExtMomTable[i][0] = (i + 0.5) * Para.MaxExtMom / ExtMomBinSize;
+    for (int j = 1; j < D; j++)
+      Para.ExtMomTable[i][j] = 0.0;
   }
 
   LOG_INFO("Inverse Temperature: " << Para.Beta << "\n"
@@ -162,7 +173,8 @@ void MonteCarlo() {
 
       if (i % 1000 == 0) {
 
-        Markov.UpdateWeight(1.0);
+        if (i % 100000 == 0)
+          Markov.UpdateWeight(1.0);
 
         // Markov.PrintDeBugMCInfo();
         if (PrinterTimer.check(Para.PrinterTimer)) {

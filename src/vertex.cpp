@@ -61,9 +61,8 @@ verQTheta::verQTheta() {
     for (int inin = 0; inin < AngBinSize; ++inin)
       for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
         double k = Index2Mom(qIndex);
-        // EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k +
-        // Para.Mass2);
-        EffInteraction[scale][inin][qIndex] = 0.0;
+        EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
+        // EffInteraction[scale][inin][qIndex] = 0.0;
         for (int order = 0; order < MaxOrder; ++order)
           DiffInteraction[order][scale][inin][qIndex] = 0.0;
       }
@@ -74,9 +73,15 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
                               const momentum &Transfer, int VerType,
                               int Scale) {
   if (VerType >= 0) {
+    double k = Transfer.norm();
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
-    // return EffInteraction[Scale][AngleIndex][Mom2Index(Transfer.norm())];
-    return 1.0;
+    if (k < Para.MaxExtMom)
+      // return 8.0 * PI / (k * k + Para.Mass2);
+      return EffInteraction[Scale][AngleIndex][Mom2Index(k)];
+    else
+      return 8.0 * PI / (k * k + Para.Mass2);
+    // return 8.0 * PI / (k * k + Para.Mass2);
+    // return 1.0;
   } else if (VerType == -1) {
     return 1.0;
   } else if (VerType == -2) {
@@ -108,7 +113,7 @@ void verQTheta::Update(double Ratio) {
         double NewValue = EffInteraction[scale + 1][angle][qindex];
         // double NewValue = 0.0;
         for (int order = 0; order < MaxOrder; ++order) {
-          NewValue += DiffInteraction[order][scale + 1][angle][qindex] /
+          NewValue -= DiffInteraction[order][scale + 1][angle][qindex] /
                       Normalization * PhyWeight;
         }
         EffInteraction[scale][angle][qindex] =

@@ -80,13 +80,6 @@ void weight::Initialization() {
   for (auto &sp : Var.LoopSpin)
     sp = (spin)(Random.irn(0, 1));
 
-  // initialize external momentum
-  for (int i = 0; i < ExtMomBinSize; i++) {
-    // the external momentum only has x component
-    Para.ExtMomTable[i][0] = i * Para.MaxExtMom / ExtMomBinSize;
-    for (int j = 1; j < D; j++)
-      Para.ExtMomTable[i][j] = 0.0;
-  }
   Var.CurrExtMomBin = 0;
   // Var.LoopMom[0].fill(0.0);
   // for (int i = 0; i < D; i++)
