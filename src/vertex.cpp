@@ -232,7 +232,7 @@ double fermi::FockSigma(const momentum &Mom) {
 
 double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
   // if tau is exactly zero, set tau=0^-
-  double green, Ek, kk;
+  double green, Ek, kk, k;
   if (Tau == 0.0) {
     return EPS;
   }
@@ -246,9 +246,9 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
     s = -s;
   }
 
-  kk = Mom.squaredNorm();
+  k = Mom.norm();
   if (Para.SelfEnergyType == BARE)
-    Ek = kk; // bare propagator
+    Ek = k * k; // bare propagator
   else if (Para.SelfEnergyType == FOCK)
     Ek = FockSigma(Mom); // Fock diagram dressed propagator
   else
@@ -292,7 +292,7 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
 
   if (Para.Type == RG) {
     double kScale = Para.ScaleTable[Scale];
-    green *= (1 - exp(-kk / kScale / kScale));
+    green *= (1 - exp(-(k - Para.Kf) * (k - Para.Kf) / kScale / kScale));
   }
   return green;
 }

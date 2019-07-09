@@ -86,8 +86,8 @@ fig, ax = plt.subplots()
 ColorList = ['k', 'r', 'b', 'g', 'm', 'c']
 ColorList = ColorList*10
 
-# for i in range(ScaleBinSize+1):
-for i in range(8):
+for i in range(ScaleBinSize+1):
+# for i in range(8):
     ErrorPlot(ax, ExtMomBin, qData[i, :],
               ColorList[i], 's', "Order {0}".format(i))
     # ErrorPlot(ax, AngleBin, Data[i, :, 8],

@@ -51,7 +51,7 @@ void InitPara() {
   Para.DiagFileFormat = "groups/DiagLoop{}.txt";
   Para.GroupName = {"0", "1"};
   // Para.GroupName = {"1", "2"};
-  Para.ReWeight = {1.0, 1.0, 5.0, 10.0, 0.1};
+  Para.ReWeight = {0.01, 1.0, 5.0, 10.0, 0.1};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 
@@ -76,16 +76,24 @@ void InitPara() {
   Para.UVScale = 8.0 * Para.Ef;
   Para.UVCoupling = 1.0 * Para.Ef;
 
-  double dScale = Para.UVScale / ScaleBinSize;
-  double R = 1.5;
-  Para.ScaleTable[0] = 0.0;
-  Para.ScaleTable[1] = 0.4;
-  Para.dScaleTable[0] = Para.ScaleTable[1] - Para.ScaleTable[0];
-  for (int i = 2; i < ScaleBinSize + 1; i++) {
-    Para.ScaleTable[i] = Para.ScaleTable[i - 1] * R;
-    Para.dScaleTable[i - 1] = Para.ScaleTable[i] - Para.ScaleTable[i - 1];
+  // double dScale = Para.UVScale / ScaleBinSize;
+  // double R = 1.5;
+  // Para.ScaleTable[0] = 0.0;
+  // Para.ScaleTable[1] = 0.4;
+  // Para.dScaleTable[0] = Para.ScaleTable[1] - Para.ScaleTable[0];
+  // for (int i = 2; i < ScaleBinSize + 1; i++) {
+  //   Para.ScaleTable[i] = Para.ScaleTable[i - 1] * R;
+  //   Para.dScaleTable[i - 1] = Para.ScaleTable[i] - Para.ScaleTable[i - 1];
+  // }
+
+  Para.ScaleTable = {0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 8.0};
+  for (int i = 0; i < ScaleBinSize + 1; i++) {
+    Para.ScaleTable[i] *= Para.Kf;
   }
-  // Para.dScaleTable[0] = 0.0;
+
+  for (int i = 0; i < ScaleBinSize + 1; i++) {
+    Para.dScaleTable[i] = Para.ScaleTable[i + 1] - Para.ScaleTable[i];
+  }
 
   for (int i = 0; i < AngBinSize; i++) {
     Para.AngleTable[i] = diag::Index2Angle(i, AngBinSize);
