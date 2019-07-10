@@ -179,7 +179,6 @@ void markov::ChangeGroup() {
     // Generate New Mom
     Prop *= GetNewK(NewMom);
     Var.LoopMom[Var.CurrGroup->LoopNum] = NewMom;
-
   } else if (NewGroup.Order == Var.CurrGroup->Order - 1) {
     // change to a new group with one lower order
     Name = DECREASE_ORDER;
@@ -301,7 +300,7 @@ void markov::ChangeScale() {
   else
     Var.CurrScale -= 1;
 
-  if (Var.CurrScale > ScaleBinSize || Var.CurrScale < 1) {
+  if (Var.CurrScale >= ScaleBinSize || Var.CurrScale < 1) {
     Var.CurrScale = OldScale;
     return;
   }

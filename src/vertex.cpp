@@ -61,8 +61,9 @@ verQTheta::verQTheta() {
     for (int inin = 0; inin < AngBinSize; ++inin)
       for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
         double k = Index2Mom(qIndex);
-        EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
-        // EffInteraction[scale][inin][qIndex] = 0.0;
+        // EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k +
+        // Para.Mass2);
+        EffInteraction[scale][inin][qIndex] = 1.0;
         for (int order = 0; order < MaxOrder; ++order)
           DiffInteraction[order][scale][inin][qIndex] = 0.0;
       }
@@ -76,11 +77,14 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
     double k = Transfer.norm();
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
     if (k < Para.MaxExtMom)
-      // return 8.0 * PI / (k * k + Para.Mass2);
-      return EffInteraction[Scale][AngleIndex][Mom2Index(k)];
+      // return 8.0 * PI /
+      //        (k * k + Para.Mass2 +
+      //         0.159 * (1 - sqrt(1 - 4.0 * Para.Kf * Para.Kf / k / k)));
+      // return EffInteraction[Scale][AngleIndex][Mom2Index(k)];
+      return 1.0;
     else
-      return 8.0 * PI / (k * k + Para.Mass2);
-    // return 8.0 * PI / (k * k + Para.Mass2);
+      // return 8.0 * PI / (k * k + Para.Mass2);
+      return 1.0;
     // return 1.0;
   } else if (VerType == -1) {
     return 1.0;
@@ -110,10 +114,10 @@ void verQTheta::Update(double Ratio) {
     for (int angle = 0; angle < AngBinSize; ++angle)
       for (int qindex = 0; qindex < ExtMomBinSize; ++qindex) {
         double OldValue = EffInteraction[scale][angle][qindex];
-        double NewValue = EffInteraction[scale + 1][angle][qindex];
-        // double NewValue = 0.0;
+        // double NewValue = EffInteraction[scale + 1][angle][qindex];
+        double NewValue = 0.0;
         for (int order = 0; order < MaxOrder; ++order) {
-          NewValue -= DiffInteraction[order][scale + 1][angle][qindex] /
+          NewValue += DiffInteraction[order][scale + 1][angle][qindex] /
                       Normalization * PhyWeight;
         }
         EffInteraction[scale][angle][qindex] =
@@ -235,12 +239,15 @@ double fermi::FockSigma(const momentum &Mom) {
   return fock + k * k;
 }
 
-double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
+double fermi::PhyGreen(double Tau, const momentum &Mom, int GType, int Scale) {
   // if tau is exactly zero, set tau=0^-
   double green, Ek, kk, k;
   if (Tau == 0.0) {
     return EPS;
   }
+  // equal time green's function
+  if (GType == 1)
+    Tau = -1.0e-10;
 
   double s = 1.0;
   if (Tau < 0.0) {
@@ -297,7 +304,13 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
 
   if (Para.Type == RG) {
     double kScale = Para.ScaleTable[Scale];
-    green *= (1 - exp(-(k - Para.Kf) * (k - Para.Kf) / kScale / kScale));
+    double dK2 = (k - Para.Kf) * (k - Para.Kf);
+    double expFactor = exp(-dK2 / kScale / kScale);
+    // green *= (1 - exp(-(k - Para.Kf) * (k - Para.Kf) / kScale / kScale));
+
+    green *= (1 - expFactor);
+    if (GType == 2)
+      green *= -expFactor * 2.0 / kScale / kScale / kScale * dK2;
   }
   return green;
 }
@@ -305,11 +318,8 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int Scale) {
 double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType,
                     int Scale) {
   double green;
-  if (GType == 0) {
-    green = PhyGreen(Tau, Mom, Scale);
-  } else if (GType == 1) {
-    // equal time green's function
-    green = PhyGreen(-1.0e-10, Mom, Scale);
+  if (GType >= 0) {
+    green = PhyGreen(Tau, Mom, GType, Scale);
   } else if (GType == -1) {
     // green = PhyGreen(Tau, Mom, Scale);
     green = 1.0;
@@ -317,7 +327,7 @@ double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType,
   } else if (GType == -2) {
     // Lower Scale Green's function
     Scale -= 1;
-    green = PhyGreen(Tau, Mom, Scale);
+    green = PhyGreen(Tau, Mom, GType, Scale);
   } else {
     ABORT("GType " << GType << " has not yet been implemented!");
     // return FakeGreen(Tau, Mom);

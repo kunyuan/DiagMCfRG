@@ -51,7 +51,7 @@ void InitPara() {
   Para.DiagFileFormat = "groups/DiagLoop{}.txt";
   Para.GroupName = {"0", "1"};
   // Para.GroupName = {"1", "2"};
-  Para.ReWeight = {0.01, 1.0, 5.0, 10.0, 0.1};
+  Para.ReWeight = {0.1, 1.0, 5.0, 10.0, 0.1};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 
@@ -73,10 +73,14 @@ void InitPara() {
 
   // scale all energy with E_F
   Para.Beta /= Para.Ef;
-  Para.UVScale = 8.0 * Para.Ef;
+  Para.UVScale = 4.0 * Para.Kf;
   Para.UVCoupling = 1.0 * Para.Ef;
 
   // double dScale = Para.UVScale / ScaleBinSize;
+  // for (int i = 0; i < (ScaleBinSize + 1); i++) {
+  //   Para.ScaleTable[i] = i * dScale;
+  //   Para.dScaleTable[i] = dScale;
+  // }
   // double R = 1.5;
   // Para.ScaleTable[0] = 0.0;
   // Para.ScaleTable[1] = 0.4;
@@ -85,14 +89,33 @@ void InitPara() {
   //   Para.ScaleTable[i] = Para.ScaleTable[i - 1] * R;
   //   Para.dScaleTable[i - 1] = Para.ScaleTable[i] - Para.ScaleTable[i - 1];
   // }
+  double deltaScale = Para.Kf / 4.0;
+  double Start = 0;
+  double End = ScaleBinSize / 2;
+  double dScale = deltaScale / (End - Start);
+  for (int i = Start; i < End; i++) {
+    Para.ScaleTable[i] = i * dScale;
+  }
+
+  deltaScale = Para.Kf * 3.0 / 4.0;
+  Start = End;
+  End = ScaleBinSize * 3 / 4;
+  dScale = deltaScale / (End - Start);
+  for (int i = Start; i < End; i++) {
+    Para.ScaleTable[i] = Para.ScaleTable[i - 1] + dScale;
+  }
+
+  deltaScale = Para.UVScale - Para.Kf;
+  Start = End;
+  End = ScaleBinSize + 1;
+  dScale = deltaScale / (End - Start);
+  for (int i = Start; i < End; i++) {
+    Para.ScaleTable[i] = Para.ScaleTable[i - 1] + dScale;
+  }
 
   // Para.ScaleTable = {0, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 8.0};
-  Para.ScaleTable = {0,   0.005, 0.01, 0.02, 0.04, 0.08, 0.12, 0.16, 0.2,
-                     0.3, 0.5,   0.8,  1.0,  1.2,  1.5,  2.0,  8.0};
-
-  for (int i = 0; i < ScaleBinSize + 1; i++) {
-    Para.ScaleTable[i] *= Para.Kf;
-  }
+  // Para.ScaleTable = {0,   0.005, 0.01, 0.02, 0.04, 0.08, 0.12, 0.16, 0.2,
+  //                    0.3, 0.5,   0.8,  1.0,  1.2,  1.5,  2.0,  8.0};
 
   for (int i = 0; i < ScaleBinSize + 1; i++) {
     Para.dScaleTable[i] = Para.ScaleTable[i + 1] - Para.ScaleTable[i];
@@ -173,7 +196,7 @@ void MonteCarlo() {
 
       if (i % 1000 == 0) {
 
-        if (i % 100000 == 0)
+        if (i % 10000 == 0)
           Markov.UpdateWeight(1.0);
 
         // Markov.PrintDeBugMCInfo();

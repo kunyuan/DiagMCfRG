@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import integrate
 import matplotlib.pyplot as plt
 import matplotlib as mat
 import sys
@@ -66,7 +67,12 @@ Data /= Num
 Data = Data.reshape((ScaleBinSize+1, AngleBinSize, ExtMomBinSize))
 
 qData = np.array(Data)
-qData = np.mean(qData, axis=1)/8.0/np.pi
+# qData = np.mean(qData, axis=1)/8.0/np.pi
+qData = np.mean(qData, axis=1)
+
+verData=np.zeros(len(ExtMomBin))
+for i in range(len(ExtMomBin)):
+    verData[i]=integrate.simps(qData[:-1,i], ScaleBin[:-1])
 
 
 def ErrorPlot(p, x, d, color, marker, label=None, size=4, shift=False):
@@ -86,13 +92,20 @@ fig, ax = plt.subplots()
 ColorList = ['k', 'r', 'b', 'g', 'm', 'c']
 ColorList = ColorList*10
 
-for i in range(ScaleBinSize+1):
-# for i in range(8):
+# ErrorPlot(ax, ScaleBin, qData[:, 20],
+#             ColorList[0], 's', "Q {0}".format(ExtMomBin[20]))
+# ErrorPlot(ax, ScaleBin, qData[:, 15],
+#             ColorList[1], 's', "Q {0}".format(ExtMomBin[15]))
+
+for i in range(8):
+# for i in range(ScaleBinSize+1):
     ErrorPlot(ax, ExtMomBin, qData[i, :],
-              ColorList[i], 's', "Order {0}".format(i))
+              ColorList[i], 's', "Scale {0}".format(ScaleBin[i]))
     # ErrorPlot(ax, AngleBin, Data[i, :, 8],
     #           ColorList[i], 's', "Order {0}".format(i))
     # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
+
+ErrorPlot(ax, ExtMomBin, verData, 'y', 'o', "Sum")
 
 # ErrorPlot(ax, Data[1][0], 'k', 's', "Diag 1")
 # ErrorPlot(ax, tmp, 'm', 's', "Diag 3+c 1")
@@ -122,10 +135,23 @@ for i in range(len(x)):
     if x[i]>2.0:
         y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
 
-y=1.0/(x*x*kF*kF+1.0+y[i])
-# y=1.0/(x*x*kF*kF+1.0)
-ax.plot(x,y,'k-', lw=2)
+z=1.0/(1.0+y)
+y=1.0-y
 
+# y=1.0/(x*x*kF*kF+1.0)
+
+# x = np.arange(0, 3.0, 0.001)
+# y = x*0.0+Bubble
+# for i in range(len(x)):
+#     if x[i]>2.0:
+#         y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
+
+# y=1.0/(x*x*kF*kF+1.0+y)
+
+# ax.plot(x,y,'k-', lw=2)
+# ax.plot(x,z,'b-', lw=2)
+
+# ax.set_xlim([0.0, ScaleBin[-1]])
 ax.set_xlim([0.0, ExtMomBin[-1]])
 # ax.set_xlim([0.0, AngleBin[-1]])
 # ax.set_xticks([0.0,0.04,0.08,0.12])

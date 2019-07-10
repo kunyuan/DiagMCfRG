@@ -24,7 +24,7 @@ private:
   double DeltaK;
   double UpperBound2, LowerBound2; // lower upbound for better sigma
   double DeltaK2;
-  double PhyGreen(double Tau, const momentum &Mom, int Scale = 0);
+  double PhyGreen(double Tau, const momentum &Mom, int GType, int Scale = 0);
   double FockSigma(const momentum &Mom);
   double BuildFockSigma();
   double Fock(double k);
