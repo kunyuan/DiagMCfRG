@@ -103,6 +103,7 @@ void verQTheta::Measure(const momentum &InL, const momentum &InR,
     Normalization += WeightFactor;
   } else {
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
+    // cout << AngleIndex << endl;
     DiffInteraction[Order][Scale][AngleIndex][QIndex] +=
         WeightFactor / Para.dAngleTable[AngleIndex];
   }

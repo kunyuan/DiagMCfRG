@@ -99,13 +99,13 @@ ColorList = ColorList*10
 
 for i in range(8):
 # for i in range(ScaleBinSize+1):
-    ErrorPlot(ax, ExtMomBin, qData[i, :],
-              ColorList[i], 's', "Scale {0}".format(ScaleBin[i]))
-    # ErrorPlot(ax, AngleBin, Data[i, :, 8],
-    #           ColorList[i], 's', "Order {0}".format(i))
+    # ErrorPlot(ax, ExtMomBin, qData[i, :],
+    #           ColorList[i], 's', "Scale {0}".format(ScaleBin[i]))
+    ErrorPlot(ax, AngleBin, Data[i, :, 0],
+              ColorList[i], 's', "Order {0}".format(i))
     # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
 
-ErrorPlot(ax, ExtMomBin, verData, 'y', 'o', "Sum")
+# ErrorPlot(ax, ExtMomBin, verData, 'y', 'o', "Sum")
 
 # ErrorPlot(ax, Data[1][0], 'k', 's', "Diag 1")
 # ErrorPlot(ax, tmp, 'm', 's', "Diag 3+c 1")
@@ -152,8 +152,8 @@ y=1.0-y
 # ax.plot(x,z,'b-', lw=2)
 
 # ax.set_xlim([0.0, ScaleBin[-1]])
-ax.set_xlim([0.0, ExtMomBin[-1]])
-# ax.set_xlim([0.0, AngleBin[-1]])
+# ax.set_xlim([0.0, ExtMomBin[-1]])
+ax.set_xlim([0.0, AngleBin[-1]])
 # ax.set_xticks([0.0,0.04,0.08,0.12])
 # ax.set_yticks([0.35,0.4,0.45,0.5])
 # ax.set_ylim([-0.02, 0.125])

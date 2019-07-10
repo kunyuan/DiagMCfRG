@@ -300,7 +300,7 @@ void markov::ChangeScale() {
   else
     Var.CurrScale -= 1;
 
-  if (Var.CurrScale >= ScaleBinSize || Var.CurrScale < 1) {
+  if (Var.CurrScale >= ScaleBinSize || Var.CurrScale < 0) {
     Var.CurrScale = OldScale;
     return;
   }
