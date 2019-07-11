@@ -153,6 +153,10 @@ void markov::SaveToFile() {
   Weight.Save();
 };
 
+void markov::ClearStatis(){
+    Weight.ClearStatis();
+}
+
 void markov::ChangeGroup() {
   group &NewGroup = Groups[Random.irn(0, Groups.size() - 1)];
   if (NewGroup.ID == Var.CurrGroup->ID)

@@ -41,6 +41,7 @@ public:
 
   void Measure(double WeightFactor);
   void Update(double Ratio);
+  void ClearStatis();
   void Save();
 
   // run test in MC updates

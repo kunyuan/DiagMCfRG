@@ -388,6 +388,12 @@ void weight::Save() {
   }
 }
 
+void weight::ClearStatis(){
+  if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
+      VerQTheta.ClearStatis();
+  }
+}
+
 void weight::GetMom(const loop &LoopBasis, const int &LoopNum, momentum &Mom) {
   // In C++11, because of the move semantics, there is no additional cost by
   // returning an array

@@ -172,6 +172,7 @@ void MonteCarlo() {
   ReweightTimer.start();
 
   LOG_INFO("Start simulation ...")
+  int WaitStep=1000;
 
   for (int Block = 0; Block < Para.TotalStep; Block++) {
     for (int i = 0; i < 1000000; i++) {
@@ -206,8 +207,11 @@ void MonteCarlo() {
 
       if (i % 1000 == 0) {
 
-        if (i % 10000 == 0)
+        if (i % WaitStep == 0){
           Markov.UpdateWeight(1.0);
+          WaitStep*=2;
+          Markov.ClearStatis();
+        }
 
         // Markov.PrintDeBugMCInfo();
         if (PrinterTimer.check(Para.PrinterTimer)) {

@@ -13,8 +13,8 @@ size = 12
 rs = 1.0
 Lambda = 1.0
 Beta = 10 
-XType="Scale"
-# XType="Mom"
+# XType="Scale"
+XType="Mom"
 # XType="Angle"
 
 ##############   3D    ##################################
@@ -73,8 +73,8 @@ ScaleBin[-1]=ScaleBin[-2]*2
 Data[-1,:,:]=0.0
 
 qData = np.array(Data)
-# qData = np.mean(qData, axis=1)/8.0/np.pi
-qData = np.mean(qData, axis=1)*2
+qData = np.mean(qData, axis=1)/8.0/np.pi
+# qData = np.mean(qData, axis=1)*2
 
 diffData=np.array(qData)
 for i in range(ScaleBinSize-1):
@@ -124,26 +124,26 @@ elif (XType=="Mom"):
 
     # ErrorPlot(ax, ExtMomBin, verData, 'y', 'o', "Sum")
 
+    # x = np.arange(0, 3.0, 0.001)
+    # y = x*0.0+Bubble
+    # for i in range(len(x)):
+        # if x[i]>2.0:
+            # y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
+
+    # z=1.0/(1.0+y)
+    # y=1.0-y
+
+    # y=1.0/(x*x*kF*kF+1.0)
+
     x = np.arange(0, 3.0, 0.001)
     y = x*0.0+Bubble
     for i in range(len(x)):
         if x[i]>2.0:
             y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
 
-    z=1.0/(1.0+y)
-    y=1.0-y
+    y=1.0/(x*x*kF*kF+1.0+y)
 
-    # y=1.0/(x*x*kF*kF+1.0)
-
-    # x = np.arange(0, 3.0, 0.001)
-    # y = x*0.0+Bubble
-    # for i in range(len(x)):
-    #     if x[i]>2.0:
-    #         y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
-
-    # y=1.0/(x*x*kF*kF+1.0+y)
-
-    # ax.plot(x,y,'k-', lw=2)
+    ax.plot(x,y,'k-', lw=2)
     # ax.plot(x,z,'b-', lw=2)
 
     ax.set_xlim([0.0, ExtMomBin[-1]])

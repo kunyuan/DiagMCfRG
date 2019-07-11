@@ -61,9 +61,8 @@ verQTheta::verQTheta() {
     for (int inin = 0; inin < AngBinSize; ++inin)
       for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
         double k = Index2Mom(qIndex);
-        // EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k +
-        // Para.Mass2);
-        EffInteraction[scale][inin][qIndex] = 0.0;
+         EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
+        //EffInteraction[scale][inin][qIndex] = 1.0;
         for (int order = 0; order < MaxOrder; ++order)
           DiffInteraction[order][scale][inin][qIndex] = 0.0;
       }
@@ -76,16 +75,18 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
   if (VerType >= 0) {
     double k = Transfer.norm();
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
-    if (k < Para.MaxExtMom)
-      // return 8.0 * PI /
-      //        (k * k + Para.Mass2 +
-      //         0.159 * (1 - sqrt(1 - 4.0 * Para.Kf * Para.Kf / k / k)));
-      // return EffInteraction[Scale][AngleIndex][Mom2Index(k)];
-      return 1.0;
-    else
-      // return 8.0 * PI / (k * k + Para.Mass2);
-      return 1.0;
-    // return 1.0;
+    if (k < Para.MaxExtMom && Scale<Para.UVScale){
+       //return 8.0 * PI /
+              //(k * k + Para.Mass2 +
+               //0.159 * (1 - sqrt(1 - 4.0 * Para.Kf * Para.Kf / k / k)));
+      int ScaleIndex = Scale2Index(Scale);
+      double Upper = EffInteraction[ScaleIndex+1][AngleIndex][Mom2Index(k)];
+      double Lower = EffInteraction[ScaleIndex][AngleIndex][Mom2Index(k)];
+      return Lower+(Upper-Lower)/(Para.ScaleTable[ScaleIndex+1]-Para.ScaleTable[ScaleIndex])*(Scale-Para.ScaleTable[ScaleIndex]);
+    }else
+        return 1.0;
+      //return 8.0 * PI / (k * k + Para.Mass2);
+
   } else if (VerType == -1) {
     return 1.0;
   } else if (VerType == -2) {
@@ -159,6 +160,18 @@ void verQTheta::Save() {
   } else {
     LOG_WARNING("Polarization for PID " << Para.PID << " fails to save!");
   }
+}
+
+void verQTheta::ClearStatis(){
+    Normalization=1.0e-10;
+      for (int scale = 0; scale < ScaleBinSize + 1; ++scale) {
+        for (int inin = 0; inin < AngBinSize; ++inin)
+          for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
+            double k = Index2Mom(qIndex);
+            for (int order = 0; order < MaxOrder; ++order)
+              DiffInteraction[order][scale][inin][qIndex] = 0.0;
+          }
+      }
 }
 
 fermi::fermi() {

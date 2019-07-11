@@ -44,6 +44,7 @@ public:
                double Scale, int Order, double WeightFactor);
   void Update(double Ratio = 1.0);
   void Save();
+  void ClearStatis();
   double EffInteraction[ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
   double DiffInteraction[MaxOrder][ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
 
