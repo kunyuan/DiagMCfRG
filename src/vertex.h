@@ -16,7 +16,7 @@ class fermi {
 public:
   fermi();
   double Green(double Tau, const momentum &Momentum, spin Spin, int GType,
-               int Scale = 0);
+               double Scale = 0);
 
 private:
   // beyond which the expense sigma function will be called
@@ -24,7 +24,7 @@ private:
   double DeltaK;
   double UpperBound2, LowerBound2; // lower upbound for better sigma
   double DeltaK2;
-  double PhyGreen(double Tau, const momentum &Mom, int GType, int Scale = 0);
+  double PhyGreen(double Tau, const momentum &Mom, int GType, double Scale = 0);
   double FockSigma(const momentum &Mom);
   double BuildFockSigma();
   double Fock(double k);
@@ -38,10 +38,10 @@ class verQTheta {
 public:
   verQTheta();
   double Interaction(const momentum &InL, const momentum &InR,
-                     const momentum &Transfer, int VerType, int Scale = 0);
+                     const momentum &Transfer, int VerType, double Scale = 0);
 
   void Measure(const momentum &InL, const momentum &InR, const int QIndex,
-               int Scale, int Order, double WeightFactor);
+               double Scale, int Order, double WeightFactor);
   void Update(double Ratio = 1.0);
   void Save();
   double EffInteraction[ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
@@ -54,7 +54,7 @@ public:
 class verQ {
 public:
   double Interaction(double Tau, const momentum &Momentum, int VerType,
-                     int Scale = 0);
+                     double Scale = 0);
 };
 
 class verfunc {
@@ -81,6 +81,9 @@ void _TestAngle2D();
 
 double Index2Mom(const int &Index);
 int Mom2Index(const double &K);
+
+double Index2Scale(const int &Index);
+int Scale2Index(const double &Scale);
 
 }; // namespace diag
 #endif

@@ -13,8 +13,8 @@ size = 12
 rs = 1.0
 Lambda = 1.0
 Beta = 10 
-# XType="Scale"
-XType="Mom"
+XType="Scale"
+# XType="Mom"
 # XType="Angle"
 
 ##############   3D    ##################################
@@ -76,9 +76,13 @@ qData = np.array(Data)
 # qData = np.mean(qData, axis=1)/8.0/np.pi
 qData = np.mean(qData, axis=1)*2
 
-verData=np.zeros(len(ExtMomBin))
-for i in range(len(ExtMomBin)):
-    verData[i]=integrate.simps(qData[:,i], ScaleBin[:])
+diffData=np.array(qData)
+for i in range(ScaleBinSize-1):
+    diffData[i, :]=(qData[i+1, :]-qData[i, :])/(ScaleBin[i+1]-ScaleBin[i])
+
+# verData=np.zeros(len(ExtMomBin))
+# for i in range(len(ExtMomBin)):
+#     verData[i]=integrate.simps(qData[:,i], ScaleBin[:])
 
 # y=np.power(ScaleBin[:-1], 3)
 # print ScaleBin[-5:-1]
@@ -104,20 +108,21 @@ ColorList = ColorList*10
 if(XType=="Scale"):
     for i in range(ExtMomBinSize/4):
         index=4*i
-        ErrorPlot(ax, ScaleBin, qData[:, index],
+        ErrorPlot(ax, ScaleBin[:-2], diffData[:-2, index],
                     ColorList[i], 's', "Q {0}".format(ExtMomBin[index]))
-    ax.set_xlim([0.0, ScaleBin[-1]])
+    ax.set_xlim([0.0, ScaleBin[-2]])
     ax.set_xlabel("$Scale$", size=size)
 elif (XType=="Mom"):
-    for i in range(8):
+    for i in range(ScaleBinSize/8):
+        index=8*i
     # for i in range(ScaleBinSize+1):
-        ErrorPlot(ax, ExtMomBin, qData[i, :],
-                ColorList[i], 's', "Scale {0}".format(ScaleBin[i]))
+        ErrorPlot(ax, ExtMomBin, qData[index, :],
+                ColorList[i], 's', "Scale {0}".format(ScaleBin[index]))
         # ErrorPlot(ax, AngleBin, Data[i, :, 8],
         #           ColorList[i], 's', "Order {0}".format(i))
         # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
 
-    ErrorPlot(ax, ExtMomBin, verData, 'y', 'o', "Sum")
+    # ErrorPlot(ax, ExtMomBin, verData, 'y', 'o', "Sum")
 
     x = np.arange(0, 3.0, 0.001)
     y = x*0.0+Bubble

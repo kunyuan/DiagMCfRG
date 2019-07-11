@@ -20,7 +20,7 @@ extern parameter Para;
 // }
 
 double verQ::Interaction(double Tau, const momentum &Mom, int VerType,
-                         int Scale) {
+                         double Scale) {
   if (VerType >= 0) {
     double interaction = 8.0 * PI / (Mom.squaredNorm() + Para.Mass2);
     if (VerType > 0) {
@@ -54,7 +54,7 @@ verQTheta::verQTheta() {
   // PhyWeight = (1.0 - exp(-Para.MaxExtMom / Para.Kf)) /
   //             (1.0 - exp(-Para.MaxExtMom / Para.Kf / ExtMomBinSize)) * 4.0 *
   //             PI * PI;
-  PhyWeight = ExtMomBinSize * 2.0 * PI * ScaleBinSize;
+  PhyWeight = ExtMomBinSize * 2.0 * PI * Para.Kf * 4.0;
 
   // initialize interaction table
   for (int scale = 0; scale < ScaleBinSize + 1; ++scale) {
@@ -63,7 +63,7 @@ verQTheta::verQTheta() {
         double k = Index2Mom(qIndex);
         // EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k +
         // Para.Mass2);
-        EffInteraction[scale][inin][qIndex] = 1.0;
+        EffInteraction[scale][inin][qIndex] = 0.0;
         for (int order = 0; order < MaxOrder; ++order)
           DiffInteraction[order][scale][inin][qIndex] = 0.0;
       }
@@ -72,7 +72,7 @@ verQTheta::verQTheta() {
 
 double verQTheta::Interaction(const momentum &InL, const momentum &InR,
                               const momentum &Transfer, int VerType,
-                              int Scale) {
+                              double Scale) {
   if (VerType >= 0) {
     double k = Transfer.norm();
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
@@ -90,24 +90,25 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
     return 1.0;
   } else if (VerType == -2) {
     // return exp(-Transfer.norm() / Para.Kf);
-    return 1.0;
+    return exp(-Scale / Para.Kf / 4.0);
   } else {
     ABORT("VerType can not be " << VerType);
   }
 }
 
 void verQTheta::Measure(const momentum &InL, const momentum &InR,
-                        const int QIndex, int Scale, int Order,
+                        const int QIndex, double Scale, int Order,
                         double WeightFactor) {
   if (Order == 0) {
     Normalization += WeightFactor;
   } else {
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
+    int ScaleIndex = Scale2Index(Scale);
     // cout << AngleIndex << endl;
     // cout << InL[0] << "," << InL[1] << endl;
     // cout << InR[0] << "," << InR[1] << endl;
     // cout << "angle: " << Angle2D(InL, InR) << endl;
-    DiffInteraction[Order][Scale][AngleIndex][QIndex] +=
+    DiffInteraction[Order][ScaleIndex][AngleIndex][QIndex] +=
         WeightFactor / Para.dAngleTable[AngleIndex];
   }
   return;
@@ -118,10 +119,10 @@ void verQTheta::Update(double Ratio) {
     for (int angle = 0; angle < AngBinSize; ++angle)
       for (int qindex = 0; qindex < ExtMomBinSize; ++qindex) {
         double OldValue = EffInteraction[scale][angle][qindex];
-        // double NewValue = EffInteraction[scale + 1][angle][qindex];
-        double NewValue = 0.0;
+        double NewValue = EffInteraction[scale + 1][angle][qindex];
+        // double NewValue = 0.0;
         for (int order = 0; order < MaxOrder; ++order) {
-          NewValue += DiffInteraction[order][scale + 1][angle][qindex] /
+          NewValue += DiffInteraction[order][scale][angle][qindex] /
                       Normalization * PhyWeight;
         }
         EffInteraction[scale][angle][qindex] =
@@ -243,7 +244,8 @@ double fermi::FockSigma(const momentum &Mom) {
   return fock + k * k;
 }
 
-double fermi::PhyGreen(double Tau, const momentum &Mom, int GType, int Scale) {
+double fermi::PhyGreen(double Tau, const momentum &Mom, int GType,
+                       double Scale) {
   // if tau is exactly zero, set tau=0^-
   double green, Ek, kk, k;
   if (Tau == 0.0) {
@@ -302,7 +304,8 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int GType, int Scale) {
   // cout << "G: " << green << endl;
 
   if (Para.Type == RG) {
-    double kScale = Para.ScaleTable[Scale];
+    // double kScale = Para.ScaleTable[Scale];
+    double kScale = Scale;
     // double dK2 = (k - Para.Kf) * (k - Para.Kf) / kScale / kScale;
     // double expFactor = 0.0;
     // if (dK2 < 100.0)
@@ -336,7 +339,7 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int GType, int Scale) {
 }
 
 double fermi::Green(double Tau, const momentum &Mom, spin Spin, int GType,
-                    int Scale) {
+                    double Scale) {
   double green;
   if (GType >= 0) {
     green = PhyGreen(Tau, Mom, GType, Scale);
@@ -432,6 +435,13 @@ int diag::Angle2Index(const double &Angle, const int &AngleNum) {
     return 0;
   else
     return int(Angle / dAngle + 0.5);
+}
+
+double diag::Index2Scale(const int &Index) {
+  return Index * Para.UVScale / ScaleBinSize;
+}
+int diag::Scale2Index(const double &Scale) {
+  return int((Scale / Para.UVScale) * ScaleBinSize);
 }
 
 void diag::_TestAngle2D() {

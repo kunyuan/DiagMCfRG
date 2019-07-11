@@ -101,7 +101,8 @@ void weight::Initialization() {
   Var.CurrGroup = &Groups[0];
 
   // initialize RG staff
-  Var.CurrScale = ScaleBinSize - 1;
+  // Var.CurrScale = ScaleBinSize - 1;
+  Var.CurrScale = Para.Kf;
 
   LOG_INFO("Calculating the weights of all objects...")
 

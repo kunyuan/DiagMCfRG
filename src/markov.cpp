@@ -294,13 +294,13 @@ void markov::ChangeScale() {
   if (Para.Type != RG)
     return;
   double Prop = 1.0;
-  int OldScale = Var.CurrScale;
+  double OldScale = Var.CurrScale;
   if (Random.urn() < 0.5)
-    Var.CurrScale += 1;
+    Var.CurrScale += Random.urn() * 0.5;
   else
-    Var.CurrScale -= 1;
+    Var.CurrScale -= Random.urn() * 0.5;
 
-  if (Var.CurrScale >= ScaleBinSize || Var.CurrScale < 0) {
+  if (Var.CurrScale < 0.0) {
     Var.CurrScale = OldScale;
     return;
   }
