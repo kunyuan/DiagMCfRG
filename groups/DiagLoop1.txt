@@ -31,7 +31,7 @@
 # WType(Direct,Exchange)
  0  0 | 0  0 |
 # SpinFactor
- 1  0  0  0 
+ 1 -1 -1  0 
 
 # Permutation
  5  2  1  4  3  0 
@@ -52,4 +52,4 @@
 # WType(Direct,Exchange)
  0  0 | 0  0 |
 # SpinFactor
- 1  0  0  0 
+ 1 -1 -1  0 

@@ -11,11 +11,11 @@ mat.rcParams["font.family"] = "Times New Roman"
 size = 12
 
 rs = 1.0
-Lambda = 2
+Lambda = 8
 Beta = 20
 # XType="Scale"
-XType="Mom"
-# XType="Angle"
+# XType="Mom"
+XType="Angle"
 
 ##############   3D    ##################################
 # kF = (9.0*np.pi/4.0)**(1.0/3.0)/rs  # 3D
@@ -155,6 +155,12 @@ elif (XType=="Mom"):
     ax.set_xlabel("$q/k_F$", size=size)
 
 elif(XType=="Angle"):
+    for i in range(ScaleBinSize/8):
+        # print i, index
+        # print ScaleBin[index]
+        index=8*i
+        ErrorPlot(ax, AngleBin, Data[index, :, 16],
+                    ColorList[i], 's', "Q {0}".format(ScaleBin[index]))
     ax.set_xlim([0.0, AngleBin[-1]])
     ax.set_xlabel("$Angle$", size=size)
 # ax.set_xticks([0.0,0.04,0.08,0.12])
