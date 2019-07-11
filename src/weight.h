@@ -15,6 +15,7 @@ struct variable {
   int CurrExtMomBin; // current bin of the external momentum
   double CurrTau;    // current external tau
   double CurrScale;  // Current (Reference) Scale: Index=1, ..., ScaleBinSize
+  int CurrIRScaleBin;
   array<momentum, MaxLoopNum> LoopMom; // all momentum loop variables
   array<double, MaxTauNum> Tau;        // all tau variables
   array<int, MaxLoopNum> LoopSpin;     // all spin variables
@@ -42,6 +43,7 @@ public:
   void Measure(double WeightFactor);
   void Update(double Ratio);
   void ClearStatis();
+  void ResetIRScale(int IRScaleBin);
   void Save();
 
   // run test in MC updates

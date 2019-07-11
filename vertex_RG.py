@@ -11,8 +11,8 @@ mat.rcParams["font.family"] = "Times New Roman"
 size = 12
 
 rs = 1.0
-Lambda = 1.0
-Beta = 10 
+Lambda = 2
+Beta = 20
 # XType="Scale"
 XType="Mom"
 # XType="Angle"
@@ -31,7 +31,7 @@ XType="Mom"
 ###### Bare Green's function    #########################
 kF = np.sqrt(2.0)/rs  # 2D
 # Bubble=0.11635  #2D, Beta=0.5, rs=1
-Bubble = 0.15916  # 2D, Beta=10, rs=1
+Bubble = 0.15916/2  # 2D, Beta=10, rs=1
 
 folder = "./Beta{0}_rs{1}_lambda{2}/".format(Beta, rs, Lambda)
 
@@ -73,7 +73,7 @@ ScaleBin[-1]=ScaleBin[-2]*2
 Data[-1,:,:]=0.0
 
 qData = np.array(Data)
-qData = np.mean(qData, axis=1)/8.0/np.pi
+qData = np.mean(qData, axis=1)
 # qData = np.mean(qData, axis=1)*2
 
 diffData=np.array(qData)
@@ -103,7 +103,7 @@ fig, ax = plt.subplots()
 
 # plt.subplot(1,2,2)
 ColorList = ['k', 'r', 'b', 'g', 'm', 'c']
-ColorList = ColorList*10
+ColorList = ColorList*40
 
 if(XType=="Scale"):
     for i in range(ExtMomBinSize/4):
@@ -114,6 +114,8 @@ if(XType=="Scale"):
     ax.set_xlabel("$Scale$", size=size)
 elif (XType=="Mom"):
     for i in range(ScaleBinSize/8):
+        # print i, index
+        # print ScaleBin[index]
         index=8*i
     # for i in range(ScaleBinSize+1):
         ErrorPlot(ax, ExtMomBin, qData[index, :],
@@ -140,11 +142,14 @@ elif (XType=="Mom"):
     for i in range(len(x)):
         if x[i]>2.0:
             y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
+    y0=8.0*np.pi/(x*x*kF*kF+Lambda)
+    # ym=y0-y0*y0*y
+    yphy=8.0*np.pi/(x*x*kF*kF+Lambda+y*8.0*np.pi)
 
-    y=1.0/(x*x*kF*kF+1.0+y)
-
-    ax.plot(x,y,'k-', lw=2)
-    # ax.plot(x,z,'b-', lw=2)
+    # ax.plot(x,-y0*y0*y,'k-', lw=2, label="physical")
+    ax.plot(x,yphy,'k-', lw=2, label="physical")
+    ax.plot(x,y0,'b-', lw=2, label="original")
+    # ax.plot(x,ym,'r-', lw=2, label="wrong")
 
     ax.set_xlim([0.0, ExtMomBin[-1]])
     ax.set_xlabel("$q/k_F$", size=size)

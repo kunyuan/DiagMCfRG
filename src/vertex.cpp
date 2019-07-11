@@ -61,8 +61,8 @@ verQTheta::verQTheta() {
     for (int inin = 0; inin < AngBinSize; ++inin)
       for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
         double k = Index2Mom(qIndex);
-         EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
-        //EffInteraction[scale][inin][qIndex] = 1.0;
+        EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
+        // EffInteraction[scale][inin][qIndex] = 0.0;
         for (int order = 0; order < MaxOrder; ++order)
           DiffInteraction[order][scale][inin][qIndex] = 0.0;
       }
@@ -73,19 +73,25 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
                               const momentum &Transfer, int VerType,
                               double Scale) {
   if (VerType >= 0) {
+
     double k = Transfer.norm();
+    // return 8.0 * PI / (k * k + Para.Mass2);
+    // return 2.0;
+
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
-    if (k < Para.MaxExtMom && Scale<Para.UVScale){
-       //return 8.0 * PI /
-              //(k * k + Para.Mass2 +
-               //0.159 * (1 - sqrt(1 - 4.0 * Para.Kf * Para.Kf / k / k)));
+    if (k < Para.MaxExtMom && Scale < Para.UVScale) {
+      // return 8.0 * PI /
+      // (k * k + Para.Mass2 +
+      // 0.159 * (1 - sqrt(1 - 4.0 * Para.Kf * Para.Kf / k / k)));
       int ScaleIndex = Scale2Index(Scale);
-      double Upper = EffInteraction[ScaleIndex+1][AngleIndex][Mom2Index(k)];
+      double Upper = EffInteraction[ScaleIndex + 1][AngleIndex][Mom2Index(k)];
       double Lower = EffInteraction[ScaleIndex][AngleIndex][Mom2Index(k)];
-      return Lower+(Upper-Lower)/(Para.ScaleTable[ScaleIndex+1]-Para.ScaleTable[ScaleIndex])*(Scale-Para.ScaleTable[ScaleIndex]);
-    }else
-        return 1.0;
-      //return 8.0 * PI / (k * k + Para.Mass2);
+      double UpperScale = Para.ScaleTable[ScaleIndex + 1];
+      double LowerScale = Para.ScaleTable[ScaleIndex];
+      return Lower +
+             (Upper - Lower) / (UpperScale - LowerScale) * (Scale - LowerScale);
+    } else
+      return 8.0 * PI / (k * k + Para.Mass2);
 
   } else if (VerType == -1) {
     return 1.0;
@@ -162,16 +168,27 @@ void verQTheta::Save() {
   }
 }
 
-void verQTheta::ClearStatis(){
-    Normalization=1.0e-10;
-      for (int scale = 0; scale < ScaleBinSize + 1; ++scale) {
-        for (int inin = 0; inin < AngBinSize; ++inin)
-          for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
-            double k = Index2Mom(qIndex);
-            for (int order = 0; order < MaxOrder; ++order)
-              DiffInteraction[order][scale][inin][qIndex] = 0.0;
-          }
+void verQTheta::ClearStatis() {
+  Normalization = 1.0e-10;
+  for (int scale = 0; scale < ScaleBinSize + 1; ++scale) {
+    for (int inin = 0; inin < AngBinSize; ++inin)
+      for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
+        double k = Index2Mom(qIndex);
+        for (int order = 0; order < MaxOrder; ++order)
+          DiffInteraction[order][scale][inin][qIndex] = 0.0;
       }
+  }
+}
+
+void verQTheta::ResetIRScale(int IRScaleBin) {
+  for (int scale = 0; scale < IRScaleBin; ++scale) {
+    for (int inin = 0; inin < AngBinSize; ++inin)
+      for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
+        double k = Index2Mom(qIndex);
+        EffInteraction[scale][inin][qIndex] =
+            EffInteraction[IRScaleBin][inin][qIndex];
+      }
+  }
 }
 
 fermi::fermi() {

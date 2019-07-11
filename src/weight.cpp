@@ -100,6 +100,8 @@ void weight::Initialization() {
 
   Var.CurrGroup = &Groups[0];
 
+  Var.CurrIRScaleBin = ScaleBinSize / 1.5;
+
   // initialize RG staff
   // Var.CurrScale = ScaleBinSize - 1;
   Var.CurrScale = Para.Kf;
@@ -225,12 +227,36 @@ void weight::ChangeMom(group &Group, int MomIndex) {
           Ver4->NewWeight[DIRECT] = VerQTheta.Interaction(
               _InL, _InR, _Mom, Ver4->Type[DIRECT], Var.CurrScale);
         }
+
+        // if (Var.CurrGroup->Order == 1) {
+        // cout << "Order: " << Var.CurrGroup->Order << endl;
+        // cout << "Direct:" << endl;
+        // cout << Ver4->IntLoopBasis[DIRECT][0] << endl;
+        // cout << Ver4->IntLoopBasis[DIRECT][1] << endl;
+        // cout << Ver4->IntLoopBasis[DIRECT][2] << endl;
+        // cout << Ver4->IntLoopBasis[DIRECT][3] << endl;
+        // cout << _Mom.norm() << " vs "
+        //      << Para.ExtMomTable[Var.CurrExtMomBin].norm() << endl;
+        // cout << endl;
+        // }
+
         if (Ver4->IntLoopBasis[EXCHANGE][MomIndex] != 0) {
           Ver4->Excited[EXCHANGE] = true;
           GetMom(Ver4->IntLoopBasis[EXCHANGE], Group.LoopNum, _Mom);
           Ver4->NewWeight[EXCHANGE] = VerQTheta.Interaction(
               _InL, _InR, _Mom, Ver4->Type[EXCHANGE], Var.CurrScale);
         }
+        // if (Var.CurrGroup->Order == 1) {
+        //   cout << "Order: " << Var.CurrGroup->Order << endl;
+        //   cout << "Exchange:" << endl;
+        //   cout << Ver4->IntLoopBasis[EXCHANGE][0] << endl;
+        //   cout << Ver4->IntLoopBasis[EXCHANGE][1] << endl;
+        //   cout << Ver4->IntLoopBasis[EXCHANGE][2] << endl;
+        //   cout << Ver4->IntLoopBasis[EXCHANGE][3] << endl;
+        //   cout << _Mom.norm() << " vs "
+        //        << Para.ExtMomTable[Var.CurrExtMomBin].norm() << endl;
+        //   cout << endl;
+        // }
       } else {
         ABORT("Vertex4Type is not implemented!");
       }
@@ -371,8 +397,9 @@ void weight::RejectChange(group &Group) {
 
 void weight::Measure(double WeightFactor) {
   if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
-    VerQTheta.Measure(Var.LoopMom[1], Var.LoopMom[2], Var.CurrExtMomBin,
-                      Var.CurrScale, Var.CurrGroup->Order, WeightFactor);
+    if (Var.CurrScale >= Para.ScaleTable[Var.CurrIRScaleBin])
+      VerQTheta.Measure(Var.LoopMom[1], Var.LoopMom[2], Var.CurrExtMomBin,
+                        Var.CurrScale, Var.CurrGroup->Order, WeightFactor);
   }
 }
 
@@ -388,9 +415,16 @@ void weight::Save() {
   }
 }
 
-void weight::ClearStatis(){
+void weight::ClearStatis() {
   if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
-      VerQTheta.ClearStatis();
+    VerQTheta.ClearStatis();
+  }
+}
+
+void weight::ResetIRScale(int IRScaleBin) {
+  Var.CurrIRScaleBin = IRScaleBin;
+  if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
+    VerQTheta.ResetIRScale(IRScaleBin);
   }
 }
 
