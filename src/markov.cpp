@@ -468,7 +468,7 @@ double markov::ShiftExtTransferK(const int &OldExtMomBin, int &NewExtMomBin) {
 
 double markov::ShiftExtLegK(const momentum &OldExtMom, momentum &NewExtMom) {
   if (D == 2) {
-    double Theta = Random.irn(0, 2.0 * PI);
+    double Theta = Random.urn() * 2.0 * PI;
     NewExtMom[0] = Para.Kf * cos(Theta);
     NewExtMom[1] = Para.Kf * sin(Theta);
     return 1.0;

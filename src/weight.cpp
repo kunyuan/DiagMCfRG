@@ -155,8 +155,8 @@ void weight::ChangeGroup(group &Group, bool Forced) {
       } else if (Para.Vertex4Type == MOM_ANGLE) {
         if (Forced || Ver4->Version < Var.CurrVersion) {
           Ver4->Excited = {true, true};
-          GetMom(Ver4->LoopBasis[INL], Group.LoopNum, _InL);
-          GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
+          GetMom(Ver4->LoopBasis[1], Group.LoopNum, _InL);
+          GetMom(Ver4->LoopBasis[2], Group.LoopNum, _InR);
 
           GetMom(Ver4->IntLoopBasis[DIRECT], Group.LoopNum, _Mom);
           Ver4->NewWeight[DIRECT] = VerQTheta.Interaction(
@@ -203,7 +203,7 @@ void weight::ChangeMom(group &Group, int MomIndex) {
       } else if (Para.Vertex4Type == MOM) {
         if (Ver4->IntLoopBasis[DIRECT][MomIndex] != 0) {
           Ver4->Excited[DIRECT] = true;
-          GetMom(Ver4->IntLoopBasis[IN], Group.LoopNum, _Mom);
+          GetMom(Ver4->IntLoopBasis[DIRECT], Group.LoopNum, _Mom);
           Ver4->NewWeight[DIRECT] =
               VerQ.Interaction(0.0, _Mom, Ver4->Type[DIRECT], Var.CurrScale);
         }
@@ -215,12 +215,12 @@ void weight::ChangeMom(group &Group, int MomIndex) {
         }
 
       } else if (Para.Vertex4Type == MOM_ANGLE) {
-        GetMom(Ver4->LoopBasis[INL], Group.LoopNum, _InL);
-        GetMom(Ver4->LoopBasis[INR], Group.LoopNum, _InR);
+        GetMom(Ver4->LoopBasis[1], Group.LoopNum, _InL);
+        GetMom(Ver4->LoopBasis[2], Group.LoopNum, _InR);
 
         if (Ver4->IntLoopBasis[DIRECT][MomIndex] != 0) {
           Ver4->Excited[DIRECT] = true;
-          GetMom(Ver4->IntLoopBasis[IN], Group.LoopNum, _Mom);
+          GetMom(Ver4->IntLoopBasis[DIRECT], Group.LoopNum, _Mom);
           Ver4->NewWeight[DIRECT] = VerQTheta.Interaction(
               _InL, _InR, _Mom, Ver4->Type[DIRECT], Var.CurrScale);
         }

@@ -12,7 +12,10 @@ size = 12
 
 rs = 1.0
 Lambda = 1.0
-Beta = 20
+Beta = 10 
+# XType="Scale"
+XType="Mom"
+# XType="Angle"
 
 ##############   3D    ##################################
 # kF = (9.0*np.pi/4.0)**(1.0/3.0)/rs  # 3D
@@ -57,29 +60,35 @@ for f in files:
             Data += d
 
 AngleBinSize = len(AngleBin)
-ScaleBinSize = len(ScaleBin)-1
+ScaleBinSize = len(ScaleBin)
 ExtMomBinSize = len(ExtMomBin)
 ExtMomBin /= kF
 
 print "Found {0} files.".format(Num)
 Data /= Num
 
-Data = Data.reshape((ScaleBinSize+1, AngleBinSize, ExtMomBinSize))
+Data = Data.reshape((ScaleBinSize, AngleBinSize, ExtMomBinSize))
+
+ScaleBin[-1]=ScaleBin[-2]*2
+Data[-1,:,:]=0.0
 
 qData = np.array(Data)
 # qData = np.mean(qData, axis=1)/8.0/np.pi
-qData = np.mean(qData, axis=1)
+qData = np.mean(qData, axis=1)*2
 
 verData=np.zeros(len(ExtMomBin))
 for i in range(len(ExtMomBin)):
-    verData[i]=integrate.simps(qData[:-1,i], ScaleBin[:-1])
+    verData[i]=integrate.simps(qData[:,i], ScaleBin[:])
+
+# y=np.power(ScaleBin[:-1], 3)
+# print ScaleBin[-5:-1]
+# print ScaleBin
+# print integrate.simps(y, ScaleBin[:-1])
 
 
 def ErrorPlot(p, x, d, color, marker, label=None, size=4, shift=False):
     p.plot(x, d, marker=marker, c=color, label=label,
            lw=1, markeredgecolor="None", linestyle="--", markersize=size)
-    # p.errorbar(data[:,0],data[:,1], yerr=data[:,2], c=color, ecolor=color, capsize=0, linestyle="None")
-    # p.fill_between(data[:,0], data[:,1]-data[:,2], data[:,1]+data[:,2], alpha=0.5, facecolor=color, edgecolor=color)
 
 
 w = 1-0.429
@@ -92,73 +101,56 @@ fig, ax = plt.subplots()
 ColorList = ['k', 'r', 'b', 'g', 'm', 'c']
 ColorList = ColorList*10
 
-# ErrorPlot(ax, ScaleBin, qData[:, 20],
-#             ColorList[0], 's', "Q {0}".format(ExtMomBin[20]))
-# ErrorPlot(ax, ScaleBin, qData[:, 15],
-#             ColorList[1], 's', "Q {0}".format(ExtMomBin[15]))
+if(XType=="Scale"):
+    for i in range(ExtMomBinSize/4):
+        index=4*i
+        ErrorPlot(ax, ScaleBin, qData[:, index],
+                    ColorList[i], 's', "Q {0}".format(ExtMomBin[index]))
+    ax.set_xlim([0.0, ScaleBin[-1]])
+    ax.set_xlabel("$Scale$", size=size)
+elif (XType=="Mom"):
+    for i in range(8):
+    # for i in range(ScaleBinSize+1):
+        ErrorPlot(ax, ExtMomBin, qData[i, :],
+                ColorList[i], 's', "Scale {0}".format(ScaleBin[i]))
+        # ErrorPlot(ax, AngleBin, Data[i, :, 8],
+        #           ColorList[i], 's', "Order {0}".format(i))
+        # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
 
-for i in range(8):
-# for i in range(ScaleBinSize+1):
-    # ErrorPlot(ax, ExtMomBin, qData[i, :],
-    #           ColorList[i], 's', "Scale {0}".format(ScaleBin[i]))
-    ErrorPlot(ax, AngleBin, Data[i, :, 0],
-              ColorList[i], 's', "Order {0}".format(i))
-    # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
+    ErrorPlot(ax, ExtMomBin, verData, 'y', 'o', "Sum")
 
-# ErrorPlot(ax, ExtMomBin, verData, 'y', 'o', "Sum")
+    x = np.arange(0, 3.0, 0.001)
+    y = x*0.0+Bubble
+    for i in range(len(x)):
+        if x[i]>2.0:
+            y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
 
-# ErrorPlot(ax, Data[1][0], 'k', 's', "Diag 1")
-# ErrorPlot(ax, tmp, 'm', 's', "Diag 3+c 1")
-# ErrorPlot(ax, DataAll[3], 'k', 'o', "Order 3")
+    z=1.0/(1.0+y)
+    y=1.0-y
 
-# ErrorPlot(ax, Data[2][1], 'g', 'o', "Order 3 counterbubble 1")
-# ErrorPlot(ax, Data[2][2], 'g', '*', "Order 3 counterbubble 2")
-# ErrorPlot(ax, Data[2][3], 'g', '>', "Order 3 counterbubble 3")
+    # y=1.0/(x*x*kF*kF+1.0)
 
-# ErrorPlot(ax, Data[1][1], 'olive', 'o', "Order 3 shift 1")
-# ErrorPlot(ax, Data[1][2], 'olive', '*', "Order 3 shift 2")
+    # x = np.arange(0, 3.0, 0.001)
+    # y = x*0.0+Bubble
+    # for i in range(len(x)):
+    #     if x[i]>2.0:
+    #         y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
 
-# ErrorPlot(ax, Data[3][0], 'k', 's', "Diag 1", shift=True)
-# ErrorPlot(ax, Data[3][1], 'g', 's', "Diag 2", shift=True)
-# ErrorPlot(ax, Data[3][2], 'r', '*', "Diag 3", shift=True)
-# ErrorPlot(ax, Data[3][3], 'b', 's', "Diag 4", shift=True)
-# ErrorPlot(ax, Data[3][4], 'olive', '*', "Diag 5", shift=True)
-# ErrorPlot(ax, Data[3][5], 'm', 's', "Diag 6", shift=True)
-# ErrorPlot(ax, Data[3][6], 'c', '*', "Diag 7", shift=True)
+    # y=1.0/(x*x*kF*kF+1.0+y)
 
-# ErrorPlot(ax, Data[5], 'g', 's', "Diag 6")
+    # ax.plot(x,y,'k-', lw=2)
+    # ax.plot(x,z,'b-', lw=2)
 
+    ax.set_xlim([0.0, ExtMomBin[-1]])
+    ax.set_xlabel("$q/k_F$", size=size)
 
-x = np.arange(0, 3.0, 0.001)
-y = x*0.0+Bubble
-for i in range(len(x)):
-    if x[i]>2.0:
-        y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
-
-z=1.0/(1.0+y)
-y=1.0-y
-
-# y=1.0/(x*x*kF*kF+1.0)
-
-# x = np.arange(0, 3.0, 0.001)
-# y = x*0.0+Bubble
-# for i in range(len(x)):
-#     if x[i]>2.0:
-#         y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
-
-# y=1.0/(x*x*kF*kF+1.0+y)
-
-# ax.plot(x,y,'k-', lw=2)
-# ax.plot(x,z,'b-', lw=2)
-
-# ax.set_xlim([0.0, ScaleBin[-1]])
-# ax.set_xlim([0.0, ExtMomBin[-1]])
-ax.set_xlim([0.0, AngleBin[-1]])
+elif(XType=="Angle"):
+    ax.set_xlim([0.0, AngleBin[-1]])
+    ax.set_xlabel("$Angle$", size=size)
 # ax.set_xticks([0.0,0.04,0.08,0.12])
 # ax.set_yticks([0.35,0.4,0.45,0.5])
 # ax.set_ylim([-0.02, 0.125])
 # ax.set_ylim([0.07, 0.125])
-ax.set_xlabel("$q/k_F$", size=size)
 # ax.xaxis.set_label_coords(0.97, -0.01)
 # # ax.yaxis.set_label_coords(0.97, -0.01)
 # ax.text(-0.012,0.52, "$-I$", fontsize=size)

@@ -104,6 +104,9 @@ void verQTheta::Measure(const momentum &InL, const momentum &InR,
   } else {
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
     // cout << AngleIndex << endl;
+    // cout << InL[0] << "," << InL[1] << endl;
+    // cout << InR[0] << "," << InR[1] << endl;
+    // cout << "angle: " << Angle2D(InL, InR) << endl;
     DiffInteraction[Order][Scale][AngleIndex][QIndex] +=
         WeightFactor / Para.dAngleTable[AngleIndex];
   }
@@ -298,21 +301,37 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int GType, int Scale) {
   // cout << "x: " << x << ", y: " << y << ", G: " << green << endl;
   // cout << "G: " << green << endl;
 
+  if (Para.Type == RG) {
+    double kScale = Para.ScaleTable[Scale];
+    // double dK2 = (k - Para.Kf) * (k - Para.Kf) / kScale / kScale;
+    // double expFactor = 0.0;
+    // if (dK2 < 100.0)
+    //   expFactor = exp(-dK2);
+    // green *= (1 - expFactor);
+    // if (GType == 2)
+    //   green *= -expFactor * 2.0 * dK2 / kScale;
+    double dK2 = (k - Para.Kf) * (k - Para.Kf);
+    // if (GType == 2)
+    //   green *= -dK2 * 2.0 * kScale / (dK2 + kScale * kScale) /
+    //            (dK2 + kScale * kScale);
+    // else
+    //   green *= dK2 / (dK2 + kScale * kScale);
+
+    if (GType == 2)
+      green *= -dK2 * 4.0 * pow(kScale, 3) / pow((dK2 + pow(kScale, 4)), 2);
+    else
+      green *= dK2 / (dK2 + pow(kScale, 4));
+
+    // if (GType == 2)
+    //   green *= -dK2 / (dK2 + kScale) / (dK2 + kScale);
+    // else
+    //   green *= dK2 / (dK2 + kScale);
+  }
+
   if (std::isnan(green))
     ABORT("Step:" << Para.Counter << ", Green is too large! Tau=" << Tau
                   << ", Ek=" << Ek << ", Green=" << green << ", Mom"
                   << ToString(Mom));
-
-  if (Para.Type == RG) {
-    double kScale = Para.ScaleTable[Scale];
-    double dK2 = (k - Para.Kf) * (k - Para.Kf);
-    double expFactor = exp(-dK2 / kScale / kScale);
-    // green *= (1 - exp(-(k - Para.Kf) * (k - Para.Kf) / kScale / kScale));
-
-    green *= (1 - expFactor);
-    if (GType == 2)
-      green *= -expFactor * 2.0 / kScale / kScale / kScale * dK2;
-  }
   return green;
 }
 
@@ -383,11 +402,21 @@ int diag::Mom2Index(const double &K) {
 
 double diag::Angle2D(const momentum &K1, const momentum &K2) {
   // Returns the angle in radians between vectors 'K1' and 'K2'
-  double dotp = K1.dot(K2);
+  // double dotp = K1.dot(K2);
+  double dotp = K1[0] * K2[0] + K1[1] * K2[1];
   double det = K1[0] * K2[1] - K1[1] * K2[0];
   double Angle2D = atan2(det, dotp);
+
+  // cout<<endl;
+  // cout << K1[0] << "," << K1[1] << endl;
+  // cout << K2[0] << "," << K2[1] << endl;
+  // cout << "dotp:" << dotp << endl;
+  // cout << "det:" << det << endl;
+  // cout << "angle:" << Angle2D << endl;
   if (Angle2D < 0)
     Angle2D += 2.0 * PI;
+  // cout << "angleadjusted:" << Angle2D << endl;
+  // cout << endl;
   return Angle2D;
 }
 
