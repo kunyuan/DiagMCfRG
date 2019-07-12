@@ -1,5 +1,6 @@
 from free_energy import *
-from polar import *
+# from polar import *
+from ver4 import *
 import copy
 import sys
 
@@ -18,7 +19,7 @@ if __name__ == "__main__":
     print red("\nThe optimimal LnZ diagrams:")
     OptLnZHugenDiagList = LnZ.OptimizeLoopBasis()
 
-    Polar = polar(Order)
+    Polar = ver4(Order)
 
     UniqueUnLabelDiagList = []
 
@@ -58,5 +59,7 @@ if __name__ == "__main__":
         len(UniqueUnLabelDiagList)))
 
     print "Save diagrams ..."
-    with open("./Diag{0}{1}.txt".format("Polar", Order), "w") as f:
+    # with open("./Diag{0}{1}.txt".format("Polar", Order), "w") as f:
+    #     f.write(Polar.ToString(UniqueUnLabelDiagList))
+    with open("./Diag{0}{1}.txt".format("4Ver", Order-2), "w") as f:
         f.write(Polar.ToString(UniqueUnLabelDiagList))
