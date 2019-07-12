@@ -11,10 +11,10 @@ mat.rcParams["font.family"] = "Times New Roman"
 size = 12
 
 rs = 1.0
-Lambda = 2
+Lambda = 8
 Beta = 20
-# XType="Scale"
-XType="Mom"
+XType="Scale"
+# XType="Mom"
 # XType="Angle"
 
 ##############   3D    ##################################

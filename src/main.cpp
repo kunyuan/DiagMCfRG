@@ -73,7 +73,7 @@ void InitPara() {
 
   // scale all energy with E_F
   Para.Beta /= Para.Ef;
-  Para.UVScale = 2.0 * Para.Kf;
+  Para.UVScale = 1.0 * Para.Kf;
   Para.UVCoupling = 1.0 * Para.Ef;
 
   double dScale = Para.UVScale / ScaleBinSize;

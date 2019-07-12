@@ -334,31 +334,28 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int GType,
   // cout << "G: " << green << endl;
 
   if (Para.Type == RG) {
-    // double kScale = Para.ScaleTable[Scale];
+    // momentum cutoff
     double kScale = Scale;
-    // double dK2 = (k - Para.Kf) * (k - Para.Kf) / kScale / kScale;
-    // double expFactor = 0.0;
-    // if (dK2 < 100.0)
-    //   expFactor = exp(-dK2);
-    // green *= (1 - expFactor);
-    // if (GType == 2)
-    //   green *= -expFactor * 2.0 * dK2 / kScale;
     double dK2 = (k - Para.Kf) * (k - Para.Kf);
-    // if (GType == 2)
-    //   green *= -dK2 * 2.0 * kScale / (dK2 + kScale * kScale) /
-    //            (dK2 + kScale * kScale);
-    // else
-    //   green *= dK2 / (dK2 + kScale * kScale);
 
     if (GType == 2)
       green *= -dK2 * 4.0 * pow(kScale, 3) / pow((dK2 + pow(kScale, 4)), 2);
     else
       green *= dK2 / (dK2 + pow(kScale, 4));
 
+    // tau cutoff
+    if (GType == 2)
+      green *= Tau * Tau * Scale / pow((1.0 + pow(Tau * Scale, 2)), 2) -
+               pow(Para.Beta - Tau, 2) * Scale /
+                   pow((1.0 + pow(Para.Beta - Tau, 2)), 2);
+    else
+      green *= 0.5 / (1.0 + pow(Tau * Scale, 2)) +
+               0.5 / (1.0 + pow(Para.Beta - Tau, 2));
     // if (GType == 2)
-    //   green *= -dK2 / (dK2 + kScale) / (dK2 + kScale);
+    //   green *= 0.5 * (-Tau * exp(-Tau * Scale) -
+    //                   (Para.Beta - Tau) * exp(-(Para.Beta - Tau)));
     // else
-    //   green *= dK2 / (dK2 + kScale);
+    //   green *= 0.5 * (exp(-Tau * Scale) + exp(-(Para.Beta - Tau)));
   }
 
   if (std::isnan(green))
