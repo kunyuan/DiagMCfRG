@@ -489,9 +489,9 @@ class ver4():
         kG, kW = diag.AssignMomentums(
             Permutation, self.GetReference(), self.GetInteractionPairs(True))
         # InL, OutL, InR, OutR=Permutation[0], Permutation.index(0), Permutation[1], Permutation.index(1)
-        SubDiagList=[]
-        SubDiagLegList=[]
-        SubDiagSizeList=[]
+        SubList=[]
+        SubLegList=[]
+        SubSizeList=[]
 
         for i in range(len(Permutation)):
             for j in range(i+1, len(Permutation)):
@@ -555,14 +555,60 @@ class ver4():
                                 Legs=[InL, OutL, InR, OutR]
                                 if set(Legs)!=set((i, j, k, l)):
                                     Abort("Legs not equal! {0} vs {1}".format(Legs, (i,j,k,l)))
-                                SubDiagLegList.append(Legs)
-                                SubDiagList.append(InternGroup)
-                                SubDiagSizeList.append(len(InternGroup))
+                                SubLegList.append(Legs)
+                                SubList.append(InternGroup)
+                                SubSizeList.append(len(InternGroup))
 
-        for index in range(len(SubDiagLegList)):
-            print "Subdiagram:", SubDiagList[index]
-            print "Legs:", SubDiagLegList[index]
-            print "Size:", SubDiagSizeList[index]
+        SubSizeList, SubList, SubLegList =zip(*sorted(zip(SubSizeList, SubList, SubLegList)))
+        if SubSizeList[-1]!=len(Permutation)-2:
+            Abort("The last sub diagram should the diagram itself! {0} with legs {1}".format(SubList[-1], SubLegList[-1]))
+        
+        # Check channel of sub-diagram
+        SubTypeList=[]
+        for sub, legs in zip(SubList, SubLegList):
+            InL, OutL, InR, OutR=legs
+            InMom=kG[InL]+kG[InR]
+            TranMom=kG[OutL]-kG[InL]
+            TranMom2=kG[OutR]-kG[InL]
+            Flag=False
+            for e1 in range(len(sub)):
+                elem1=sub[e1]
+                if elem1==OutL or elem1==OutR:
+                    continue
+                for e2 in range(e1+1 ,len(sub)):
+                    elem2=sub[e2]
+                    # if elem1==4 and elem2==5:
+                    # if tuple(Permutation)==(4,5,6,0,7,2,1,3):
+                    #     print elem1, elem2
+                    #     print kG[elem1], kG[elem2]
+                    #     print InMom, TranMom, TranMom2
+                    #     print OutL, OutR
+                    #     print sub, Permutation
+                    if elem2==OutL or elem2==OutR:
+                        continue
+                    if abs(kG[elem1]+kG[elem2]-InMom)<1.0e-6:
+                        SubTypeList.append("pp")
+                        Flag=True
+                        break
+                    elif abs(abs(kG[elem1]-kG[elem2])-abs(TranMom))<1.0e-6:
+                        SubTypeList.append("phd")
+                        Flag=True
+                        break
+                    elif abs(abs(kG[elem1]-kG[elem2])-abs(TranMom2))<1.0e-6:
+                        SubTypeList.append("phe")
+                        Flag=True
+                        break
+            if Flag ==False:
+                SubTypeList.append("irr")
+
+        for index in range(len(SubLegList)):
+            print "Subdiagram:", SubList[index]
+            print "Legs:", SubLegList[index]
+            print "Type:", SubTypeList[index]
+            print "Size:", SubSizeList[index]
+            if SubTypeList[index]=="irr":
+                print "IrreVer4: ", Permutation, sub
+            print "\n"
                         
     # def __FindDisconnect(self, Permutation, Legs):
     #     start=Legs[0]
