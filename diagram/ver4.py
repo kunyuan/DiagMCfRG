@@ -1,6 +1,7 @@
 import diagram as diag
 import numpy as np
 from logger import *
+import unionfind
 
 
 class ver4():
@@ -206,7 +207,10 @@ class ver4():
                 # print "Reducible diagram: ", Permutation
                 continue
 
+            self.__FindVerSubDiag(Diag.GetPermu())
+
             IrreDiagList.append([Diag, FeynList, FactorList])
+        
 
         print yellow(
             "Irreducible Ver4 Diag Num: {0}".format(len(IrreDiagList)))
@@ -459,14 +463,14 @@ class ver4():
         #     return PermutationDict.keys()
 
     def __FixLoopBasis(self, Permutation, LoopBasis):
-        if(LoopBasis[1,0]!=1):
-            if(LoopBasis[1,0]==-1):
-                LoopBasis[1,:]*=-1
-            else:
-                #InL is zero currently
-                start=2
-                IsDone=False
-                while IsDone is False:
+        # if(LoopBasis[1,0]!=1):
+        #     if(LoopBasis[1,0]==-1):
+        #         LoopBasis[1,:]*=-1
+        #     else:
+        #         #InL is zero currently
+        #         start=2
+        #         IsDone=False
+        #         while IsDone is False:
                     
         # Path=diag.FindAllLoops(Permutation)
         # length=1000
@@ -480,3 +484,110 @@ class ver4():
         #     LoopBasis[0, i]=1
 
         return LoopBasis
+    
+    def __FindVerSubDiag(self, Permutation):
+        kG, kW = diag.AssignMomentums(
+            Permutation, self.GetReference(), self.GetInteractionPairs(True))
+        # InL, OutL, InR, OutR=Permutation[0], Permutation.index(0), Permutation[1], Permutation.index(1)
+        SubDiagList=[]
+        SubDiagLegList=[]
+        SubDiagSizeList=[]
+
+        for i in range(len(Permutation)):
+            for j in range(i+1, len(Permutation)):
+                for k in range(j+1, len(Permutation)):
+                    for l in range(k+1, len(Permutation)):
+                        Flag=False
+                        if(abs(abs(kG[i]+kG[j])-abs(kG[k]+kG[l])))<1.0e-6:
+                            # print "Sub Diagram 1: ", i, j, k, l
+                            Flag=True
+                        elif(abs(abs(kG[i]-kG[j])-abs(kG[k]+kG[l])))<1.0e-6:
+                            # print "Sub Diagram 2: ", i, j, k, l
+                            Flag=True
+                        elif(abs(abs(kG[i]+kG[j])-abs(kG[k]-kG[l])))<1.0e-6:
+                            # print "Sub Diagram 3: ", i, j, k, l
+                            Flag=True
+                        elif(abs(abs(kG[i]-kG[j])-abs(kG[k]-kG[l])))<1.0e-6:
+                            # print "Sub Diagram 4: ", i, j, k, l
+                            Flag=True
+
+                        if Flag==True:
+                            diagram = set(self.GetInteractionPairs(True))
+                            for e in range(len(Permutation)):
+                                if(e!=i and e!=j and e!=k and e!=l):
+                                    diagram.add((e, Permutation[e]))
+                                
+                            n_node = len(self.GetInteractionPairs(True))*2
+
+                            diagram_union = unionfind.UnionFind(n_node)
+
+                            for edge in diagram:
+                                # print "edge: ", edge
+                                if edge[0] != edge[1] and not diagram_union.is_connected(edge[0], edge[1]):
+                                    diagram_union.union(edge[0], edge[1])
+
+                            GroupNum=diagram_union.get_n_circles()
+                            if GroupNum!=2:
+                                Abort("Group number got {0}".format(GroupNum))
+
+                            GroupsMasks=diagram_union.get_circles()
+                            ExternIndex=GroupsMasks[0]
+                            InternGroup=[node for node in range(len(Permutation)) if GroupsMasks[node]!=ExternIndex]
+                            if len(InternGroup)>2:
+                                # print "Permu: ", Permutation
+                                # print "GroupNum: ", GroupNum
+                                # print "Mask:", GroupsMasks
+                                Set1=set((Permutation[i], Permutation[j], Permutation[k], Permutation[l]))
+                                InL, InR=[Permutation.index(leg) for leg in Set1.intersection(set(InternGroup))]
+                                # print "InterGroup:", InternGroup
+                                # print "leg", InL, InR
+                                # print "\n"
+                                End=Permutation[InL]
+                                while End in InternGroup:
+                                    End=Permutation[End]
+                                OutL=Permutation.index(End)
+
+                                End=Permutation[InR]
+                                while End in InternGroup:
+                                    End=Permutation[End]
+                                OutR=Permutation.index(End)
+
+                                Legs=[InL, OutL, InR, OutR]
+                                if set(Legs)!=set((i, j, k, l)):
+                                    Abort("Legs not equal! {0} vs {1}".format(Legs, (i,j,k,l)))
+                                SubDiagLegList.append(Legs)
+                                SubDiagList.append(InternGroup)
+                                SubDiagSizeList.append(len(InternGroup))
+
+        for index in range(len(SubDiagLegList)):
+            print "Subdiagram:", SubDiagList[index]
+            print "Legs:", SubDiagLegList[index]
+            print "Size:", SubDiagSizeList[index]
+                        
+    # def __FindDisconnect(self, Permutation, Legs):
+    #     start=Legs[0]
+    #     Visited=[start,]
+    #     ToSearch=[]
+    #     if Permutation[start] not in Visited:
+    #         ToSearch.append(Permutation[start])
+    #     if diag.Mirror(Permutation[start]) not in Visited:
+    #         ToSearch.append(diag.Mirror(Permutation[start]))
+
+    #     while len(ToSearch)>0:
+    #         start=ToSearch[-1]
+    #         Visited.append(start)
+    #         del ToSearch[-1]
+    #         if start==Legs[1] or start==Legs[2] or start==Legs[3]:
+    #             continue
+    #         else:
+    #             if Permutation[start] not in Visited:
+    #                 ToSearch.append(Permutation[start])
+    #             if diag.Mirror(Permutation[start]) not in Visited:
+    #                 ToSearch.append(diag.Mirror(Permutation[start]))
+    #     print "Permutation: ", Permutation
+    #     print "Leg: ", Legs
+    #     print "Visited: ", Visited
+
+
+
+
