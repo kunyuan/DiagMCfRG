@@ -51,7 +51,7 @@ void InitPara() {
   Para.DiagFileFormat = "groups/DiagLoop{}.txt";
   Para.GroupName = {"0", "1"};
   // Para.GroupName = {"1", "2"};
-  Para.ReWeight = {0.1, 1.0, 5.0, 10.0, 0.1};
+  Para.ReWeight = {1.0, 1.0, 1.0, 1.0, 1.0};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 
@@ -158,7 +158,7 @@ void InitPara() {
 }
 
 void MonteCarlo() {
-  LOG_INFO("Initializing Markov!");
+  // LOG_INFO("Initializing Markov!");
   markov Markov;
   InterruptHandler Interrupt;
 
@@ -172,7 +172,7 @@ void MonteCarlo() {
   ReweightTimer.start();
 
   LOG_INFO("Start simulation ...")
-  int WaitStep = 100000;
+  int WaitStep = 1000000;
 
   for (int Block = 0; Block < Para.TotalStep; Block++) {
     for (int i = 0; i < 1000000; i++) {
@@ -214,7 +214,7 @@ void MonteCarlo() {
         }
         if (i % (WaitStep * 10)) {
           Markov.Weight.ResetIRScale(int(Markov.Var.CurrIRScaleBin / 1.5));
-          LOG_INFO("Current IR Scale: " << Markov.Var.CurrIRScaleBin);
+          // LOG_INFO("Current IR Scale: " << Markov.Var.CurrIRScaleBin);
         }
 
         // Markov.PrintDeBugMCInfo();

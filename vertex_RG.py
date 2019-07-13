@@ -12,10 +12,10 @@ size = 12
 
 rs = 1.0
 Lambda = 8
-Beta = 20
+Beta = 40
 # XType="Scale"
-# XType="Mom"
-XType="Angle"
+XType = "Mom"
+# XType="Angle"
 
 ##############   3D    ##################################
 # kF = (9.0*np.pi/4.0)**(1.0/3.0)/rs  # 3D
@@ -69,16 +69,16 @@ Data /= Num
 
 Data = Data.reshape((ScaleBinSize, AngleBinSize, ExtMomBinSize))
 
-ScaleBin[-1]=ScaleBin[-2]*2
-Data[-1,:,:]=0.0
+ScaleBin[-1] = ScaleBin[-2]*2
+Data[-1, :, :] = 0.0
 
 qData = np.array(Data)
 qData = np.mean(qData, axis=1)
 # qData = np.mean(qData, axis=1)*2
 
-diffData=np.array(qData)
+diffData = np.array(qData)
 for i in range(ScaleBinSize-1):
-    diffData[i, :]=(qData[i+1, :]-qData[i, :])/(ScaleBin[i+1]-ScaleBin[i])
+    diffData[i, :] = (qData[i+1, :]-qData[i, :])/(ScaleBin[i+1]-ScaleBin[i])
 
 # verData=np.zeros(len(ExtMomBin))
 # for i in range(len(ExtMomBin)):
@@ -105,21 +105,21 @@ fig, ax = plt.subplots()
 ColorList = ['k', 'r', 'b', 'g', 'm', 'c']
 ColorList = ColorList*40
 
-if(XType=="Scale"):
+if(XType == "Scale"):
     for i in range(ExtMomBinSize/4):
-        index=4*i
+        index = 4*i
         ErrorPlot(ax, ScaleBin[:-2], diffData[:-2, index],
-                    ColorList[i], 's', "Q {0}".format(ExtMomBin[index]))
+                  ColorList[i], 's', "Q {0}".format(ExtMomBin[index]))
     ax.set_xlim([0.0, ScaleBin[-2]])
     ax.set_xlabel("$Scale$", size=size)
-elif (XType=="Mom"):
+elif (XType == "Mom"):
     for i in range(ScaleBinSize/8):
         # print i, index
         # print ScaleBin[index]
-        index=8*i
+        index = 8*i
     # for i in range(ScaleBinSize+1):
         ErrorPlot(ax, ExtMomBin, qData[index, :],
-                ColorList[i], 's', "Scale {0}".format(ScaleBin[index]))
+                  ColorList[i], 's', "Scale {0}".format(ScaleBin[index]))
         # ErrorPlot(ax, AngleBin, Data[i, :, 8],
         #           ColorList[i], 's', "Order {0}".format(i))
         # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
@@ -130,7 +130,7 @@ elif (XType=="Mom"):
     # y = x*0.0+Bubble
     # for i in range(len(x)):
         # if x[i]>2.0:
-            # y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
+        # y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
 
     # z=1.0/(1.0+y)
     # y=1.0-y
@@ -140,27 +140,27 @@ elif (XType=="Mom"):
     x = np.arange(0, 3.0, 0.001)
     y = x*0.0+Bubble
     for i in range(len(x)):
-        if x[i]>2.0:
-            y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
-    y0=8.0*np.pi/(x*x*kF*kF+Lambda)
+        if x[i] > 2.0:
+            y[i] = Bubble*(1-np.sqrt(1-4/x[i]**2))
+    y0 = 8.0*np.pi/(x*x*kF*kF+Lambda)
     # ym=y0-y0*y0*y
-    yphy=8.0*np.pi/(x*x*kF*kF+Lambda+y*8.0*np.pi)
+    yphy = 8.0*np.pi/(x*x*kF*kF+Lambda+y*8.0*np.pi)
 
-    # ax.plot(x,-y0*y0*y,'k-', lw=2, label="physical")
-    ax.plot(x,yphy,'k-', lw=2, label="physical")
-    ax.plot(x,y0,'b-', lw=2, label="original")
+    ax.plot(x, yphy, 'k-', lw=2, label="physical")
+    ax.plot(x, y0, 'b-', lw=2, label="original")
+
     # ax.plot(x,ym,'r-', lw=2, label="wrong")
 
     ax.set_xlim([0.0, ExtMomBin[-1]])
     ax.set_xlabel("$q/k_F$", size=size)
 
-elif(XType=="Angle"):
+elif(XType == "Angle"):
     for i in range(ScaleBinSize/8):
         # print i, index
         # print ScaleBin[index]
-        index=8*i
+        index = 8*i
         ErrorPlot(ax, AngleBin, Data[index, :, 16],
-                    ColorList[i], 's', "Q {0}".format(ScaleBin[index]))
+                  ColorList[i], 's', "Q {0}".format(ScaleBin[index]))
     ax.set_xlim([0.0, AngleBin[-1]])
     ax.set_xlabel("$Angle$", size=size)
 # ax.set_xticks([0.0,0.04,0.08,0.12])

@@ -32,13 +32,15 @@ public:
   // MC updates related operations
   // double ChangeTemperature(double NewBeta);
   void ChangeMom(group &, int Index);
-  void ChangeTau(group &,
-                 int TauIndex); // two tau index on the two sides of interaction
-  void ChangeGroup(group &,
-                   bool Forced = false); // recalculate the weights in one group
-  double GetNewWeight(group &);          // return the current weight
+  void ChangeTau(group &, int TauIndex);
+  // two tau index on the two sides of interaction
+  void ChangeGroup(group &, bool Forced = false);
+  // recalculate the weights in one group
+  double GetNewWeight(group &); // return the current weight
   void AcceptChange(group &);
   void RejectChange(group &);
+
+  double Evaluate(group &);
 
   void Measure(double WeightFactor);
   void Update(double Ratio);
@@ -89,6 +91,13 @@ private:
   verQ VerQ;
   verQTheta VerQTheta;
   verfunc VerFunc;
+
+  double fRG(int LoopNum);
+  void Ver4Loop(const momentum &InL, const momentum &OutL,
+                const momentum &DirTran, const momentum &ExTran, int LoopNum,
+                int TauIndex, int LoopIndex, double *Weight, double *ExtTau);
+  // double Ver4Loop2();
+  // double Ver6Loop1();
 };
 
 }; // namespace diag

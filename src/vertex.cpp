@@ -54,6 +54,9 @@ verQTheta::verQTheta() {
   // PhyWeight = (1.0 - exp(-Para.MaxExtMom / Para.Kf)) /
   //             (1.0 - exp(-Para.MaxExtMom / Para.Kf / ExtMomBinSize)) * 4.0 *
   //             PI * PI;
+  // PhyWeight =
+  //     1.0 / Para.Beta / Para.Beta * ExtMomBinSize * 2.0 * PI * Para.Kf * 4.0;
+
   PhyWeight = ExtMomBinSize * 2.0 * PI * Para.Kf * 4.0;
 
   // initialize interaction table
@@ -76,7 +79,7 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
 
     double k = Transfer.norm();
     // return 8.0 * PI / (k * k + Para.Mass2);
-    // return 2.0;
+    // return 1.0;
 
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
     if (k < Para.MaxExtMom && Scale < Para.UVScale) {
@@ -130,7 +133,7 @@ void verQTheta::Update(double Ratio) {
         // double NewValue = 0.0;
         for (int order = 0; order < MaxOrder; ++order) {
           NewValue += DiffInteraction[order][scale][angle][qindex] /
-                      Normalization * PhyWeight;
+                      Normalization * PhyWeight / 40.0;
         }
         EffInteraction[scale][angle][qindex] =
             OldValue * (1 - Ratio) + NewValue * Ratio;

@@ -65,18 +65,18 @@ void markov::PrintDeBugMCInfo() {
   msg += "\nMC Counter: " + to_string(Para.Counter) + ":\n";
   msg += "Current Group Info:\n " + ToString(*Var.CurrGroup);
 
-  msg += string(80, '=') + "\n";
-  msg += "GWeight: \n";
-  for (int i = 0; i < Var.CurrGroup->GNum; i++)
-    msg += ToString(Var.CurrGroup->Diag[0].G[i]->Weight) + "; ";
-  msg += "\n";
+  // msg += string(80, '=') + "\n";
+  // msg += "GWeight: \n";
+  // for (int i = 0; i < Var.CurrGroup->GNum; i++)
+  //   msg += ToString(Var.CurrGroup->Diag[0].G[i]->Weight) + "; ";
+  // msg += "\n";
 
-  msg += "VerWeight: \n";
-  for (int i = 0; i < Var.CurrGroup->Ver4Num; i++) {
-    msg += ToString(Var.CurrGroup->Diag[0].Ver4[i]->Weight[0]) + ", ";
-    msg += ToString(Var.CurrGroup->Diag[0].Ver4[i]->Weight[1]) + "; ";
-  }
-  msg += "\n";
+  // msg += "VerWeight: \n";
+  // for (int i = 0; i < Var.CurrGroup->Ver4Num; i++) {
+  //   msg += ToString(Var.CurrGroup->Diag[0].Ver4[i]->Weight[0]) + ", ";
+  //   msg += ToString(Var.CurrGroup->Diag[0].Ver4[i]->Weight[1]) + "; ";
+  // }
+  // msg += "\n";
 
   msg += string(80, '=') + "\n";
   msg += "LoopMom: \n";
@@ -197,20 +197,10 @@ void markov::ChangeGroup() {
 
   Proposed[Name][Var.CurrGroup->ID] += 1;
 
-  // if (NewGroup.ID == 3) {
-  //   cout << fmt::format("group 3\n");
-  //   cout << Weight.DebugInfo(NewGroup);
-  // }
-
-  Weight.ChangeGroup(NewGroup);
+  // Weight.ChangeGroup(NewGroup);
   double NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
              Var.CurrGroup->ReWeight;
-
-  // if (NewGroup.ID == 3) {
-  //   cout << fmt::format("weight {0}, prop {1}\n", NewWeight, Prop);
-  //   cout << Weight.DebugInfo(NewGroup);
-  // }
 
   if (Random.urn() < R) {
     Accepted[Name][Var.CurrGroup->ID]++;
@@ -225,8 +215,9 @@ void markov::ChangeTau() {
   int TauIndex = Random.irn(0, Var.CurrGroup->TauNum);
 
   // if TauIndex is a locked tau, skip
-  if (Var.CurrGroup->IsLockedTau[TauIndex])
+  if (Var.CurrGroup->IsLockedTau[TauIndex]) {
     return;
+  }
 
   Proposed[CHANGE_TAU][Var.CurrGroup->ID]++;
 
@@ -236,7 +227,7 @@ void markov::ChangeTau() {
 
   Var.Tau[TauIndex] = NewTau;
 
-  Weight.ChangeTau(*Var.CurrGroup, TauIndex);
+  // Weight.ChangeTau(*Var.CurrGroup, TauIndex);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
@@ -278,7 +269,7 @@ void markov::ChangeMomentum() {
     Prop = ShiftK(CurrMom, Var.LoopMom[LoopIndex]);
   }
 
-  Weight.ChangeMom(*Var.CurrGroup, LoopIndex);
+  // Weight.ChangeMom(*Var.CurrGroup, LoopIndex);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
@@ -310,7 +301,7 @@ void markov::ChangeScale() {
   Proposed[CHANGE_SCALE][Var.CurrGroup->ID] += 1;
 
   // force to change the group weight
-  Weight.ChangeGroup(*(Var.CurrGroup), true);
+  // Weight.ChangeGroup(*(Var.CurrGroup), true);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
 
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);

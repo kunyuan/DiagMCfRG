@@ -43,25 +43,25 @@ void weight::Initialization() {
   LOG_INFO("Initializating diagram states ...")
   for (auto &group : Groups) {
     group.ReWeight = 1.0;
-    for (auto &diag : group.Diag) {
-      for (int i = 0; i < group.GNum; i++) {
-        diag.G[i]->Excited = false;
-        diag.G[i]->Version = -1;
-        diag.G[i]->Weight = 1.0e-10;
-      }
-      for (int i = 0; i < group.Ver4Num; i++) {
-        diag.Ver4[i]->Excited = {false, false};
-        diag.Ver4[i]->Version = -1;
-        diag.Ver4[i]->Weight = {1.0e-10, -1.0e-10};
-      }
-    }
+    // for (auto &diag : group.Diag) {
+    //   for (int i = 0; i < group.GNum; i++) {
+    //     diag.G[i]->Excited = false;
+    //     diag.G[i]->Version = -1;
+    //     diag.G[i]->Weight = 1.0e-10;
+    //   }
+    //   for (int i = 0; i < group.Ver4Num; i++) {
+    //     diag.Ver4[i]->Excited = {false, false};
+    //     diag.Ver4[i]->Version = -1;
+    //     diag.Ver4[i]->Weight = {1.0e-10, -1.0e-10};
+    //   }
+    // }
 
-    if (Para.ObsType == EQUALTIME) {
-      for (int i = 0; i < group.Ver4Num; ++i)
-        if (group.IsExtTau[i])
-          // to measure equal-time observable, lock all external tau
-          group.IsLockedTau[i] = true;
-    }
+    // if (Para.ObsType == EQUALTIME) {
+    //   for (int i = 0; i < group.Ver4Num; ++i)
+    //     if (group.IsExtTau[i])
+    //       // to measure equal-time observable, lock all external tau
+    //       group.IsLockedTau[i] = true;
+    // }
   }
 
   LOG_INFO("Initializating MC variables ...")
@@ -71,9 +71,14 @@ void weight::Initialization() {
       mom[i] = Random.urn() * Para.Kf / sqrt(D);
 
   // initialize tau variables
-  for (int i = 0; i < MaxTauNum / 2; i++) {
-    Var.Tau[2 * i] = Random.urn() * Para.Beta;
-    Var.Tau[2 * i + 1] = Var.Tau[2 * i]; // assume even and odd tau are the same
+  // for (int i = 0; i < MaxTauNum/ 2; i++) {
+  //   Var.Tau[2 * i] = Random.urn() * Para.Beta;
+  //   Var.Tau[2 * i + 1] = Var.Tau[2 * i]; // assume even and odd tau are the
+  //   same
+  // }
+
+  for (int i = 0; i < MaxTauNum; i++) {
+    Var.Tau[i] = Random.urn() * Para.Beta;
   }
 
   // initialize spin variables
@@ -87,9 +92,9 @@ void weight::Initialization() {
   Var.LoopMom[0] = Para.ExtMomTable[Var.CurrExtMomBin];
 
   // initialize external tau
-  Var.Tau[0] = 0.0;
-  Var.Tau[1] = 1.0e-10; // do not make Tau[1]==Tau[0], otherwise the Green's
-                        // function is not well-defined
+  // Var.Tau[0] = 0.0;
+  // Var.Tau[1] = 1.0e-10; // do not make Tau[1]==Tau[0], otherwise the Green's
+  // function is not well-defined
 
   Var.CurrTau = Var.Tau[1] - Var.Tau[0];
 
@@ -108,7 +113,7 @@ void weight::Initialization() {
 
   LOG_INFO("Calculating the weights of all objects...")
 
-  ChangeGroup(*Var.CurrGroup, true);
+  // ChangeGroup(*Var.CurrGroup, true);
   GetNewWeight(*Var.CurrGroup);
   AcceptChange(*Var.CurrGroup);
 
@@ -285,114 +290,121 @@ void weight::ChangeTau(group &Group, int TauIndex) {
 }
 
 double weight::GetNewWeight(group &Group) {
-  static double VIn, VOut, TotWeight;
-  Group.NewWeight = 0.0;
-
-  for (auto &d : Group.Diag) {
-    double GWeight = d.SymFactor;
-    for (int i = 0; i < Group.GNum; i++) {
-      if (d.G[i]->Excited)
-        GWeight *= d.G[i]->NewWeight;
-      else
-        GWeight *= d.G[i]->Weight;
-    }
-
-    double VerWeight;
-    if (Group.Ver4Num == 0) {
-      VerWeight = d.SpinFactor[0];
-      // cout << "spin factor: " << d.SpinFactor[0] << endl;
-    } else {
-      vertex4 *Ver4 = d.Ver4[0];
-
-      _Tree[0][0] = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
-                                          : Ver4->Weight[DIRECT];
-      _Tree[0][1] = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
-                                            : Ver4->Weight[EXCHANGE];
-
-      int BlockNum = 2;
-      for (int level = 1; level < Group.Ver4Num; level++) {
-
-        vertex4 *Ver4 = d.Ver4[level];
-        VIn = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
-                                    : Ver4->Weight[DIRECT];
-        VOut = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
-                                       : Ver4->Weight[EXCHANGE];
-
-        for (int j = 0; j < BlockNum; j++) {
-          _Tree[level][2 * j] = _Tree[level - 1][j] * VIn;
-          _Tree[level][2 * j + 1] = _Tree[level - 1][j] * VOut;
-        }
-        BlockNum *= 2;
-      }
-
-      VerWeight = 0.0;
-      for (int j = 0; j < BlockNum; j++)
-        VerWeight += _Tree[Group.Ver4Num - 1][j] * d.SpinFactor[j];
-
-      //============= for spin case ===========================//
-
-      // double TempWeightIn, TempWeightOut;
-      // for (int i = 0; i < Group.Ver4Num; i++) {
-      //   //=========== for spinless case ===========================//
-      //   vertex *Ver4 = d.Ver4[i];
-      //   TempWeightIn =
-      //       Ver4->Excited[IN] ? Ver4->NewWeight[IN] : Ver4->Weight[IN];
-      //   TempWeightOut =
-      //       Ver4->Excited[OUT] ? Ver4->NewWeight[OUT] : Ver4->Weight[OUT];
-      //   VerWeight *= TempWeightIn - TempWeightOut;
-    }
-
-    d.NewWeight = GWeight * VerWeight / pow(2 * PI, D * Group.InternalLoopNum);
-
-    // Group Weight= sum of all diagram weight in the group
-    Group.NewWeight += d.NewWeight;
-  }
+  Group.NewWeight = fRG(Group.Order);
   return Group.NewWeight;
 }
+
+// double weight::GetNewWeight(group &Group) {
+//   static double VIn, VOut, TotWeight;
+//   Group.NewWeight = 0.0;
+
+//   for (auto &d : Group.Diag) {
+//     double GWeight = d.SymFactor;
+//     for (int i = 0; i < Group.GNum; i++) {
+//       if (d.G[i]->Excited)
+//         GWeight *= d.G[i]->NewWeight;
+//       else
+//         GWeight *= d.G[i]->Weight;
+//     }
+
+//     double VerWeight;
+//     if (Group.Ver4Num == 0) {
+//       VerWeight = d.SpinFactor[0];
+//       // cout << "spin factor: " << d.SpinFactor[0] << endl;
+//     } else {
+//       vertex4 *Ver4 = d.Ver4[0];
+
+//       _Tree[0][0] = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
+//                                           : Ver4->Weight[DIRECT];
+//       _Tree[0][1] = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
+//                                             : Ver4->Weight[EXCHANGE];
+
+//       int BlockNum = 2;
+//       for (int level = 1; level < Group.Ver4Num; level++) {
+
+//         vertex4 *Ver4 = d.Ver4[level];
+//         VIn = Ver4->Excited[DIRECT] ? Ver4->NewWeight[DIRECT]
+//                                     : Ver4->Weight[DIRECT];
+//         VOut = Ver4->Excited[EXCHANGE] ? Ver4->NewWeight[EXCHANGE]
+//                                        : Ver4->Weight[EXCHANGE];
+
+//         for (int j = 0; j < BlockNum; j++) {
+//           _Tree[level][2 * j] = _Tree[level - 1][j] * VIn;
+//           _Tree[level][2 * j + 1] = _Tree[level - 1][j] * VOut;
+//         }
+//         BlockNum *= 2;
+//       }
+
+//       VerWeight = 0.0;
+//       for (int j = 0; j < BlockNum; j++)
+//         VerWeight += _Tree[Group.Ver4Num - 1][j] * d.SpinFactor[j];
+
+//       //============= for spin case ===========================//
+
+//       // double TempWeightIn, TempWeightOut;
+//       // for (int i = 0; i < Group.Ver4Num; i++) {
+//       //   //=========== for spinless case ===========================//
+//       //   vertex *Ver4 = d.Ver4[i];
+//       //   TempWeightIn =
+//       //       Ver4->Excited[IN] ? Ver4->NewWeight[IN] : Ver4->Weight[IN];
+//       //   TempWeightOut =
+//       //       Ver4->Excited[OUT] ? Ver4->NewWeight[OUT] : Ver4->Weight[OUT];
+//       //   VerWeight *= TempWeightIn - TempWeightOut;
+//     }
+
+//     d.NewWeight = GWeight * VerWeight / pow(2 * PI, D *
+//     Group.InternalLoopNum);
+
+//     // Group Weight= sum of all diagram weight in the group
+//     Group.NewWeight += d.NewWeight;
+//   }
+//   return Group.NewWeight;
+// }
 
 void weight::AcceptChange(group &Group) {
   Var.CurrVersion++;
   Var.CurrGroup = &Group;
   Group.Weight = Group.NewWeight; // accept group  newweight
 
-  for (auto &d : Group.Diag) {
-    d.Weight = d.NewWeight; // accept diagram newweight
-    for (int i = 0; i < Group.GNum; i++) {
-      green *G = d.G[i];
-      G->Version = Var.CurrVersion;
-      if (G->Excited) {
-        G->Excited = false;
-        G->Weight = G->NewWeight;
-      }
-    }
-    for (int i = 0; i < Group.Ver4Num; i++) {
-      vertex4 *Ver4 = d.Ver4[i];
-      Ver4->Version = Var.CurrVersion;
-      if (Ver4->Excited[DIRECT]) {
-        Ver4->Excited[DIRECT] = false;
-        Ver4->Weight[DIRECT] = Ver4->NewWeight[DIRECT];
-      }
-      if (Ver4->Excited[EXCHANGE]) {
-        Ver4->Excited[EXCHANGE] = false;
-        Ver4->Weight[EXCHANGE] = Ver4->NewWeight[EXCHANGE];
-      }
-    }
-  }
+  //   for (auto &d : Group.Diag) {
+  //     d.Weight = d.NewWeight; // accept diagram newweight
+  //     for (int i = 0; i < Group.GNum; i++) {
+  //       green *G = d.G[i];
+  //       G->Version = Var.CurrVersion;
+  //       if (G->Excited) {
+  //         G->Excited = false;
+  //         G->Weight = G->NewWeight;
+  //       }
+  //     }
+  //     for (int i = 0; i < Group.Ver4Num; i++) {
+  //       vertex4 *Ver4 = d.Ver4[i];
+  //       Ver4->Version = Var.CurrVersion;
+  //       if (Ver4->Excited[DIRECT]) {
+  //         Ver4->Excited[DIRECT] = false;
+  //         Ver4->Weight[DIRECT] = Ver4->NewWeight[DIRECT];
+  //       }
+  //       if (Ver4->Excited[EXCHANGE]) {
+  //         Ver4->Excited[EXCHANGE] = false;
+  //         Ver4->Weight[EXCHANGE] = Ver4->NewWeight[EXCHANGE];
+  //       }
+  //     }
+  //   }
 }
 
 void weight::RejectChange(group &Group) {
-  for (auto &d : Group.Diag) {
-    for (int i = 0; i < Group.GNum; i++) {
-      if (d.G[i]->Excited)
-        d.G[i]->Excited = false;
-      for (int i = 0; i < Group.Ver4Num; i++) {
-        if (d.Ver4[i]->Excited[0])
-          d.Ver4[i]->Excited[0] = false;
-        if (d.Ver4[i]->Excited[1])
-          d.Ver4[i]->Excited[1] = false;
-      }
-    }
-  }
+  //   for (auto &d : Group.Diag) {
+  //     for (int i = 0; i < Group.GNum; i++) {
+  //       if (d.G[i]->Excited)
+  //         d.G[i]->Excited = false;
+  //       for (int i = 0; i < Group.Ver4Num; i++) {
+  //         if (d.Ver4[i]->Excited[0])
+  //           d.Ver4[i]->Excited[0] = false;
+  //         if (d.Ver4[i]->Excited[1])
+  //           d.Ver4[i]->Excited[1] = false;
+  //       }
+  //     }
+  //   }
+  return;
 }
 
 void weight::Measure(double WeightFactor) {
