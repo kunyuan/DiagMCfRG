@@ -74,7 +74,10 @@ void InitPara() {
   // scale all energy with E_F
   Para.Beta /= Para.Ef;
   Para.UVScale = 2.0 * Para.Kf;
+  Para.UVFreqScale = 8.0 * Para.Kf;
   Para.UVCoupling = 1.0 * Para.Ef;
+
+  Para.DeltaW = 2.0 * PI / Para.Beta;
 
   double dScale = Para.UVScale / ScaleBinSize;
   for (int i = 0; i < (ScaleBinSize + 1); i++) {
@@ -183,19 +186,21 @@ void MonteCarlo() {
       // }
 
       double x = Random.urn();
-      if (x < 1.0 / 4.0) {
+      if (x < 1.0 / 3.0) {
         Markov.ChangeGroup();
         // ;
-      } else if (x < 2.0 / 4.0) {
+      } else if (x < 2.0 / 3.0) {
         Markov.ChangeMomentum();
         // ;
-      } else if (x < 3.0 / 4.0) {
-        Markov.ChangeTau();
-        // ;
-      } else if (x < 4.0 / 4.0) {
+      } else if (x < 3.0 / 3.0) {
         Markov.ChangeScale();
         // ;
       }
+
+      // cout << Markov.Weight.Var.LoopMom[3][0] << endl;
+      // cout << Markov.Weight.Var.LoopMom[3][1] << endl;
+      // cout << Markov.Weight.Var.LoopMom[3][2] << endl;
+      // cout << endl;
 
       // if (Para.Counter == 140737351830544) {
       //   cout << "After: " << Para.Counter << endl;

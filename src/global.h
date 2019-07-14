@@ -20,16 +20,16 @@ const int D = 2;
 // number of q bins of the external momentum
 const int ExtMomBinSize = 32;
 // number of bins for the angle between InL and InR legs
-const int AngBinSize = 16;
+const int AngBinSize = 8;
 // number of energy scales, only useful in RG approach
-const int ScaleBinSize = 128;
+const int ScaleBinSize = 256;
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
 enum type { RG, POLAR };
 enum obstype { FREQ, EQUALTIME };
 enum ver4 { POINT, FULL, MOM, MOM_ANGLE };
 
-typedef Vec<double, D> momentum;
+typedef Vec<double, D + 1> momentum;
 typedef std::complex<double> cmplx;
 // typedef std::array<double, D> momentum;
 
@@ -37,12 +37,14 @@ typedef std::complex<double> cmplx;
 struct parameter {
   // physical parameters
   double Rs, Ef, Kf,
-      Mu;            // r_s, fermi energy, fermi momentum, chemical potential
-  double Beta;       // inverse temperature
-  double UVScale;    // the UV bound of the energy scale
-  double UVCoupling; // the coupling constant at the UV scale
-  double Mass2;      // screening length^2
-  double MaxExtMom;  // the maximum external momentum
+      Mu;             // r_s, fermi energy, fermi momentum, chemical potential
+  double Beta;        // inverse temperature
+  double UVScale;     // the UV bound of the energy scale
+  double UVFreqScale; // the UV bound of the energy scale
+  double UVCoupling;  // the coupling constant at the UV scale
+  double Mass2;       // screening length^2
+  double MaxExtMom;   // the maximum external momentum
+  double DeltaW;
   selfenergy SelfEnergyType;
   ver4 Vertex4Type;
 

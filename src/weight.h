@@ -37,11 +37,11 @@ public:
   // two tau index on the two sides of interaction
   void ChangeGroup(group &, bool Forced = false);
   // recalculate the weights in one group
-  double GetNewWeight(group &); // return the current weight
+  cmplx GetNewWeight(group &); // return the current weight
   void AcceptChange(group &);
   void RejectChange(group &);
 
-  double Evaluate(group &);
+  cmplx Evaluate(group &);
 
   void Measure(double WeightFactor);
   void Update(double Ratio);
@@ -95,16 +95,16 @@ private:
 
   cmplx fRG(int LoopNum);
   cmplx Ver4Loop(const momentum &InL, const momentum &InR,
-                 const momentum &DirTran, const momentum &ExTran, int LoopNum,
-                 int TauIndex, int LoopIndex, int Channel, int Type, int &Level,
+                 const momentum &DirTran, const momentum &ExTran, int Order,
+                 int LoopIndex, int Channel, int Type, int &Level,
                  int &DiagNum);
   cmplx Ver4Loop0(const momentum &InL, const momentum &InR,
-                  const momentum &DirTran, const momentum &ExTran, int TauIndex,
+                  const momentum &DirTran, const momentum &ExTran,
                   int LoopIndex, int &Level, int &DiagNum);
   cmplx Ver4Loop1(const momentum &InL, const momentum &InR,
-                  const momentum &DirTran, const momentum &ExTran, int LoopNum,
-                  int TauIndex, int LoopIndex, int Channel, int Type,
-                  int &Level, int &DiagNum);
+                  const momentum &DirTran, const momentum &ExTran, int Order,
+                  int LoopIndex, int Channel, int Type, int &Level,
+                  int &DiagNum);
 
   cmplx _Weight[MaxOrder][MaxDiagNum][2];
   double _ExtTau[MaxOrder][MaxDiagNum][4];

@@ -57,15 +57,17 @@ verQTheta::verQTheta() {
   // PhyWeight =
   //     1.0 / Para.Beta / Para.Beta * ExtMomBinSize * 2.0 * PI * Para.Kf * 4.0;
 
-  PhyWeight = ExtMomBinSize * 2.0 * PI * Para.Kf * 4.0;
+  PhyWeight = ExtMomBinSize * 2.0 * PI * Para.Kf * 1.0 *
+              (1.0 - exp(-Para.UVScale / Para.Kf));
 
   // initialize interaction table
   for (int scale = 0; scale < ScaleBinSize + 1; ++scale) {
     for (int inin = 0; inin < AngBinSize; ++inin)
       for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
         double k = Index2Mom(qIndex);
-        EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
-        // EffInteraction[scale][inin][qIndex] = 0.0;
+        // EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k +
+        // Para.Mass2);
+        EffInteraction[scale][inin][qIndex] = 0.0;
         for (int order = 0; order < MaxOrder; ++order)
           DiffInteraction[order][scale][inin][qIndex] = 0.0;
       }
@@ -79,7 +81,7 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
 
     double k = Transfer.norm();
     // return 8.0 * PI / (k * k + Para.Mass2);
-    // return 1.0;
+    return 1.0;
 
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
     if (k < Para.MaxExtMom && Scale < Para.UVScale) {
@@ -100,7 +102,7 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
     return 1.0;
   } else if (VerType == -2) {
     // return exp(-Transfer.norm() / Para.Kf);
-    return exp(-Scale / Para.Kf / 4.0);
+    return exp(-Scale / (Para.Kf));
   } else {
     ABORT("VerType can not be " << VerType);
   }
@@ -277,11 +279,11 @@ double fermi::FockSigma(const momentum &Mom) {
   return fock + k * k;
 }
 
-cmplx fermi::GreenFreq(double Freq, const momentum &Mom, int GType,
-                       double Scale) {
+cmplx fermi::GreenFreq(const momentum &Mom, int GType, double Scale) {
   cmplx green;
   double k = Mom.norm();
-  green = -1.0 / (1i * Freq - k * k);
+  double Freq = Mom[D];
+  green = -1.0 / (cmplx(0.0, Freq) - k * k + Para.Mu);
   if (Para.Type == RG) {
     double kScale = Scale;
     double dK2 = (k - Para.Kf) * (k - Para.Kf);

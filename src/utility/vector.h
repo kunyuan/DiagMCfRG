@@ -118,17 +118,17 @@ public:
 
   // friend bool operator==(const Vec<int>&, const Vec<int>&);
   // friend bool operator==(const Vec<real>&, const Vec<real>&);
-  double dot(const Vec &v2) const {
-    double sum = _Array[0] * v2[0];
-    for (int i = 1; i < D; ++i) {
-      sum += _Array[i] * v2[i];
-    }
-    return sum;
-  }
+  // double dot(const Vec &v2) const {
+  //   double sum = _Array[0] * v2[0];
+  //   for (int i = 1; i < D; ++i) {
+  //     sum += _Array[i] * v2[i];
+  //   }
+  //   return sum;
+  // }
 
   double squaredNorm() const {
     double sum = _Array[0] * _Array[0];
-    for (int i = 1; i < D; ++i) {
+    for (int i = 1; i < D - 1; ++i) {
       sum += _Array[i] * _Array[i];
     }
     return sum;
@@ -136,7 +136,7 @@ public:
 
   double norm() const {
     double sum = _Array[0] * _Array[0];
-    for (int i = 1; i < D; ++i) {
+    for (int i = 1; i < D - 1; ++i) {
       sum += _Array[i] * _Array[i];
     }
     return sqrt(sum);

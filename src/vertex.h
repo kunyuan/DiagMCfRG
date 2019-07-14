@@ -17,6 +17,7 @@ public:
   fermi();
   double Green(double Tau, const momentum &Momentum, spin Spin, int GType,
                double Scale = 0);
+  cmplx GreenFreq(const momentum &Mom, int GType, double Scale);
 
 private:
   // beyond which the expense sigma function will be called
@@ -25,7 +26,6 @@ private:
   double UpperBound2, LowerBound2; // lower upbound for better sigma
   double DeltaK2;
   double PhyGreen(double Tau, const momentum &Mom, int GType, double Scale = 0);
-  cmplx GreenFreq(double Freq, const momentum &Mom, int GType, double Scale);
   double FockSigma(const momentum &Mom);
   double BuildFockSigma();
   double Fock(double k);

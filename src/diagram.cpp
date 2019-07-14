@@ -428,8 +428,8 @@ std::string ToString(const diagram &Diag) {
 std::string ToString(const group &Group) {
   return fmt::format("GroupID: {0}\n Weight={1}\n NewWeight={2}\n "
                      "HugenNum={3}\n ReWeight={4}\n",
-                     Group.ID, Group.Weight, Group.NewWeight, Group.HugenNum,
-                     Group.ReWeight);
+                     Group.ID, real(Group.Weight), real(Group.NewWeight),
+                     Group.HugenNum, Group.ReWeight);
 };
 std::string ToString(const green &G) {
   std::ostringstream oss;

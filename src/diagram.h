@@ -87,8 +87,8 @@ struct group {
   int ExtTauNum;          // dimension of external tau basis
   int InternalTauNum;     // dimension of internal tau basis
   double ReWeight;
-  double Weight;
-  double NewWeight;
+  cmplx Weight;
+  cmplx NewWeight;
   array<bool, MaxLoopNum> IsExtLoop;
   array<bool, MaxLoopNum> IsExtTransferLoop;
   array<bool, MaxLoopNum> IsExtLegLoop;

@@ -289,8 +289,9 @@ void weight::ChangeTau(group &Group, int TauIndex) {
   }
 }
 
-double weight::GetNewWeight(group &Group) {
+cmplx weight::GetNewWeight(group &Group) {
   Group.NewWeight = fRG(Group.Order);
+  // cout << Group.NewWeight << "order: " << Group.Order << endl;
   return Group.NewWeight;
 }
 

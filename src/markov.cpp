@@ -87,13 +87,6 @@ void markov::PrintDeBugMCInfo() {
   }
   msg += "\n";
 
-  msg += string(80, '=') + "\n";
-  msg += "Tau: \n";
-  for (int i = 0; i < Var.CurrGroup->TauNum; i++)
-    msg += ToString(Var.Tau[i]) + ", ";
-
-  msg += "\n";
-
   LOG_INFO(msg);
 }
 
@@ -104,7 +97,7 @@ void markov::AdjustGroupReWeight() {
 
 void markov::Measure() {
   double MCWeight = fabs(Var.CurrGroup->Weight) * Var.CurrGroup->ReWeight;
-  double WeightFactor = Var.CurrGroup->Weight / MCWeight;
+  double WeightFactor = real(Var.CurrGroup->Weight) / MCWeight;
 
   Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
   PolarStatic[Var.CurrGroup->ID] += WeightFactor;
@@ -172,22 +165,11 @@ void markov::ChangeGroup() {
     // change to a new group with one higher order
     Name = INCREASE_ORDER;
     static momentum NewMom;
-    double NewTau;
-    // Generate New Tau
-    Prop = GetNewTau(NewTau);
-    int NewTauIndex = Var.CurrGroup->TauNum;
-    // ASSUME: NewTauIndex will never equal to 0 or 1
-    Var.Tau[NewTauIndex] = NewTau;
-    // Generate New Mom
     Prop *= GetNewK(NewMom);
     Var.LoopMom[Var.CurrGroup->LoopNum] = NewMom;
   } else if (NewGroup.Order == Var.CurrGroup->Order - 1) {
     // change to a new group with one lower order
     Name = DECREASE_ORDER;
-    // Remove OldTau
-    int TauToRemove = Var.CurrGroup->TauNum - 1;
-    Prop = RemoveOldTau(Var.Tau[TauToRemove]);
-    // Remove OldMom
     int LoopToRemove = Var.CurrGroup->LoopNum - 1;
     Prop *= RemoveOldK(Var.LoopMom[LoopToRemove]);
 
@@ -198,7 +180,9 @@ void markov::ChangeGroup() {
   Proposed[Name][Var.CurrGroup->ID] += 1;
 
   // Weight.ChangeGroup(NewGroup);
-  double NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
+  cmplx NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
+
+  // cout << Prop << " weight:" << NewWeight << endl;
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
              Var.CurrGroup->ReWeight;
 
@@ -209,36 +193,6 @@ void markov::ChangeGroup() {
     Weight.RejectChange(NewGroup);
   }
   return;
-};
-
-void markov::ChangeTau() {
-  int TauIndex = Random.irn(0, Var.CurrGroup->TauNum);
-
-  // if TauIndex is a locked tau, skip
-  if (Var.CurrGroup->IsLockedTau[TauIndex]) {
-    return;
-  }
-
-  Proposed[CHANGE_TAU][Var.CurrGroup->ID]++;
-
-  double CurrTau = Var.Tau[TauIndex];
-  double NewTau;
-  double Prop = ShiftTau(CurrTau, NewTau);
-
-  Var.Tau[TauIndex] = NewTau;
-
-  // Weight.ChangeTau(*Var.CurrGroup, TauIndex);
-  double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
-  double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
-  if (Random.urn() < R) {
-    Accepted[CHANGE_TAU][Var.CurrGroup->ID]++;
-    Weight.AcceptChange(*Var.CurrGroup);
-  } else {
-    // retore the old Tau if the update is rejected
-    // if TauIndex is external, then its partner can be different
-    Var.Tau[TauIndex] = CurrTau;
-    Weight.RejectChange(*Var.CurrGroup);
-  }
 };
 
 void markov::ChangeMomentum() {
@@ -270,7 +224,8 @@ void markov::ChangeMomentum() {
   }
 
   // Weight.ChangeMom(*Var.CurrGroup, LoopIndex);
-  double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
+  cmplx NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
+
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
     Accepted[CHANGE_MOM][Var.CurrGroup->ID]++;
@@ -293,7 +248,7 @@ void markov::ChangeScale() {
   else
     Var.CurrScale -= Random.urn() * 0.5;
 
-  if (Var.CurrScale < 0.0) {
+  if (Var.CurrScale < 0.0 || Var.CurrScale > Para.UVScale) {
     Var.CurrScale = OldScale;
     return;
   }
@@ -302,7 +257,7 @@ void markov::ChangeScale() {
 
   // force to change the group weight
   // Weight.ChangeGroup(*(Var.CurrGroup), true);
-  double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
+  cmplx NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
 
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
@@ -315,13 +270,12 @@ void markov::ChangeScale() {
   return;
 }
 
-double markov::GetNewTau(double &NewTau) {
-  NewTau = Random.urn() * Para.Beta;
-  return Para.Beta;
-};
-double markov::RemoveOldTau(double &OldTau) { return 1.0 / Para.Beta; }
-
 double markov::GetNewK(momentum &NewMom) {
+  //============================================//
+  // new frequency
+  NewMom[D] = (int((Random.urn() - 0.5) * 40) + 0.5) * Para.DeltaW;
+  double Prop = 40.0;
+
   //====== The hard Way ======================//
   // double dK = Para.Kf / sqrt(Para.Beta) / 4.0;
   // if (dK > Para.Kf / 2)
@@ -347,27 +301,31 @@ double markov::GetNewK(momentum &NewMom) {
     NewMom[0] = K_XY * cos(Phi);
     NewMom[1] = K_XY * sin(Phi);
     NewMom[D - 1] = KAmp * cos(Theta);
-    return 2.0 * dK                    // prop density of KAmp in [Kf-dK, Kf+dK)
+    return Prop * 2.0 * dK             // prop density of KAmp in [Kf-dK, Kf+dK)
            * 2.0 * PI                  // prop density of Phi
            * PI                        // prop density of Theta
            * sin(Theta) * KAmp * KAmp; // Jacobian
   } else if (D == 2) {
     NewMom[0] = KAmp * cos(Phi);
     NewMom[1] = KAmp * sin(Phi);
-    return 2.0 * dK   // prop density of KAmp in [Kf-dK, Kf+dK)
-           * 2.0 * PI // prop density of Phi
-           * KAmp;    // Jacobian
+    return Prop * 2.0 * dK // prop density of KAmp in [Kf-dK, Kf+dK)
+           * 2.0 * PI      // prop density of Phi
+           * KAmp;         // Jacobian
   }
 
   //===== The simple way  =======================//
   // for (int i = 0; i < D; i++)
   //   NewMom[i] = Para.Kf * (Random.urn() - 0.5) * 2.0;
   // return pow(2.0 * Para.Kf, D);
-
-  //============================================//
 };
 
 double markov::RemoveOldK(momentum &OldMom) {
+
+  if (OldMom[D] > (20.0 + 0.5) * Para.DeltaW ||
+      OldMom[D] < -(20.0 - 0.5) * Para.DeltaW)
+    return 0.0;
+  double Prop = 1.0 / 40;
+
   //====== The hard Way ======================//
   double dK = 1.0 * Var.CurrScale;
   // double dK = Para.Kf / sqrt(Para.Beta) / 4.0;
@@ -384,9 +342,9 @@ double markov::RemoveOldK(momentum &OldMom) {
     auto SinTheta = sqrt(OldMom[0] * OldMom[0] + OldMom[1] * OldMom[1]) / KAmp;
     if (SinTheta < EPS)
       return 0.0;
-    return 1.0 / (2.0 * dK * 2.0 * PI * PI * SinTheta * KAmp * KAmp);
+    return Prop * 1.0 / (2.0 * dK * 2.0 * PI * PI * SinTheta * KAmp * KAmp);
   } else if (D == 2) {
-    return 1.0 / (2.0 * dK * 2.0 * PI * KAmp);
+    return Prop * 1.0 / (2.0 * dK * 2.0 * PI * KAmp);
   }
 
   //===== The simple way  =======================//
@@ -398,6 +356,12 @@ double markov::RemoveOldK(momentum &OldMom) {
 }
 
 double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
+
+  double dW = int((Random.urn() - 0.5) * 10) * Para.DeltaW;
+  NewMom[D] = OldMom[D] + dW;
+  if (abs(NewMom[D]) > Para.UVFreqScale)
+    return 0.0;
+
   double x = Random.urn();
   double Prop;
   if (x < 1.0 / 3) {
@@ -464,28 +428,12 @@ double markov::ShiftExtLegK(const momentum &OldExtMom, momentum &NewExtMom) {
     double Theta = Random.urn() * 2.0 * PI;
     NewExtMom[0] = Para.Kf * cos(Theta);
     NewExtMom[1] = Para.Kf * sin(Theta);
+    NewExtMom[2] = 0.0;
     return 1.0;
   } else {
     ABORT("ShiftExtKOnKf for D=3 has not yet been implemented!");
   }
 };
-
-double markov::ShiftTau(const double &OldTau, double &NewTau) {
-  double x = Random.urn();
-  if (x < 1.0 / 3) {
-    double DeltaT = Para.Beta / 3.0;
-    NewTau = OldTau + DeltaT * (Random.urn() - 0.5);
-  } else if (x < 2.0 / 3) {
-    NewTau = -OldTau;
-  } else {
-    NewTau = Random.urn() * Para.Beta;
-  }
-  if (NewTau < 0.0)
-    NewTau += Para.Beta;
-  if (NewTau > Para.Beta)
-    NewTau -= Para.Beta;
-  return 1.0;
-}
 
 std::string markov::_DetailBalanceStr(Updates op) {
   string Output = string(80, '-') + "\n";

@@ -114,10 +114,10 @@ if(XType == "Scale"):
     ax.set_xlim([0.0, ScaleBin[-2]])
     ax.set_xlabel("$Scale$", size=size)
 elif (XType == "Mom"):
-    for i in range(ScaleBinSize/8):
+    for i in range(ScaleBinSize/16):
         # print i, index
         # print ScaleBin[index]
-        index = 8*i
+        index = 16*i
     # for i in range(ScaleBinSize+1):
         ErrorPlot(ax, ExtMomBin, qData[index, :],
                   ColorList[i], 's', "Scale {0}".format(ScaleBin[index]))
