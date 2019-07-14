@@ -93,15 +93,17 @@ private:
   verfunc VerFunc;
 
   double fRG(int LoopNum);
-  void Ver4Loop(const momentum &InL, const momentum &InR,
-                const momentum &DirTran, const momentum &ExTran, int LoopNum,
-                int TauIndex, int LoopIndex, int &Level, int &DiagNum);
-  void Ver4Loop0(const momentum &InL, const momentum &InR,
-                 const momentum &DirTran, const momentum &ExTran, int TauIndex,
-                 int LoopIndex, int &Level, int &DiagNum);
-  void Ver4Loop1(const momentum &InL, const momentum &InR,
-                 const momentum &DirTran, const momentum &ExTran, int TauIndex,
-                 int LoopIndex, int &Level, int &DiagNum);
+  double Ver4Loop(const momentum &InL, const momentum &InR,
+                  const momentum &DirTran, const momentum &ExTran, int LoopNum,
+                  int TauIndex, int LoopIndex, int Channel, int Type,
+                  int &Level, int &DiagNum);
+  double Ver4Loop0(const momentum &InL, const momentum &InR,
+                   const momentum &DirTran, const momentum &ExTran,
+                   int TauIndex, int LoopIndex, int &Level, int &DiagNum);
+  double Ver4Loop1(const momentum &InL, const momentum &InR,
+                   const momentum &DirTran, const momentum &ExTran, int LoopNum,
+                   int TauIndex, int LoopIndex, int Channel, int Type,
+                   int &Level, int &DiagNum);
 
   double _Weight[MaxOrder][MaxDiagNum][2];
   double _ExtTau[MaxOrder][MaxDiagNum][4];
