@@ -38,8 +38,7 @@ class verQTheta {
 public:
   verQTheta();
   double Interaction(const momentum &InL, const momentum &InR,
-                     const momentum &Transfer, int VerType, double Scale = 0
-                     );
+                     const momentum &Transfer, int VerType, double Scale = 0);
 
   void Measure(const momentum &InL, const momentum &InR, const int QIndex,
                double Scale, int Order, double WeightFactor);

@@ -17,9 +17,9 @@ const bool DEBUGMODE = true;
 // D=2 or D=3
 const int D = 2;
 // number of q bins of the external momentum
-const int ExtMomBinSize = 32;
+const int ExtMomBinSize = 16;
 // number of bins for the angle between InL and InR legs
-const int AngBinSize = 8;
+const int AngBinSize = 32;
 // number of energy scales, only useful in RG approach
 const int ScaleBinSize = 128;
 

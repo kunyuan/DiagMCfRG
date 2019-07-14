@@ -51,9 +51,9 @@ double weight::fRG(int LoopNum) {
              VerLExtTau);
     Ver4Loop(VerRInL, InR, DirTran, VerRExTran, LoopNum - 1 - loop, RTauIndex,
              4 + loop, VerRWeight, VerRExtTau);
-    // double
-    // VerWeight=(VerLWeight[DIRECT]-VerLWeight[EXCHANGE])*(VerRWeight[DIRECT]-VerRWeight[EXCHANGE])
-    double VerWeight = VerLWeight[DIRECT] * VerRWeight[DIRECT];
+    double VerWeight = (VerLWeight[DIRECT] - VerLWeight[EXCHANGE]) *
+                       (VerRWeight[DIRECT] - VerRWeight[EXCHANGE]);
+    // double VerWeight = VerLWeight[DIRECT] * VerRWeight[DIRECT];
 
     double TauR2L = VerLExtTau[INR] - VerRExtTau[OUTL];
     double TauL2R = VerRExtTau[INL] - VerLExtTau[OUTR];

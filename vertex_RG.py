@@ -11,11 +11,11 @@ mat.rcParams["font.family"] = "Times New Roman"
 size = 12
 
 rs = 1.0
-Lambda = 8
-Beta = 40
-# XType="Scale"
+Lambda = 2
+Beta = 20
+# XType = "Scale"
 XType = "Mom"
-# XType="Angle"
+# XType = "Angle"
 
 ##############   3D    ##################################
 # kF = (9.0*np.pi/4.0)**(1.0/3.0)/rs  # 3D
@@ -73,6 +73,7 @@ ScaleBin[-1] = ScaleBin[-2]*2
 Data[-1, :, :] = 0.0
 
 qData = np.array(Data)
+# qData = np.sum(qData, axis=1)/AngleBinSize*2.0*np.pi
 qData = np.mean(qData, axis=1)
 # qData = np.mean(qData, axis=1)*2
 
@@ -146,8 +147,8 @@ elif (XType == "Mom"):
     # ym=y0-y0*y0*y
     yphy = 8.0*np.pi/(x*x*kF*kF+Lambda+y*8.0*np.pi)
 
-    ax.plot(x, yphy, 'k-', lw=2, label="physical")
-    ax.plot(x, y0, 'b-', lw=2, label="original")
+    # ax.plot(x, yphy, 'k-', lw=2, label="physical")
+    # ax.plot(x, y0, 'b-', lw=2, label="original")
 
     # ax.plot(x,ym,'r-', lw=2, label="wrong")
 
@@ -159,7 +160,7 @@ elif(XType == "Angle"):
         # print i, index
         # print ScaleBin[index]
         index = 8*i
-        ErrorPlot(ax, AngleBin, Data[index, :, 16],
+        ErrorPlot(ax, AngleBin, Data[index, :, 5],
                   ColorList[i], 's', "Q {0}".format(ScaleBin[index]))
     ax.set_xlim([0.0, AngleBin[-1]])
     ax.set_xlabel("$Angle$", size=size)
