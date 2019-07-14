@@ -18,8 +18,9 @@ struct variable {
   double CurrScale;  // Current (Reference) Scale: Index=1, ..., ScaleBinSize
   int CurrIRScaleBin;
   array<momentum, MaxLoopNum> LoopMom; // all momentum loop variables
-  array<double, MaxTauNum> Tau;        // all tau variables
-  array<int, MaxLoopNum> LoopSpin;     // all spin variables
+  // array<int, MaxLoopNum> LoopFreq;     // all momentum loop variables
+  array<double, MaxTauNum> Tau;    // all tau variables
+  array<int, MaxLoopNum> LoopSpin; // all spin variables
 };
 
 class weight {

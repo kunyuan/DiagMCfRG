@@ -74,7 +74,7 @@ void InitPara() {
   // scale all energy with E_F
   Para.Beta /= Para.Ef;
   Para.UVScale = 2.0 * Para.Kf;
-  Para.UVFreqScale = 8.0 * Para.Kf;
+  Para.UVFreqScale = 16.0 * Para.Kf;
   Para.UVCoupling = 1.0 * Para.Ef;
 
   Para.DeltaW = 2.0 * PI / Para.Beta;
@@ -143,7 +143,7 @@ void InitPara() {
   for (int i = 0; i < ExtMomBinSize; i++) {
     // the external momentum only has x component
     Para.ExtMomTable[i][0] = (i + 0.5) * Para.MaxExtMom / ExtMomBinSize;
-    for (int j = 1; j < D; j++)
+    for (int j = 1; j < D + 1; j++)
       Para.ExtMomTable[i][j] = 0.0;
   }
 
@@ -211,6 +211,8 @@ void MonteCarlo() {
       // Markov.DynamicTest();
 
       if (i % 1000 == 0) {
+        // cout << Markov.Weight.Var.LoopMom[3][D] << " at "
+        //      << Markov.Weight.Var.LoopMom[3][D] / Para.DeltaW << endl;
 
         if (i % WaitStep == 0) {
           Markov.UpdateWeight(1.0);

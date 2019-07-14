@@ -29,7 +29,7 @@ enum type { RG, POLAR };
 enum obstype { FREQ, EQUALTIME };
 enum ver4 { POINT, FULL, MOM, MOM_ANGLE };
 
-typedef Vec<double, D + 1> momentum;
+typedef Vec<double, D> momentum;
 typedef std::complex<double> cmplx;
 // typedef std::array<double, D> momentum;
 

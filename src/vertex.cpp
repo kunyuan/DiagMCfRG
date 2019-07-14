@@ -135,7 +135,7 @@ void verQTheta::Update(double Ratio) {
         // double NewValue = 0.0;
         for (int order = 0; order < MaxOrder; ++order) {
           NewValue += DiffInteraction[order][scale][angle][qindex] /
-                      Normalization * PhyWeight / 40.0;
+                      Normalization * PhyWeight;
         }
         EffInteraction[scale][angle][qindex] =
             OldValue * (1 - Ratio) + NewValue * Ratio;
@@ -283,15 +283,24 @@ cmplx fermi::GreenFreq(const momentum &Mom, int GType, double Scale) {
   cmplx green;
   double k = Mom.norm();
   double Freq = Mom[D];
+  if (abs(Freq) > Para.UVFreqScale)
+    return cmplx(0.0, 0.0);
+
   green = -1.0 / (cmplx(0.0, Freq) - k * k + Para.Mu);
+  // green = -1.0 / (Freq * Freq + k * k + 1.0);
   if (Para.Type == RG) {
     double kScale = Scale;
     double dK2 = (k - Para.Kf) * (k - Para.Kf);
+    // double dK2 = k * k;
 
-    if (GType == 2)
+    if (GType == 2) {
       green *= -dK2 * 4.0 * pow(kScale, 3) / pow((dK2 + pow(kScale, 4)), 2);
-    else
+      // green *= -Freq*Freq * 4.0 * pow(kScale, 3) / pow((Freq*Freq +
+      // pow(kScale, 4)), 2);
+    } else {
       green *= dK2 / (dK2 + pow(kScale, 4));
+      // green *= Freq*Freq/(Freq*Freq + pow(kScale, 4));
+    }
 
     // if (GType == 2)
     //   green *= -dK2 / (dK2 + kScale) / (dK2 + kScale);

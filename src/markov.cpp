@@ -357,16 +357,12 @@ double markov::RemoveOldK(momentum &OldMom) {
 
 double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
 
-  double dW = int((Random.urn() - 0.5) * 10) * Para.DeltaW;
-  NewMom[D] = OldMom[D] + dW;
-  if (abs(NewMom[D]) > Para.UVFreqScale)
-    return 0.0;
-
   double x = Random.urn();
   double Prop;
   if (x < 1.0 / 3) {
     // COPYFROMTO(OldMom, NewMom);
-    NewMom = OldMom;
+    for (int i = 0; i < D; i++)
+      NewMom[i] = OldMom[i];
     int dir = Random.irn(0, D - 1);
     double STEP = Para.Beta > 1.0 ? Para.Kf / Para.Beta * 3.0 : Para.Kf;
     NewMom[dir] += STEP * (Random.urn() - 0.5);
@@ -375,7 +371,8 @@ double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
     double k = OldMom.norm();
     if (k < 1.0e-9) {
       Prop = 0.0;
-      NewMom = OldMom;
+      for (int i = 0; i < D; i++)
+        NewMom[i] = OldMom[i];
     } else {
       const double Lambda = 1.5;
       double knew = k / Lambda + Random.urn() * (Lambda - 1.0 / Lambda) * k;
@@ -388,32 +385,20 @@ double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
         Prop = Ratio;
     }
 
-    // if (isnan(Var.LoopMom[0][0]) || isnan(Var.LoopMom[0][0])) {
-    //   cout << "Na" << endl;
-    // }
-    // if (isnan(Var.LoopMom[1][0]) || isnan(Var.LoopMom[1][0])) {
-    //   cout << "Na" << endl;
-    // }
-    // if (isnan(Var.LoopMom[2][0]) || isnan(Var.LoopMom[2][0])) {
-    //   cout << "Na" << endl;
-    // }
-    // if (isnan(Var.LoopMom[3][0]) || isnan(Var.LoopMom[3][0])) {
-    //   cout << "Na" << endl;
-    // }
-    // if (isnan(Var.LoopMom[4][0]) || isnan(Var.LoopMom[4][0])) {
-    //   cout << "Na" << endl;
-    // }
-    // if (isnan(Var.LoopMom[5][0]) || isnan(Var.LoopMom[5][0])) {
-    //   cout << "Na" << endl;
-    // }
-    // if (isnan(Var.LoopMom[6][0]) || isnan(Var.LoopMom[6][0])) {
-    //   cout << "Na" << endl;
-    // }
   } else {
     for (int i = 0; i < D; i++)
       NewMom[i] = -OldMom[i];
     Prop = 1.0;
   }
+
+  // double dW = int((Random.urn() - 0.5) * 10) * Para.DeltaW;
+  if (Random.urn() < 0.5)
+    NewMom[D] = OldMom[D] + Para.DeltaW;
+  else
+    NewMom[D] = OldMom[D] - Para.DeltaW;
+  // NewMom[D] = OldMom[D] + dW;
+  // if (abs(NewMom[D]) > Para.UVFreqScale)
+  //   return 0.0;
 
   return Prop;
 };
@@ -428,7 +413,8 @@ double markov::ShiftExtLegK(const momentum &OldExtMom, momentum &NewExtMom) {
     double Theta = Random.urn() * 2.0 * PI;
     NewExtMom[0] = Para.Kf * cos(Theta);
     NewExtMom[1] = Para.Kf * sin(Theta);
-    NewExtMom[2] = 0.0;
+    NewExtMom[2] = Para.DeltaW / 2.0;
+    // NewExtMom[2] = 0.0;
     return 1.0;
   } else {
     ABORT("ShiftExtKOnKf for D=3 has not yet been implemented!");
