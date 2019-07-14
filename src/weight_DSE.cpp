@@ -10,7 +10,7 @@
 using namespace diag;
 using namespace std;
 
-double weight::Evaluate(group &Group) {
+cmplx weight::Evaluate(group &Group) {
   if (Group.Order == 0)
     VerQTheta.Interaction(Var.LoopMom[1], Var.LoopMom[2], Var.LoopMom[0], -1,
                           Var.CurrScale);
@@ -20,7 +20,7 @@ double weight::Evaluate(group &Group) {
   }
 }
 
-double weight::fRG(int LoopNum) {
+cmplx weight::fRG(int LoopNum) {
 
   const momentum &DirTran = Var.LoopMom[0];
   const momentum &InL = Var.LoopMom[1];

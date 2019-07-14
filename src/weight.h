@@ -14,6 +14,7 @@ struct variable {
   long int CurrVersion;
   int CurrExtMomBin; // current bin of the external momentum
   double CurrTau;    // current external tau
+  double CurrFreq;   // current external tau
   double CurrScale;  // Current (Reference) Scale: Index=1, ..., ScaleBinSize
   int CurrIRScaleBin;
   array<momentum, MaxLoopNum> LoopMom; // all momentum loop variables
@@ -92,20 +93,20 @@ private:
   verQTheta VerQTheta;
   verfunc VerFunc;
 
-  double fRG(int LoopNum);
-  double Ver4Loop(const momentum &InL, const momentum &InR,
+  cmplx fRG(int LoopNum);
+  cmplx Ver4Loop(const momentum &InL, const momentum &InR,
+                 const momentum &DirTran, const momentum &ExTran, int LoopNum,
+                 int TauIndex, int LoopIndex, int Channel, int Type, int &Level,
+                 int &DiagNum);
+  cmplx Ver4Loop0(const momentum &InL, const momentum &InR,
+                  const momentum &DirTran, const momentum &ExTran, int TauIndex,
+                  int LoopIndex, int &Level, int &DiagNum);
+  cmplx Ver4Loop1(const momentum &InL, const momentum &InR,
                   const momentum &DirTran, const momentum &ExTran, int LoopNum,
                   int TauIndex, int LoopIndex, int Channel, int Type,
                   int &Level, int &DiagNum);
-  double Ver4Loop0(const momentum &InL, const momentum &InR,
-                   const momentum &DirTran, const momentum &ExTran,
-                   int TauIndex, int LoopIndex, int &Level, int &DiagNum);
-  double Ver4Loop1(const momentum &InL, const momentum &InR,
-                   const momentum &DirTran, const momentum &ExTran, int LoopNum,
-                   int TauIndex, int LoopIndex, int Channel, int Type,
-                   int &Level, int &DiagNum);
 
-  double _Weight[MaxOrder][MaxDiagNum][2];
+  cmplx _Weight[MaxOrder][MaxDiagNum][2];
   double _ExtTau[MaxOrder][MaxDiagNum][4];
   // double Ver4Loop2();
   // double Ver6Loop1();

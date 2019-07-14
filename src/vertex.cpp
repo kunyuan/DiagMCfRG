@@ -277,6 +277,28 @@ double fermi::FockSigma(const momentum &Mom) {
   return fock + k * k;
 }
 
+cmplx fermi::GreenFreq(double Freq, const momentum &Mom, int GType,
+                       double Scale) {
+  cmplx green;
+  double k = Mom.norm();
+  green = -1.0 / (1i * Freq - k * k);
+  if (Para.Type == RG) {
+    double kScale = Scale;
+    double dK2 = (k - Para.Kf) * (k - Para.Kf);
+
+    if (GType == 2)
+      green *= -dK2 * 4.0 * pow(kScale, 3) / pow((dK2 + pow(kScale, 4)), 2);
+    else
+      green *= dK2 / (dK2 + pow(kScale, 4));
+
+    // if (GType == 2)
+    //   green *= -dK2 / (dK2 + kScale) / (dK2 + kScale);
+    // else
+    //   green *= dK2 / (dK2 + kScale);
+  }
+  return green;
+}
+
 double fermi::PhyGreen(double Tau, const momentum &Mom, int GType,
                        double Scale) {
   // if tau is exactly zero, set tau=0^-

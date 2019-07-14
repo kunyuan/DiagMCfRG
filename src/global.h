@@ -3,6 +3,7 @@
 
 #include "utility/vector.h"
 #include <array>
+#include <complex>
 #include <math.h>
 #include <string>
 #include <vector>
@@ -29,6 +30,7 @@ enum obstype { FREQ, EQUALTIME };
 enum ver4 { POINT, FULL, MOM, MOM_ANGLE };
 
 typedef Vec<double, D> momentum;
+typedef std::complex<double> cmplx;
 // typedef std::array<double, D> momentum;
 
 /////////// Global Parameter ////////////////////
