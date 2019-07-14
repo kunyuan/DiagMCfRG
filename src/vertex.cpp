@@ -64,9 +64,8 @@ verQTheta::verQTheta() {
     for (int inin = 0; inin < AngBinSize; ++inin)
       for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
         double k = Index2Mom(qIndex);
-        // EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k +
-        // Para.Mass2);
-        EffInteraction[scale][inin][qIndex] = 0.0;
+        EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
+        // EffInteraction[scale][inin][qIndex] = 0.0;
         for (int order = 0; order < MaxOrder; ++order)
           DiffInteraction[order][scale][inin][qIndex] = 0.0;
       }
@@ -79,7 +78,7 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
   if (VerType >= 0) {
 
     double k = Transfer.norm();
-    return 8.0 * PI / (k * k + Para.Mass2);
+    // return 8.0 * PI / (k * k + Para.Mass2);
     // return 1.0;
 
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);

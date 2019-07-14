@@ -11,7 +11,7 @@ mat.rcParams["font.family"] = "Times New Roman"
 size = 12
 
 rs = 1.0
-Lambda = 8
+Lambda = 2
 Beta = 20
 # XType = "Scale"
 XType = "Mom"
