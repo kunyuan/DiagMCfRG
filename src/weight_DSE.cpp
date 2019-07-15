@@ -30,7 +30,7 @@ double weight::fRG(int LoopNum) {
     return VerQTheta.Interaction(InL, InR, DirTran, -2, Var.CurrScale);
   } else {
     int Level = 0;
-    int DiagNum;
+    int DiagNum = 0;
     return Ver4Loop(InL, InR, DirTran, DirTran, LoopNum, 0, 3,
                     1,  // calculate u diagram only
                     -1, // do RG diagram
@@ -118,17 +118,17 @@ double weight::Ver4Loop0(const momentum &InL, const momentum &InR,
                          int &DiagNum) {
   //   return VerQTheta.Interaction(InL, InR, DirTran, 0, Var.CurrScale) -
   //   VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
-
-  _Weight[Level][DiagNum][DIRECT] =
-      VerQTheta.Interaction(InL, InR, DirTran, 0, Var.CurrScale);
-  _Weight[Level][DiagNum][EXCHANGE] =
-      VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
+  double DiWeight = VerQTheta.Interaction(InL, InR, DirTran, 0, Var.CurrScale);
+  double ExWeight = VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
   _ExtTau[Level][DiagNum][INL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagNum][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagNum][INR] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagNum][OUTR] = Var.Tau[TauIndex];
+  _Weight[Level][DiagNum] = DiWeight - ExWeight;
+  // _Weight[Level][DiagNum] = DiWeight;
+
   DiagNum += 1;
-  return _Weight[Level][DiagNum][DIRECT] - _Weight[Level][DiagNum][EXCHANGE];
+  return _Weight[Level][DiagNum];
 }
 
 double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
@@ -143,6 +143,8 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
   double GWeight = 0.0;
   double TauR2L, TauL2R;
   int DiagIndex = 0;
+  int NextLevel = Level + 1;
+  int NextDiagNum = 0;
 
   // u diagram
   if (Channel == 0 || Channel == 1) {
@@ -158,38 +160,40 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
 
       //====================  DIRECT  Diagram =============================
       // left vertex
-      int LIndex = DiagNum;
+      int LIndex = NextDiagNum;
       Ver4Loop(InL, Internal, DirTran, VerLExTran, loop, LTauIndex,
                LoopIndex + 1,
                0, // calculate u, s, t sub-ver-diagram
                0, // type 0
-               Level, DiagNum);
-      int LDiagNum = DiagNum - LIndex;
+               NextLevel, NextDiagNum);
+      int LDiagNum = NextDiagNum - LIndex;
 
       // right vertex
-      int RIndex = DiagNum;
+      int RIndex = NextDiagNum;
       Ver4Loop(VerRInL, InR, DirTran, VerRExTran, LoopNum - 1 - loop, RTauIndex,
                LoopIndex + 1 + loop,
                0, // calculate u, s, t sub-ver-diagram
                0, // type 0
-               Level, DiagNum);
-      int RDiagNum = DiagNum - RIndex;
+               NextLevel, NextDiagNum);
+      int RDiagNum = NextDiagNum - RIndex;
 
       for (int left = LIndex; left < LIndex + LDiagNum; left++) {
         for (int right = RIndex; right < RIndex + RDiagNum; right++) {
-          VerWeight =
-              (_Weight[Level][left][DIRECT] - _Weight[Level][left][EXCHANGE]) *
-              (_Weight[Level][right][DIRECT] - _Weight[Level][right][EXCHANGE]);
+          VerWeight = _Weight[NextLevel][left] * _Weight[NextLevel][right];
 
-          TauR2L = _ExtTau[Level][left][INR] - _ExtTau[Level][right][OUTL];
-          TauL2R = _ExtTau[Level][right][INL] - _ExtTau[Level][left][OUTR];
+          TauR2L =
+              _ExtTau[NextLevel][left][INR] - _ExtTau[NextLevel][right][OUTL];
+          TauL2R =
+              _ExtTau[NextLevel][right][INL] - _ExtTau[NextLevel][left][OUTR];
 
           GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
                     Fermi.Green(TauR2L, Internal, UP, 2, Var.CurrScale);
           GWeight += Fermi.Green(TauL2R, Internal2, UP, 2, Var.CurrScale) *
                      Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
 
-          Weight += GWeight * VerWeight * pow(-1, LoopNum);
+          _Weight[Level][DiagNum] = GWeight * VerWeight * pow(-1, LoopNum);
+          Weight += _Weight[Level][DiagNum];
+
           // cout << TauR2L << " vs " << TauL2R << endl;
           // cout << "deltaT" << Var.Tau[0] << " vs " << Var.Tau[1] << endl;
 
@@ -197,6 +201,7 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
           // endl; cout << VerWeight << ", g: " << GWeight << ", total: " <<
           // Weight
           //      << endl;
+          DiagNum++;
         }
         // double VerWeight = VerLWeight[DIRECT] * VerRWeight[DIRECT];
       }

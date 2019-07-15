@@ -105,7 +105,7 @@ private:
                    int TauIndex, int LoopIndex, int Channel, int Type,
                    int &Level, int &DiagNum);
 
-  double _Weight[MaxOrder][MaxDiagNum][2];
+  double _Weight[MaxOrder][MaxDiagNum];
   double _ExtTau[MaxOrder][MaxDiagNum][4];
   // double Ver4Loop2();
   // double Ver6Loop1();
