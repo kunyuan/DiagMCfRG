@@ -202,6 +202,9 @@ void markov::ChangeGroup() {
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
              Var.CurrGroup->ReWeight;
 
+  // if (NewGroup.Order == 2)
+  //   cout << NewWeight << endl;
+
   if (Random.urn() < R) {
     Accepted[Name][Var.CurrGroup->ID]++;
     Weight.AcceptChange(NewGroup);

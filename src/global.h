@@ -72,15 +72,15 @@ struct parameter {
 };
 
 //////////   Diagram  ////////////////////////////
-const int MaxOrder = 8;        // Max diagram order
+const int MaxOrder = 4;        // Max diagram order
 const int MaxGroupNum = 8;     // Max number of diagram groups
 const int MaxDiagNum = 1024;   // Max number of Hugenholtz diagrams in one group
 const int MaxGPoolSize = 8192; // Max total indepdent G for all diagrams
 const int MaxVerPoolSize = 4096; // Max total indepdent vertex for all diagrams
-const int MaxLoopNum = MaxOrder; // Max loop number in one group
-const int MaxTauNum = 2 * MaxOrder; // Max tau number in one group
-const int MaxGNum = 2 * MaxOrder;   // Max G number in one group
-const int MaxVer4Num = MaxOrder;    // Max Ver4 number in one group
+const int MaxLoopNum = MaxOrder + 3; // Max loop number in one group
+const int MaxTauNum = 2 * MaxOrder;  // Max tau number in one group
+const int MaxGNum = 2 * MaxOrder;    // Max G number in one group
+const int MaxVer4Num = MaxOrder;     // Max Ver4 number in one group
 
 //////////   Generic Global Constants  /////////////////
 const double TM32 = 1.0 / (pow(2.0, 32));

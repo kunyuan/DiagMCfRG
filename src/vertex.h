@@ -48,6 +48,7 @@ public:
   void ResetIRScale(int IRScaleBin);
   double EffInteraction[ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
   double DiffInteraction[MaxOrder][ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
+  double IntInteraction[MaxOrder][ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
 
   double Normalization;
   double PhyWeight;

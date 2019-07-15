@@ -65,9 +65,10 @@ verQTheta::verQTheta() {
       for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
         double k = Index2Mom(qIndex);
         EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
-        // EffInteraction[scale][inin][qIndex] = 0.0;
-        for (int order = 0; order < MaxOrder; ++order)
+        for (int order = 0; order < MaxOrder; ++order) {
           DiffInteraction[order][scale][inin][qIndex] = 0.0;
+          IntInteraction[order][scale][inin][qIndex] = 0.0;
+        }
       }
   }
 }
@@ -78,7 +79,7 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
   if (VerType >= 0) {
 
     double k = Transfer.norm();
-    // return 8.0 * PI / (k * k + Para.Mass2);
+    return 8.0 * PI / (k * k + Para.Mass2);
     // return 1.0;
 
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
@@ -125,22 +126,68 @@ void verQTheta::Measure(const momentum &InL, const momentum &InR,
 }
 
 void verQTheta::Update(double Ratio) {
+  // for (int scale = ScaleBinSize - 1; scale >= 0; --scale)
+  //   for (int angle = 0; angle < AngBinSize; ++angle)
+  //     for (int qindex = 0; qindex < ExtMomBinSize; ++qindex) {
+  //       double OldValue = EffInteraction[scale][angle][qindex];
+  //       double NewValue = EffInteraction[scale + 1][angle][qindex];
+  //       // double NewValue = 0.0;
+  //       for (int order = 0; order < MaxOrder; ++order) {
+  //         NewValue += DiffInteraction[order][scale][angle][qindex] /
+  //                     Normalization * PhyWeight / 40.0;
+  //       }
+  //       EffInteraction[scale][angle][qindex] =
+  //           OldValue * (1 - Ratio) + NewValue * Ratio;
+  //     }
   for (int scale = ScaleBinSize - 1; scale >= 0; --scale)
     for (int angle = 0; angle < AngBinSize; ++angle)
       for (int qindex = 0; qindex < ExtMomBinSize; ++qindex) {
-        double OldValue = EffInteraction[scale][angle][qindex];
-        double NewValue = EffInteraction[scale + 1][angle][qindex];
-        // double NewValue = 0.0;
         for (int order = 0; order < MaxOrder; ++order) {
-          NewValue += DiffInteraction[order][scale][angle][qindex] /
-                      Normalization * PhyWeight / 40.0;
+          // double NewValue = 0.0;
+          double delta = DiffInteraction[order][scale][angle][qindex] /
+                         Normalization * PhyWeight / 40.0;
+          IntInteraction[order][scale][angle][qindex] =
+              IntInteraction[order][scale + 1][angle][qindex] + delta;
         }
-        EffInteraction[scale][angle][qindex] =
-            OldValue * (1 - Ratio) + NewValue * Ratio;
+        for (int order = 0; order < MaxOrder; ++order)
+          EffInteraction[scale][angle][qindex] =
+              EffInteraction[scale][angle][qindex] * (1 - Ratio) +
+              IntInteraction[order][scale][angle][qindex] * Ratio;
       }
 }
 
 void verQTheta::Save() {
+  for (int order = 1; order < 3; order++) {
+    string FileName = fmt::format("vertex{0}_pid{1}.dat", order, Para.PID);
+    ofstream VerFile;
+    VerFile.open(FileName, ios::out | ios::trunc);
+    if (VerFile.is_open()) {
+      VerFile << fmt::sprintf(
+          "#PID:%d, Type:%d, rs:%.3f, Beta: %.3f, Step: %d\n", Para.PID,
+          Para.ObsType, Para.Rs, Para.Beta, Para.Counter);
+      VerFile << "# ScaleTable: ";
+      for (int scale = 0; scale < ScaleBinSize + 1; ++scale)
+        VerFile << Para.ScaleTable[scale] << " ";
+      VerFile << endl;
+      VerFile << "# AngleTable: ";
+      for (int angle = 0; angle < AngBinSize; ++angle)
+        VerFile << Para.AngleTable[angle] << " ";
+      VerFile << endl;
+      VerFile << "# ExtMomBinTable: ";
+      for (int qindex = 0; qindex < ExtMomBinSize; ++qindex)
+        VerFile << Para.ExtMomTable[qindex][0] << " ";
+      VerFile << endl;
+
+      for (int scale = 0; scale < ScaleBinSize + 1; ++scale)
+        for (int angle = 0; angle < AngBinSize; ++angle)
+          for (int qindex = 0; qindex < ExtMomBinSize; ++qindex)
+            VerFile << IntInteraction[order][scale][angle][qindex] << "  ";
+      VerFile.close();
+    } else {
+      LOG_WARNING("Polarization for PID " << Para.PID << " fails to save!");
+    }
+  }
+
   string FileName = fmt::format("vertex_pid{0}.dat", Para.PID);
   ofstream VerFile;
   VerFile.open(FileName, ios::out | ios::trunc);

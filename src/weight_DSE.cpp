@@ -106,7 +106,7 @@ double weight::Ver4Loop(const momentum &InL, const momentum &InR,
                         int &DiagNum) {
   if (LoopNum == 0) {
     return Ver4Loop0(InL, InR, DirTran, TauIndex, LoopIndex, Level, DiagNum);
-  } else if (LoopNum == 1)
+  } else if (LoopNum >= 1)
     return Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex, Channel,
                      Type, Level, DiagNum);
 }
