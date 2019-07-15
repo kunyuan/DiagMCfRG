@@ -94,16 +94,16 @@ private:
 
   double fRG(int LoopNum);
   double Ver4Loop(const momentum &InL, const momentum &InR,
-                  const momentum &DirTran, const momentum &ExTran, int LoopNum,
-                  int TauIndex, int LoopIndex, int Channel, int Type,
-                  int &Level, int &DiagNum);
+                  const momentum &DirTran, int LoopNum, int TauIndex,
+                  int LoopIndex, int Channel, int Type, int &Level,
+                  int &DiagNum);
   double Ver4Loop0(const momentum &InL, const momentum &InR,
-                   const momentum &DirTran, const momentum &ExTran,
-                   int TauIndex, int LoopIndex, int &Level, int &DiagNum);
-  double Ver4Loop1(const momentum &InL, const momentum &InR,
-                   const momentum &DirTran, const momentum &ExTran, int LoopNum,
-                   int TauIndex, int LoopIndex, int Channel, int Type,
+                   const momentum &DirTran, int TauIndex, int LoopIndex,
                    int &Level, int &DiagNum);
+  double Ver4Loop1(const momentum &InL, const momentum &InR,
+                   const momentum &DirTran, int LoopNum, int TauIndex,
+                   int LoopIndex, int Channel, int Type, int &Level,
+                   int &DiagNum);
 
   double _Weight[MaxOrder][MaxDiagNum];
   double _ExtTau[MaxOrder][MaxDiagNum][4];

@@ -81,7 +81,7 @@ void markov::PrintDeBugMCInfo() {
   msg += string(80, '=') + "\n";
   msg += "LoopMom: \n";
   for (int d = 0; d < D; d++) {
-    for (int i = 0; i < Var.CurrGroup->LoopNum; i++)
+    for (int i = 0; i < Var.CurrGroup->Order + 3; i++)
       msg += ToString(Var.LoopMom[i][d]) + ", ";
     msg += "\n";
   }
@@ -89,7 +89,7 @@ void markov::PrintDeBugMCInfo() {
 
   msg += string(80, '=') + "\n";
   msg += "Tau: \n";
-  for (int i = 0; i < Var.CurrGroup->TauNum; i++)
+  for (int i = 0; i < Var.CurrGroup->Order + 1; i++)
     msg += ToString(Var.Tau[i]) + ", ";
 
   msg += "\n";
@@ -243,6 +243,7 @@ void markov::ChangeTau() {
 
 void markov::ChangeMomentum() {
   int LoopIndex = Random.irn(0, Var.CurrGroup->LoopNum - 1);
+  // int LoopIndex = int(Random.urn() * (Var.CurrGroup->Order + 3));
 
   // if loopIndex is a locked loop, skip
   if (Var.CurrGroup->IsLockedLoop[LoopIndex])

@@ -387,6 +387,8 @@ group diag::ReadOneGroup(istream &DiagFile, pool &Pool) {
   ASSERT_ALLWAYS(Group.TauNum <= MaxTauNum,
                  "Tau Number must be smaller than " << MaxTauNum);
 
+  cout << Group.Order << ", " << Group.TauNum << " " << Group.LoopNum << endl;
+
   vector<int> ExtTau = _ExtractNumbers<int>(DiagFile, "ExtTauIndex");
   Group.ExtTauNum = ExtTau.size();
   Group.IsExtTau.fill(false);
