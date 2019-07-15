@@ -361,8 +361,7 @@ double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
   double Prop;
   if (x < 1.0 / 3) {
     // COPYFROMTO(OldMom, NewMom);
-    for (int i = 0; i < D; i++)
-      NewMom[i] = OldMom[i];
+    NewMom = OldMom;
     int dir = Random.irn(0, D - 1);
     double STEP = Para.Beta > 1.0 ? Para.Kf / Para.Beta * 3.0 : Para.Kf;
     NewMom[dir] += STEP * (Random.urn() - 0.5);
@@ -371,8 +370,7 @@ double markov::ShiftK(const momentum &OldMom, momentum &NewMom) {
     double k = OldMom.norm();
     if (k < 1.0e-9) {
       Prop = 0.0;
-      for (int i = 0; i < D; i++)
-        NewMom[i] = OldMom[i];
+      NewMom = OldMom;
     } else {
       const double Lambda = 1.5;
       double knew = k / Lambda + Random.urn() * (Lambda - 1.0 / Lambda) * k;
