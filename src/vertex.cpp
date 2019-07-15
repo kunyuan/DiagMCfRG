@@ -145,7 +145,7 @@ void verQTheta::Update(double Ratio) {
         for (int order = 0; order < MaxOrder; ++order) {
           // double NewValue = 0.0;
           double delta = DiffInteraction[order][scale][angle][qindex] /
-                         Normalization * PhyWeight / 40.0;
+                         Normalization * PhyWeight;
           IntInteraction[order][scale][angle][qindex] =
               IntInteraction[order][scale + 1][angle][qindex] + delta;
         }

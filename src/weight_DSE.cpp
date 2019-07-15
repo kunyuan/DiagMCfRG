@@ -34,7 +34,8 @@ double weight::fRG(int LoopNum) {
     return Ver4Loop(InL, InR, DirTran, LoopNum, 0, 3,
                     0,  // calculate u diagram only
                     -1, // do RG diagram
-                    Level, DiagNum);
+                    Level, DiagNum) /
+           pow(40.0, LoopNum);
   }
 
   //   momentum Internal = Var.LoopMom[3];
@@ -126,6 +127,9 @@ double weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   _Weight[Level][DiagNum] = DiWeight - ExWeight;
   // _Weight[Level][DiagNum] = DiWeight;
 
+  // ASSERT_ALLWAYS(abs(DirTran.norm() - Var.LoopMom[0].norm()) < 1.0e-5,
+  //                "Ext Mom wrong!");
+
   DiagNum += 1;
   return _Weight[Level][DiagNum];
 }
@@ -160,6 +164,7 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
       VerRInL = Internal2;
       VerRInR = InR;
       VerRDiTran = DirTran;
+      SymFactor = 1.0;
     } else if ((Channel == -1 || Channel == 1) && chan == 1) {
       // u diagram
       Internal2 = Internal - DirTran + InL - InR;
@@ -170,6 +175,7 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
       VerRInL = Internal2;
       VerRInR = InR;
       VerRDiTran = Internal2 - Internal;
+      SymFactor = 1.0;
     } else if ((Channel == -1 || Channel == 2) && chan == 2) {
       // s diagram
       Internal2 = InL + InR - Internal;
@@ -180,20 +186,21 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
       VerRInL = Internal2;
       VerRInR = Internal;
       VerRDiTran = Internal2 - OutL;
+      SymFactor = 0.5;
     } else {
       continue;
     }
 
     for (int loop = 0; loop < LoopNum; loop++) {
       int LTauIndex = TauIndex;
-      int RTauIndex = TauIndex + LoopNum + 1 - (loop + 1);
+      int RTauIndex = TauIndex + (loop + 1);
 
       //====================  DIRECT  Diagram =============================
       // left vertex
       int LIndex = NextDiagNum;
       Ver4Loop(VerLInL, VerLInR, VerLDiTran, loop, LTauIndex, LoopIndex + 1,
-               0,  // calculate u, s, t sub-ver-diagram
-               -1, // type -1
+               0, // calculate u, s, t sub-ver-diagram
+               0, // type 0
                NextLevel, NextDiagNum);
       int LDiagNum = NextDiagNum - LIndex;
 
@@ -201,8 +208,8 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
       int RIndex = NextDiagNum;
       Ver4Loop(VerRInL, VerRInR, VerRDiTran, LoopNum - 1 - loop, RTauIndex,
                LoopIndex + 1 + loop,
-               0,  // calculate u, s, t sub-ver-diagram
-               -1, // type -1
+               0, // calculate u, s, t sub-ver-diagram
+               0, // type 0
                NextLevel, NextDiagNum);
       int RDiagNum = NextDiagNum - RIndex;
 
@@ -219,7 +226,6 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
                 _ExtTau[NextLevel][left][INR] - _ExtTau[NextLevel][right][OUTL];
             TauL2R =
                 _ExtTau[NextLevel][right][INL] - _ExtTau[NextLevel][left][OUTR];
-            SymFactor = 1.0;
 
           } else if ((Channel == -1 || Channel == 1) && chan == 1) {
             _ExtTau[Level][DiagNum][INL] = _ExtTau[NextLevel][left][INL];
@@ -231,7 +237,6 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
                 _ExtTau[NextLevel][left][INR] - _ExtTau[NextLevel][right][OUTL];
             TauL2R =
                 _ExtTau[NextLevel][right][INL] - _ExtTau[NextLevel][left][OUTR];
-            SymFactor = 1.0;
           } else if ((Channel == -1 || Channel == 2) && chan == 2) {
             _ExtTau[Level][DiagNum][INL] = _ExtTau[NextLevel][left][INL];
             _ExtTau[Level][DiagNum][OUTL] = _ExtTau[NextLevel][right][OUTL];
@@ -242,7 +247,6 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
                 _ExtTau[NextLevel][left][OUTR] - _ExtTau[NextLevel][right][INR];
             TauL2R =
                 _ExtTau[NextLevel][right][INL] - _ExtTau[NextLevel][left][OUTL];
-            SymFactor = 0.5;
           }
 
           VerWeight = _Weight[NextLevel][left] * _Weight[NextLevel][right];
