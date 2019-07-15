@@ -31,11 +31,22 @@ double weight::fRG(int LoopNum) {
   } else {
     int Level = 0;
     int DiagNum = 0;
-    return Ver4Loop(InL, InR, DirTran, LoopNum, 0, 3,
-                    0,  // calculate u diagram only
-                    -1, // do RG diagram
-                    Level, DiagNum) /
-           pow(40.0, LoopNum);
+    if (LoopNum == 1) {
+      Ver4Loop(InL, InR, DirTran, LoopNum, 0, 3,
+               0,  // calculate u diagram only
+               -1, // do RG diagram
+               Level, DiagNum);
+    } else if (LoopNum == 2) {
+      Ver4Loop(InL, InR, DirTran, LoopNum, 0, 3,
+               0,  // calculate u diagram only
+               -1, // do RG diagram
+               Level, DiagNum, 0);
+    }
+    double Weight = 0.0;
+    for (int diag = 0; diag < DiagNum; diag++)
+      if (_Derivative[Level][diag] == true)
+        Weight += _Weight[Level][diag];
+    return Weight / pow(40.0, LoopNum);
   }
 
   //   momentum Internal = Var.LoopMom[3];
@@ -104,12 +115,12 @@ double weight::fRG(int LoopNum) {
 double weight::Ver4Loop(const momentum &InL, const momentum &InR,
                         const momentum &DirTran, int LoopNum, int TauIndex,
                         int LoopIndex, int Channel, int Type, int &Level,
-                        int &DiagNum) {
+                        int &DiagNum, int LVerOrder) {
   if (LoopNum == 0) {
     return Ver4Loop0(InL, InR, DirTran, TauIndex, LoopIndex, Level, DiagNum);
   } else if (LoopNum >= 1)
     return Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex, Channel,
-                     Type, Level, DiagNum);
+                     Type, Level, DiagNum, LVerOrder);
 }
 
 double weight::Ver4Loop0(const momentum &InL, const momentum &InR,
@@ -126,6 +137,7 @@ double weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   _ExtTau[Level][DiagNum][OUTR] = Var.Tau[TauIndex];
   _Weight[Level][DiagNum] = DiWeight - ExWeight;
   // _Weight[Level][DiagNum] = DiWeight;
+  _Derivative[Level][DiagNum] = false;
 
   // ASSERT_ALLWAYS(abs(DirTran.norm() - Var.LoopMom[0].norm()) < 1.0e-5,
   //                "Ext Mom wrong!");
@@ -137,7 +149,7 @@ double weight::Ver4Loop0(const momentum &InL, const momentum &InR,
 double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
                          const momentum &DirTran, int LoopNum, int TauIndex,
                          int LoopIndex, int Channel, int Type, int &Level,
-                         int &DiagNum) {
+                         int &DiagNum, int LVerOrder) {
 
   momentum Internal = Var.LoopMom[LoopIndex];
   momentum OutL = InL - DirTran;
@@ -191,7 +203,15 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
       continue;
     }
 
-    for (int loop = 0; loop < LoopNum; loop++) {
+    int LVerStart = 0;
+    int LVerEnd = LoopNum;
+    if (LVerOrder >= 0) {
+      LVerStart = LVerOrder;
+      LVerEnd = LVerOrder + 1;
+    }
+    // iterate all possible left vertex order
+
+    for (int loop = LVerStart; loop < LVerEnd; loop++) {
       int LTauIndex = TauIndex;
       int RTauIndex = TauIndex + (loop + 1);
 
@@ -200,8 +220,7 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
       int LIndex = NextDiagNum;
       Ver4Loop(VerLInL, VerLInR, VerLDiTran, loop, LTauIndex, LoopIndex + 1,
                0, // calculate u, s, t sub-ver-diagram
-               0, // type 0
-               NextLevel, NextDiagNum);
+               Type, NextLevel, NextDiagNum);
       int LDiagNum = NextDiagNum - LIndex;
 
       // right vertex
@@ -209,8 +228,7 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
       Ver4Loop(VerRInL, VerRInR, VerRDiTran, LoopNum - 1 - loop, RTauIndex,
                LoopIndex + 1 + loop,
                0, // calculate u, s, t sub-ver-diagram
-               0, // type 0
-               NextLevel, NextDiagNum);
+               Type, NextLevel, NextDiagNum);
       int RDiagNum = NextDiagNum - RIndex;
 
       for (int left = LIndex; left < LIndex + LDiagNum; left++) {
@@ -251,19 +269,26 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
 
           VerWeight = _Weight[NextLevel][left] * _Weight[NextLevel][right];
 
-          if (Type == -1) {
-            // do RG
+          if (Type == -1 && _Derivative[NextLevel][left] == false &&
+              _Derivative[NextLevel][right] == false) {
+            // if both left and right vertex has not yet derivatived, then one
+            // may appy derivative on GG
             GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
                       Fermi.Green(TauR2L, Internal, UP, 2, Var.CurrScale);
             GWeight += Fermi.Green(TauL2R, Internal2, UP, 2, Var.CurrScale) *
                        Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
-          } else {
-            GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
-                      Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
+            _Derivative[Level][DiagNum] = true;
+            _Weight[Level][DiagNum] = GWeight * VerWeight * (-1) * SymFactor;
+            Weight += _Weight[Level][DiagNum];
+            DiagNum++;
           }
-
+          GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
+                    Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
           _Weight[Level][DiagNum] = GWeight * VerWeight * (-1) * SymFactor;
+          _Derivative[Level][DiagNum] =
+              _Derivative[NextLevel][left] | _Derivative[NextLevel][right];
           Weight += _Weight[Level][DiagNum];
+          DiagNum++;
 
           // cout << "Chan:" << chan << endl;
           // cout << TauR2L << " vs " << TauL2R << endl;
@@ -278,7 +303,6 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
           // cout << Internal.norm() << endl;
           // cout << Internal2.norm() << endl;
           // cout << endl;
-          DiagNum++;
         }
         // double VerWeight = VerLWeight[DIRECT] * VerRWeight[DIRECT];
       }
