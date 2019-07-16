@@ -37,89 +37,29 @@ double weight::fRG(int LoopNum) {
                0,  // calculate u diagram only
                -1, // do RG diagram
                Level, DiagNum);
-      Weight = _Weight[Level][0];
+      // Weight = _Weight[Level][0];
     } else if (LoopNum == 2) {
       Ver4Loop(InL, InR, DirTran, LoopNum, 0, 3,
                0,  // calculate u diagram only
                -1, // do RG diagram
-               Level, DiagNum, 1);
-      Weight = _Weight[Level][2];
+               Level, DiagNum, 0);
+      // Weight = _Weight[Level][2];
       // cout << _Weight[Level][0] << ": " << _Weight[Level][1] << ": "
       //      << _Weight[Level][2] << ": " << _Weight[Level][3] << endl;
     }
-    // for (int diag = 0; diag < DiagNum; diag++)
-    //   if (_Derivative[Level][diag] == true) {
-    //     Weight += _Weight[Level][diag];
-    //   }
+    // int count = 0;
+    for (int diag = 0; diag < DiagNum; diag++) {
+      Weight += _Weight[Level][diag][1];
+      // count++;
+    }
+
     // cout << _Weight[Level][0] << ": " << _Weight[Level][1] << ": "
     //      << _Weight[Level][2] << endl;
 
     // if (LoopNum == 2)
-    // cout << count << " diag: " << DiagNum << endl;
-    return Weight / pow(40.0, LoopNum);
+    //   cout << count << " diag: " << DiagNum << endl;
+    return Weight / pow(40.0, LoopNum) * pow(-1, LoopNum - 1);
   }
-
-  //   momentum Internal = Var.LoopMom[3];
-  //   momentum Internal2 = Var.LoopMom[3] + DirTran;
-  //   const momentum &VerLExTran = InL - Internal - DirTran;
-
-  //   const momentum &VerRInL = Internal2;
-  //   const momentum &VerRExTran = Internal - InR;
-
-  //   double Weight = 0.0;
-  //   double VerWeight = 0.0;
-  //   double GWeight = 0.0;
-  //   double TauR2L, TauL2R;
-  //   int DiagIndex = 0;
-  //   int DiagNum = 0;
-  //   int Level = 0;
-  //   for (int loop = 0; loop < LoopNum; loop++) {
-  //     int LTauIndex = 0;
-  //     int RTauIndex = LoopNum + 1 - (loop + 1);
-
-  //     //====================  DIRECT  Diagram =============================
-  //     // left vertex
-  //     int LIndex = DiagNum;
-  //     Ver4Loop(InL, Internal, DirTran, VerLExTran, loop, LTauIndex, 4, Level,
-  //              DiagNum);
-  //     int LDiagNum = DiagNum - LIndex;
-
-  //     // right vertex
-  //     int RIndex = DiagNum;
-  //     Ver4Loop(VerRInL, InR, DirTran, VerRExTran, LoopNum - 1 - loop,
-  //     RTauIndex,
-  //              4 + loop, Level, DiagNum);
-  //     int RDiagNum = DiagNum - RIndex;
-
-  //     for (int left = LIndex; left < LIndex + LDiagNum; left++)
-  //       for (int right = RIndex; right < RIndex + RDiagNum; right++) {
-  //         VerWeight =
-  //             (_Weight[Level][left][DIRECT] - _Weight[Level][left][EXCHANGE])
-  //             *
-  //             (_Weight[Level][right][DIRECT] -
-  //             _Weight[Level][right][EXCHANGE]);
-
-  //         TauR2L = _ExtTau[Level][left][INR] - _ExtTau[Level][right][OUTL];
-  //         TauL2R = _ExtTau[Level][right][INL] - _ExtTau[Level][left][OUTR];
-
-  //         GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
-  //                   Fermi.Green(TauR2L, Internal, UP, 2, Var.CurrScale);
-  //         GWeight += Fermi.Green(TauL2R, Internal2, UP, 2, Var.CurrScale) *
-  //                    Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
-
-  //         Weight += GWeight * VerWeight;
-  //         // cout << TauR2L << " vs " << TauL2R << endl;
-  //         // cout << "deltaT" << Var.Tau[0] << " vs " << Var.Tau[1] << endl;
-
-  //         // cout << VerLWeight[DIRECT] << " ver " << VerRWeight[DIRECT] <<
-  //         endl;
-  //         // cout << VerWeight << ", g: " << GWeight << ", total: " << Weight
-  //         //      << endl;
-  //       }
-  //     // double VerWeight = VerLWeight[DIRECT] * VerRWeight[DIRECT];
-  //   }
-  //   Weight *= pow(-1, LoopNum);
-  //   return Weight;
 }
 
 double weight::Ver4Loop(const momentum &InL, const momentum &InR,
@@ -145,15 +85,15 @@ double weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   _ExtTau[Level][DiagNum][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagNum][INR] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagNum][OUTR] = Var.Tau[TauIndex];
-  _Weight[Level][DiagNum] = DiWeight - ExWeight;
+  _Weight[Level][DiagNum][0] = DiWeight - ExWeight;
+  _Weight[Level][DiagNum][1] = 0.0;
   // _Weight[Level][DiagNum] = DiWeight;
-  _Derivative[Level][DiagNum] = false;
 
   // ASSERT_ALLWAYS(abs(DirTran.norm() - Var.LoopMom[0].norm()) < 1.0e-5,
   //                "Ext Mom wrong!");
 
   DiagNum += 1;
-  return _Weight[Level][DiagNum];
+  return _Weight[Level][DiagNum][0];
 }
 
 double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
@@ -170,11 +110,11 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
   double VerWeight = 0.0;
   double LVerWeight, RVerWeight;
   double GWeight = 0.0;
-  double GWeight1 = 0.0;
+  double GWeightRG = 0.0;
   double TauR2L, TauL2R, SymFactor;
   int DiagIndex = 0;
-  int NextLevel = Level + 1;
-  int NextDiagNum = 0;
+  int nLevel = Level + 1;
+  int nDiagNum = 0;
 
   for (int chan = 0; chan < 3; chan++) {
     if ((Channel == -1 || Channel == 0) && chan == 0) {
@@ -228,182 +168,78 @@ double weight::Ver4Loop1(const momentum &InL, const momentum &InR,
 
       //====================  DIRECT  Diagram =============================
       // left vertex
-      int LIndex = NextDiagNum;
+      int LIndex = nDiagNum;
       Ver4Loop(VerLInL, VerLInR, VerLDiTran, loop, LTauIndex, LoopIndex + 1,
-               1, // calculate u, s, t sub-ver-diagram
-               -1, NextLevel, NextDiagNum);
-      int LDiagNum = NextDiagNum - LIndex;
+               0, // calculate u, s, t sub-ver-diagram
+               Type, nLevel, nDiagNum);
+      int LDiagNum = nDiagNum - LIndex;
 
       // right vertex
-      int RIndex = NextDiagNum;
+      int RIndex = nDiagNum;
       Ver4Loop(VerRInL, VerRInR, VerRDiTran, LoopNum - 1 - loop, RTauIndex,
                LoopIndex + 1 + loop,
                0, // calculate u, s, t sub-ver-diagram
-               Type, NextLevel, NextDiagNum);
-      int RDiagNum = NextDiagNum - RIndex;
+               Type, nLevel, nDiagNum);
+      int RDiagNum = nDiagNum - RIndex;
 
       for (int left = LIndex; left < LIndex + LDiagNum; left++) {
         for (int right = RIndex; right < RIndex + RDiagNum; right++) {
 
           if ((Channel == -1 || Channel == 0) && chan == 0) {
-            _ExtTau[Level][DiagNum][INL] = _ExtTau[NextLevel][left][INL];
-            _ExtTau[Level][DiagNum][OUTL] = _ExtTau[NextLevel][left][OUTL];
-            _ExtTau[Level][DiagNum][INR] = _ExtTau[NextLevel][right][INR];
-            _ExtTau[Level][DiagNum][OUTR] = _ExtTau[NextLevel][right][OUTR];
+            _ExtTau[Level][DiagNum][INL] = _ExtTau[nLevel][left][INL];
+            _ExtTau[Level][DiagNum][OUTL] = _ExtTau[nLevel][left][OUTL];
+            _ExtTau[Level][DiagNum][INR] = _ExtTau[nLevel][right][INR];
+            _ExtTau[Level][DiagNum][OUTR] = _ExtTau[nLevel][right][OUTR];
           } else if ((Channel == -1 || Channel == 1) && chan == 1) {
-            _ExtTau[Level][DiagNum][INL] = _ExtTau[NextLevel][left][INL];
-            _ExtTau[Level][DiagNum][OUTL] = _ExtTau[NextLevel][right][OUTR];
-            _ExtTau[Level][DiagNum][INR] = _ExtTau[NextLevel][right][INR];
-            _ExtTau[Level][DiagNum][OUTR] = _ExtTau[NextLevel][left][OUTL];
+            _ExtTau[Level][DiagNum][INL] = _ExtTau[nLevel][left][INL];
+            _ExtTau[Level][DiagNum][OUTL] = _ExtTau[nLevel][right][OUTR];
+            _ExtTau[Level][DiagNum][INR] = _ExtTau[nLevel][right][INR];
+            _ExtTau[Level][DiagNum][OUTR] = _ExtTau[nLevel][left][OUTL];
           } else if ((Channel == -1 || Channel == 2) && chan == 2) {
-            _ExtTau[Level][DiagNum][INL] = _ExtTau[NextLevel][left][INL];
-            _ExtTau[Level][DiagNum][OUTL] = _ExtTau[NextLevel][right][OUTL];
-            _ExtTau[Level][DiagNum][INR] = _ExtTau[NextLevel][left][INR];
-            _ExtTau[Level][DiagNum][OUTR] = _ExtTau[NextLevel][right][OUTR];
+            _ExtTau[Level][DiagNum][INL] = _ExtTau[nLevel][left][INL];
+            _ExtTau[Level][DiagNum][OUTL] = _ExtTau[nLevel][right][OUTL];
+            _ExtTau[Level][DiagNum][INR] = _ExtTau[nLevel][left][INR];
+            _ExtTau[Level][DiagNum][OUTR] = _ExtTau[nLevel][right][OUTR];
           }
 
-          VerWeight = _Weight[NextLevel][left] * _Weight[NextLevel][right];
-
-          // if (Type == -1 && _Derivative[NextLevel][left] == false &&
-          //     _Derivative[NextLevel][right] == false) {
-          // if both left and right vertex has not yet derivatived, then one
-          // may appy derivative on GG
-          // if (Level == 0 && LoopNum == 2) {
-          //   ASSERT_ALLWAYS(DiagNum == 1, "diagnum1: " << DiagNum);
-          // }
-          // }
-          // if (Level == 0 && LoopNum == 2) {
-          //   continue;
-          // }
-          // if (Level == 0 && LoopNum == 2) {
-          //   ASSERT_ALLWAYS(DiagNum == 0 || DiagNum == 2,
-          //                  "diagnum2: " << DiagNum);
-          // }
-          if ((LoopNum == 2 && left == 0) || LoopNum == 1) {
-            if ((Channel == -1 || Channel == 2) && chan == 2) {
-              double Tau1 = _ExtTau[NextLevel][right][INR] -
-                            _ExtTau[NextLevel][left][OUTR];
-              double Tau2 = _ExtTau[NextLevel][right][INL] -
-                            _ExtTau[NextLevel][left][OUTL];
-              GWeight = Fermi.Green(Tau2, Internal2, UP, 0, Var.CurrScale) *
-                        Fermi.Green(Tau1, Internal, UP, 0, Var.CurrScale);
-            } else {
-              TauR2L = _ExtTau[NextLevel][left][INR] -
-                       _ExtTau[NextLevel][right][OUTL];
-              TauL2R = _ExtTau[NextLevel][right][INL] -
-                       _ExtTau[NextLevel][left][OUTR];
-              // cout << TauR2L << ":1 " << TauL2R << endl;
-              GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
-                        Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
-            }
-            _Weight[Level][DiagNum] = GWeight * VerWeight * (-1) * SymFactor;
-            if (_Derivative[NextLevel][left] == true ||
-                _Derivative[NextLevel][right] == true)
-              _Derivative[Level][DiagNum] = true;
-            else
-              _Derivative[Level][DiagNum] = false;
-
-            // if (LoopNum == 2 && left == 0) {
-            // Weight += _Weight[Level][DiagNum];
-            // _Weight[Level][DiagNum] = _Weight[Level][DiagNum - 1];
-            // _Weight[Level][DiagNum] = 0.0;
-            // }
-            DiagNum++;
+          if ((Channel == -1 || Channel == 2) && chan == 2) {
+            TauR2L = _ExtTau[nLevel][right][INR] - _ExtTau[nLevel][left][OUTR];
+            TauL2R = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTL];
+          } else {
+            TauR2L = _ExtTau[nLevel][left][INR] - _ExtTau[nLevel][right][OUTL];
+            TauL2R = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTR];
           }
 
-          if ((LoopNum == 2 && left == 0) || LoopNum == 1) {
-            if ((Channel == -1 || Channel == 2) && chan == 2) {
-              double Tau1 = _ExtTau[NextLevel][right][INR] -
-                            _ExtTau[NextLevel][left][OUTR];
-              double Tau2 = _ExtTau[NextLevel][right][INL] -
-                            _ExtTau[NextLevel][left][OUTL];
-              GWeight = Fermi.Green(Tau2, Internal2, UP, 0, Var.CurrScale) *
-                        Fermi.Green(Tau1, Internal, UP, 2, Var.CurrScale);
-              GWeight += Fermi.Green(Tau2, Internal2, UP, 2, Var.CurrScale) *
-                         Fermi.Green(Tau1, Internal, UP, 0, Var.CurrScale);
-            } else {
-              TauR2L = _ExtTau[NextLevel][left][INR] -
-                       _ExtTau[NextLevel][right][OUTL];
-              TauL2R = _ExtTau[NextLevel][right][INL] -
-                       _ExtTau[NextLevel][left][OUTR];
-              // cout << TauR2L << ":1 " << TauL2R << "loop: " << LoopNum <<
-              // endl; cout<<_ExtTau[NextLevel][Left][]]
-              GWeight = 0.0;
-              GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
+          _Weight[Level][DiagNum][0] = 0.0;
+          _Weight[Level][DiagNum][1] = 0.0;
+
+          GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
+                    Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
+          VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
+          _Weight[Level][DiagNum][0] += GWeight * VerWeight * (-1) * SymFactor;
+          Weight += _Weight[Level][DiagNum][0];
+
+          if (Type == -1) {
+            GWeightRG = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
                         Fermi.Green(TauR2L, Internal, UP, 2, Var.CurrScale);
-              GWeight += Fermi.Green(TauL2R, Internal2, UP, 2, Var.CurrScale) *
+            GWeightRG += Fermi.Green(TauL2R, Internal2, UP, 2, Var.CurrScale) *
                          Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
-            }
-            VerWeight = _Weight[NextLevel][left] * _Weight[NextLevel][right];
-            _Derivative[Level][DiagNum] = true;
-            _Weight[Level][DiagNum] = GWeight * VerWeight * (-1) * SymFactor;
-            // _Weight[Level][DiagNum] = _Weight[Level][DiagNum - 1];
-            // Weight += _Weight[Level][DiagNum];
-            DiagNum++;
+
+            // if both left and right vertex do not contain derivative, then
+            // GG can contain derivative
+            VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
+            _Weight[Level][DiagNum][1] +=
+                GWeightRG * VerWeight * (-1) * SymFactor;
+            Weight += _Weight[Level][DiagNum][1];
+
+            VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][1];
+            VerWeight += _Weight[nLevel][left][1] * _Weight[nLevel][right][0];
+            _Weight[Level][DiagNum][1] +=
+                GWeight * VerWeight * (-1) * SymFactor;
+            Weight += _Weight[Level][DiagNum][1];
           }
-          if ((LoopNum == 2 && left == 1)) {
-            if ((Channel == -1 || Channel == 2) && chan == 2) {
-              double Tau1 = _ExtTau[NextLevel][right][INR] -
-                            _ExtTau[NextLevel][left][OUTR];
-              double Tau2 = _ExtTau[NextLevel][right][INL] -
-                            _ExtTau[NextLevel][left][OUTL];
-              GWeight = Fermi.Green(Tau2, Internal2, UP, 0, Var.CurrScale) *
-                        Fermi.Green(Tau1, Internal, UP, 0, Var.CurrScale);
-            } else {
-              TauR2L = _ExtTau[NextLevel][left][INR] -
-                       _ExtTau[NextLevel][right][OUTL];
-              TauL2R = _ExtTau[NextLevel][right][INL] -
-                       _ExtTau[NextLevel][left][OUTR];
-              cout << TauR2L << ":2 " << TauL2R << "loop: " << LoopNum << endl;
-              GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
-                        Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
-            }
-            _Weight[Level][DiagNum] = GWeight * VerWeight * (-1) * SymFactor;
-            if (_Derivative[NextLevel][left] == true ||
-                _Derivative[NextLevel][right] == true)
-              _Derivative[Level][DiagNum] = true;
-            else
-              _Derivative[Level][DiagNum] = false;
-
-            // if (LoopNum == 2 && left == 0) {
-            // Weight += _Weight[Level][DiagNum];
-            // _Weight[Level][DiagNum] = _Weight[Level][DiagNum - 1];
-            // _Weight[Level][DiagNum] = 0.0;
-            // }
-            DiagNum++;
-          }
-
-          // if (Level == 0 && LoopNum == 2) {
-          //   cout << DiagNum << endl;
-          // }
-          // ASSERT_ALLWAYS(DiagNum == 0 || DiagNum == 2,
-          //                "diagnum2: " << DiagNum);
-          // cout << _Derivative[Level][0] << "," << _Derivative[Level][1] <<
-          // ","
-          //      << _Derivative[Level][2] << endl;
-          // cout << _Weight[Level][0] << "," << _Weight[Level][1] << ","
-          //      << _Weight[Level][2] << endl;
-          //   VerWeight = 0.0;
-          //   _Weight[Level][0] = GWeight * VerWeight * (-1) * SymFactor;
-          //   _Weight[Level][1] = GWeight * VerWeight * (-1) * SymFactor;
-          // }
-
-          // cout << "Chan:" << chan << endl;
-          // cout << TauR2L << " vs " << TauL2R << endl;
-          // // cout << "deltaT" << Var.Tau[0] << " vs " << Var.Tau[1] <<
-          // endl;
-
-          // cout << VerWeight << ", g: " << GWeight << ", total: " << Weight
-          //      << endl;
-          // cout << "Order: " << Var.CurrGroup->Order << endl;
-          // cout << "LoopNum: " << LoopNum << endl;
-          // cout << Var.LoopMom[1].norm() << endl;
-          // cout << Var.LoopMom[3].norm() << endl;
-          // cout << Internal.norm() << endl;
-          // cout << Internal2.norm() << endl;
-          // cout << endl;
         }
-        // double VerWeight = VerLWeight[DIRECT] * VerRWeight[DIRECT];
+        DiagNum++;
       }
     }
   }
