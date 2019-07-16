@@ -197,6 +197,11 @@ void MonteCarlo() {
         // ;
       }
 
+      // if (Markov.Weight.Var.CurrScale > Para.UVScale) {
+      //   cout << "Scale wrong!" << Markov.Weight.Var.CurrScale << endl;
+      //   ABORT("wrong");
+      // }
+
       // if (Para.Counter == 140737351830544) {
       //   cout << "After: " << Para.Counter << endl;
       //   Markov.PrintDeBugMCInfo();

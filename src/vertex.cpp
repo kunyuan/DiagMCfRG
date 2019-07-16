@@ -113,6 +113,8 @@ void verQTheta::Measure(const momentum &InL, const momentum &InR,
   if (Order == 0) {
     Normalization += WeightFactor;
   } else {
+    if (Scale > Para.UVScale)
+      return;
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
     int ScaleIndex = Scale2Index(Scale);
     // cout << AngleIndex << endl;
