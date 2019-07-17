@@ -96,7 +96,7 @@ private:
   int Ver4Loop(const momentum &InL, const momentum &InR,
                const momentum &DirTran, int LoopNum, int TauIndex,
                int LoopIndex, int DiagIndex, int Level,
-               int Type,          //-1: RG derivative
+               int RG = 0,        // 1: RG derivative
                int Channel = -1,  //-1: all channel, 0: t, 1: u, 2: s
                int LVerOrder = -1 // order of left vertex
   );
@@ -107,7 +107,7 @@ private:
   int Ver4Loop1(momentum InL, momentum InR, const momentum &DirTran,
                 int LoopNum, int TauIndex, int LoopIndex, int DiagIndex,
                 int Level,
-                int Type,           //-1: RG derivative
+                int RG = 0,         // 1: RG derivative
                 int Channel = -1,   //-1: all channel, 0: t, 1: u, 2: s
                 int LVerOrder = -1, // order of left vertex
                 int Projection = 0  // 1: projection, other: no projection

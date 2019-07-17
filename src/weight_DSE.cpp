@@ -34,15 +34,15 @@ double weight::fRG(int LoopNum) {
     double Weight = 0.0;
     if (LoopNum == 1) {
       DiagIndex = Ver4Loop(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
-                           -1, // do RG diagram
-                           0   // calculate u diagram only
+                           1, // do RG diagram
+                           0  // calculate u diagram only
       );
       // Weight = _Weight[Level][0];
     } else if (LoopNum == 2) {
       DiagIndex = Ver4Loop(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
-                           -1, // do RG diagram
-                           0,  // calculate u diagram only
-                           1   // LverOrder
+                           1, // do RG diagram
+                           0, // calculate u diagram only
+                           1  // LverOrder
       );
       // Weight = _Weight[Level][2];
       // cout << _Weight[Level][0] << ": " << _Weight[Level][1] << ": "
@@ -99,13 +99,13 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
 
 int weight::Ver4Loop1(momentum InL, momentum InR, const momentum &DirTran,
                       int LoopNum, int TauIndex, int LoopIndex, int DiagIndex,
-                      int Level, int Type, int Channel, int LVerOrder,
+                      int Level, int RG, int Channel, int LVerOrder,
                       int Projection) {
 
   if (Projection == 1) {
     InL = InL * (Para.Kf / InL.norm());
     InR = InR * (Para.Kf / InR.norm());
-    if (Type == -1)
+    if (RG == 1)
       // derivative of a projection is zero
       return 0;
   }
@@ -177,7 +177,7 @@ int weight::Ver4Loop1(momentum InL, momentum InR, const momentum &DirTran,
       // left vertex
       int LIndex = nDiagIndex;
       nDiagIndex = Ver4Loop(VerLInL, VerLInR, VerLDiTran, loop, LTauIndex,
-                            LoopIndex + 1, nDiagIndex, nLevel, Type,
+                            LoopIndex + 1, nDiagIndex, nLevel, RG,
                             2 // calculate u, s, t sub-ver-diagram
       );
       int LDiagIndex = nDiagIndex;
@@ -186,7 +186,7 @@ int weight::Ver4Loop1(momentum InL, momentum InR, const momentum &DirTran,
       int RIndex = LDiagIndex;
       nDiagIndex =
           Ver4Loop(VerRInL, VerRInR, VerRDiTran, LoopNum - 1 - loop, RTauIndex,
-                   LoopIndex + 1 + loop, nDiagIndex, nLevel, Type,
+                   LoopIndex + 1 + loop, nDiagIndex, nLevel, RG,
                    0 // calculate u, s, t sub-ver-diagram
           );
       int RDiagIndex = nDiagIndex;
@@ -238,7 +238,7 @@ int weight::Ver4Loop1(momentum InL, momentum InR, const momentum &DirTran,
               GWeight * VerWeight * (-1) * SymFactor;
           Weight += _Weight[Level][DiagIndex][0];
 
-          if (Type == -1) {
+          if (RG == 1) {
             GWeightRG = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
                         Fermi.Green(TauR2L, Internal, UP, 2, Var.CurrScale);
             GWeightRG += Fermi.Green(TauL2R, Internal2, UP, 2, Var.CurrScale) *
