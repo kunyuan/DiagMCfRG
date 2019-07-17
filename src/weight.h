@@ -95,18 +95,25 @@ private:
   double fRG(int LoopNum);
   int Ver4Loop(const momentum &InL, const momentum &InR,
                const momentum &DirTran, int LoopNum, int TauIndex,
-               int LoopIndex, int Level, int Channel, int Type, int DiagIndex,
-               int LVerOrder = -1);
+               int LoopIndex, int DiagIndex, int Level,
+               int Type,          //-1: RG derivative
+               int Channel = -1,  //-1: all channel, 0: t, 1: u, 2: s
+               int LVerOrder = -1 // order of left vertex
+  );
   int Ver4Loop0(const momentum &InL, const momentum &InR,
                 const momentum &DirTran, int TauIndex, int LoopIndex, int Level,
                 int DiagIndex);
-  int Ver4Loop1(const momentum &InL, const momentum &InR,
-                const momentum &DirTran, int LoopNum, int TauIndex,
-                int LoopIndex, int Level, int Channel, int Type, int DiagIndex,
-                int LVerOrder = -1);
+
+  int Ver4Loop1(momentum InL, momentum InR, const momentum &DirTran,
+                int LoopNum, int TauIndex, int LoopIndex, int DiagIndex,
+                int Level,
+                int Type,           //-1: RG derivative
+                int Channel = -1,   //-1: all channel, 0: t, 1: u, 2: s
+                int LVerOrder = -1, // order of left vertex
+                int Projection = 0  // 1: projection, other: no projection
+  );
 
   double _Weight[MaxOrder][MaxDiagNum][2];
-  int _Diff[MaxOrder][MaxDiagNum];
   double _ExtTau[MaxOrder][MaxDiagNum][4];
   // double Ver4Loop2();
   // double Ver6Loop1();
