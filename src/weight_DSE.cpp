@@ -60,7 +60,7 @@ double weight::fRG(int LoopNum) {
 
     // if (LoopNum == 2)
     //   cout << count << " diag: " << DiagIndex << endl;
-    return Weight / pow(40.0, LoopNum) * pow(-1, LoopNum - 1);
+    return Weight / pow(40.0, LoopNum);
   }
 }
 
@@ -122,6 +122,7 @@ int weight::Ver4Operator(const momentum &InL, const momentum &InR,
                           VerType,   // vertex type
                           -1, -1);
   }
+  return DiagIndex;
 }
 
 int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
@@ -130,8 +131,8 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   //   return VerQTheta.Interaction(InL, InR, DirTran, 0, Var.CurrScale) -
   //   VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
   momentum ExTran = InR + DirTran - InL;
-  double DiWeight = VerQTheta.Interaction(InL, InR, DirTran, 0, Var.CurrScale);
-  double ExWeight = VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
+  double DiWeight = -VerQTheta.Interaction(InL, InR, DirTran, 0, Var.CurrScale);
+  double ExWeight = -VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
   _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];
@@ -194,7 +195,7 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
       VerRInL = Internal2;
       VerRInR = InR;
       VerRDiTran = DirTran;
-      SymFactor *= 1.0;
+      SymFactor *= -1.0;
     } else if ((Channel == -1 || Channel == 1) && chan == 1) {
       // u diagram
       if (VerType == 1) {
@@ -217,7 +218,7 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
       VerRInL = Internal2;
       VerRInR = InR;
       VerRDiTran = Internal2 - Internal;
-      SymFactor *= -1.0;
+      SymFactor *= 1.0;
     } else if ((Channel == -1 || Channel == 2) && chan == 2) {
       // s diagram
       Internal2 = InL + InR - Internal;
@@ -228,7 +229,7 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
       VerRInL = Internal2;
       VerRInR = Internal;
       VerRDiTran = Internal2 - OutL;
-      SymFactor *= -0.5;
+      SymFactor *= 0.5;
     } else {
       continue;
     }
@@ -249,7 +250,7 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
       int LIndex = nDiagIndex;
       nDiagIndex = Ver4Loop(VerLInL, VerLInR, VerLDiTran, loop, LTauIndex,
                             LoopIndex + 1, nDiagIndex, nLevel, RG,
-                            0, // calculate u, s, t sub-ver-diagram
+                            1, // calculate u, s, t sub-ver-diagram
                             LVerType);
       int LDiagIndex = nDiagIndex;
 
@@ -305,8 +306,7 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
           GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
                     Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
           VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
-          _Weight[Level][DiagIndex][0] +=
-              GWeight * VerWeight * (-1) * SymFactor;
+          _Weight[Level][DiagIndex][0] += GWeight * VerWeight * SymFactor;
           Weight += _Weight[Level][DiagIndex][0];
 
           if (RG == 1) {
@@ -318,14 +318,12 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
             // if both left and right vertex do not contain derivative, then
             // GG can contain derivative
             VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
-            _Weight[Level][DiagIndex][1] +=
-                GWeightRG * VerWeight * (-1) * SymFactor;
+            _Weight[Level][DiagIndex][1] += GWeightRG * VerWeight * SymFactor;
             Weight += _Weight[Level][DiagIndex][1];
 
             VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][1];
             VerWeight += _Weight[nLevel][left][1] * _Weight[nLevel][right][0];
-            _Weight[Level][DiagIndex][1] +=
-                GWeight * VerWeight * (-1) * SymFactor;
+            _Weight[Level][DiagIndex][1] += GWeight * VerWeight * SymFactor;
             Weight += _Weight[Level][DiagIndex][1];
           }
         }
