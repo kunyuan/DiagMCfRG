@@ -96,21 +96,33 @@ private:
   int Ver4Loop(const momentum &InL, const momentum &InR,
                const momentum &DirTran, int LoopNum, int TauIndex,
                int LoopIndex, int DiagIndex, int Level,
-               int RG = 0,        // 1: RG derivative
-               int Channel = -1,  //-1: all channel, 0: t, 1: u, 2: s
-               int LVerOrder = -1 // order of left vertex
+               int RG = 0,         // 1: RG derivative
+               int Channel = -1,   //-1: all channel, 0: t, 1: u, 2: s
+               int LVerOrder = -1, // order of left vertex
+               int VerType = 0     // 0: normal, 1: projected, 2: diff
   );
+
+  int Ver4Operator(const momentum &InL, const momentum &InR,
+                   const momentum &DirTran, int LoopNum, int TauIndex,
+                   int LoopIndex, int DiagIndex, int Level,
+                   int RG = 0,         // 1: RG derivative
+                   int Channel = -1,   //-1: all channel, 0: t, 1: u, 2: s
+                   int LVerOrder = -1, // order of left vertex
+                   int VerType = 0     // 0: normal, 1: projected, 2: diff
+  );
+
   int Ver4Loop0(const momentum &InL, const momentum &InR,
                 const momentum &DirTran, int TauIndex, int LoopIndex, int Level,
                 int DiagIndex);
 
-  int Ver4Loop1(momentum InL, momentum InR, const momentum &DirTran,
-                int LoopNum, int TauIndex, int LoopIndex, int DiagIndex,
-                int Level,
+  int Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
+                int TauIndex, int LoopIndex, int DiagIndex, int Level,
                 int RG = 0,         // 1: RG derivative
                 int Channel = -1,   //-1: all channel, 0: t, 1: u, 2: s
                 int LVerOrder = -1, // order of left vertex
-                int Projection = 0  // 1: projection, other: no projection
+                int VerType = 0,    // 1: projection, other: no projection
+                int LVerType = 0,   // 0: normal, 1: projected, 2: diff
+                int RVerType = 0    // 0: normal, 1: projected, 2: diff
   );
 
   double _Weight[MaxOrder][MaxDiagNum][2];
