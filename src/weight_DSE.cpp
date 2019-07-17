@@ -42,7 +42,8 @@ double weight::fRG(int LoopNum) {
       DiagIndex = Ver4Loop(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
                            1, // do RG diagram
                            0, // calculate u diagram only
-                           1  // LverOrder
+                           1, // LverOrder
+                           -1 // VerType
       );
       // Weight = _Weight[Level][2];
       // cout << _Weight[Level][0] << ": " << _Weight[Level][1] << ": "
@@ -76,31 +77,30 @@ int weight::Ver4Loop(const momentum &InL, const momentum &InR,
                         0  // no projection
     );
   } else if (LoopNum == 2) {
-    if (VerType == 0 || VerType == 1) {
-      // for normal vertex or projected vertex, just return
+    // for normal vertex or projected vertex, just return
+    if (VerType == -1) {
       DiagIndex = Ver4Operator(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
                                DiagIndex, Level, RG, Channel,
-                               0,      // LVertex order 0
-                               VerType // vertex type
-      );
-      return DiagIndex;
+                               LVerOrder, // LVertex order 0
+                               -1,        // vertex type
+                               -1, -1);
     }
+    return DiagIndex;
   }
 }
 
 int weight::Ver4Operator(const momentum &InL, const momentum &InR,
                          const momentum &DirTran, int LoopNum, int TauIndex,
                          int LoopIndex, int DiagIndex, int Level, int RG,
-                         int Channel, int LVerOrder, int VerType) {
+                         int Channel, int LVerOrder, int VerType, int LVerType,
+                         int RVerType) {
   if (VerType == 0 || VerType == 1) {
     // for normal vertex or projected vertex, just return
     DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
                           DiagIndex, Level, RG, Channel,
                           LVerOrder, // LVertex order 0
                           VerType,   // vertex type
-                          0,         // normal left vertex
-                          2          // diff right vertex
-    );
+                          LVerType, RVerType);
     return DiagIndex;
   } else if (VerType == 2) {
     // do vertex diff
@@ -108,17 +108,19 @@ int weight::Ver4Operator(const momentum &InL, const momentum &InR,
                           DiagIndex, Level, RG, Channel,
                           LVerOrder, // LVertex order 0
                           0,         // normal vertex type
-                          0,         // normal left vertex
-                          2          // diff right vertex
-    );
+                          LVerType, RVerType);
     DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
                           DiagIndex, Level, RG, Channel,
                           LVerOrder, // LVertex order 0
                           1,         // projected vertex
-                          0,         // normal left vertex
-                          2          // diff right vertex
-    );
+                          LVerType, RVerType);
     return DiagIndex;
+  } else if (VerType == -1) {
+    DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+                          DiagIndex, Level, RG, Channel,
+                          LVerOrder, // LVertex order 0
+                          VerType,   // vertex type
+                          -1, -1);
   }
 }
 
@@ -168,8 +170,11 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
   }
 
   momentum Internal = Var.LoopMom[LoopIndex];
-  momentum OutL, OutR, Internal2, VerLInL, VerLInR, VerLDiTran, VerRInL,
-      VerRInR, VerRDiTran;
+  momentum Internal2, VerLInL, VerLInR, VerLDiTran, VerRInL, VerRInR,
+      VerRDiTran;
+
+  momentum OutL = InL - DirTran;
+  momentum OutR = InR + DirTran;
 
   for (int chan = 0; chan < 3; chan++) {
     if (VerType == 1 && chan == 2)
@@ -180,8 +185,6 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
       if (VerType == 1) {
         InL = InL * (Para.Kf / InL.norm());
         InR = InR * (Para.Kf / InR.norm());
-        OutL = InL - DirTran;
-        OutR = InR + DirTran;
       }
       Internal2 = Internal + DirTran;
       VerLInL = InL;
@@ -246,7 +249,7 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
       int LIndex = nDiagIndex;
       nDiagIndex = Ver4Loop(VerLInL, VerLInR, VerLDiTran, loop, LTauIndex,
                             LoopIndex + 1, nDiagIndex, nLevel, RG,
-                            2, // calculate u, s, t sub-ver-diagram
+                            0, // calculate u, s, t sub-ver-diagram
                             LVerType);
       int LDiagIndex = nDiagIndex;
 
