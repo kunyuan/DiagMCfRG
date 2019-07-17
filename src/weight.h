@@ -93,20 +93,20 @@ private:
   verfunc VerFunc;
 
   double fRG(int LoopNum);
-  double Ver4Loop(const momentum &InL, const momentum &InR,
-                  const momentum &DirTran, int LoopNum, int TauIndex,
-                  int LoopIndex, int Channel, int Type, int Level, int &DiagNum,
-                  int LVerOrder = -1);
-  double Ver4Loop0(const momentum &InL, const momentum &InR,
-                   const momentum &DirTran, int TauIndex, int LoopIndex,
-                   int Level, int &DiagNum);
-  double Ver4Loop1(const momentum &InL, const momentum &InR,
-                   const momentum &DirTran, int LoopNum, int TauIndex,
-                   int LoopIndex, int Channel, int Type, int Level,
-                   int &DiagNum, int LVerOrder = -1);
+  int Ver4Loop(const momentum &InL, const momentum &InR,
+               const momentum &DirTran, int LoopNum, int TauIndex,
+               int LoopIndex, int Level, int Channel, int Type, int DiagIndex,
+               int LVerOrder = -1);
+  int Ver4Loop0(const momentum &InL, const momentum &InR,
+                const momentum &DirTran, int TauIndex, int LoopIndex, int Level,
+                int DiagIndex);
+  int Ver4Loop1(const momentum &InL, const momentum &InR,
+                const momentum &DirTran, int LoopNum, int TauIndex,
+                int LoopIndex, int Level, int Channel, int Type, int DiagIndex,
+                int LVerOrder = -1);
 
   double _Weight[MaxOrder][MaxDiagNum][2];
-  // int _Diff[MaxOrder][MaxDiagNum];
+  int _Diff[MaxOrder][MaxDiagNum];
   double _ExtTau[MaxOrder][MaxDiagNum][4];
   // double Ver4Loop2();
   // double Ver6Loop1();
