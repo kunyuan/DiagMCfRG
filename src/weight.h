@@ -139,18 +139,13 @@ private:
                 const momentum &DirTran, int TauIndex, int LoopIndex, int Level,
                 int DiagIndex);
 
-  int Ver4Loop1(
-      momentum InL, momentum InR, momentum DirTran, int LoopNum, int TauIndex,
-      int LoopIndex, int DiagIndex, int Level,
-      int RG = 0,         // 1: RG derivative
-      int Channel = -1,   //-1: all channel, 0: t, 1: u, 2: s
-      int LVerOrder = -1, // order of left vertex
-      int VerType = -1,   // -1: normal, 0: regularized, 1: projected, 2: diff
-      int LVerType = -1,  // -1: normal, 0: regularized, 1: projected, 2: diff
-      int RVerType = -1,  // -1: normal, 0: regularized, 1: projected, 2: diff
-      int SubtractChannel = -1, // subtract certain channel
-      int IsPenguin = 0         // 0: not penguin diagram, 1: penguin diagram
-  );
+  int OneLoop(const momentum &InL, const momentum &InR, const momentum &DirTran,
+              int LoopNum, int LVerLoopNum, int TauIndex, int LoopIndex,
+              int DiagIndex, int Level,
+              bool *Channel, // three flags, calculate t, u, s or not
+              int *VerType,  // -1: normal, 0: regularized, 1: projected, 2:
+                             // diff; three number: ver, leftver, rightver
+              bool IsPenguin = false);
 
   double _Weight[MaxOrder][MaxDiagNum][2];
   double _ExtTau[MaxOrder][MaxDiagNum][4];

@@ -226,11 +226,15 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   return DiagIndex;
 }
 
-int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
-                      int TauIndex, int LoopIndex, int DiagIndex, int Level,
-                      int RG, int Channel, int LVerOrder, int VerType,
-                      int LVerType, int RVerType, int SubtractChannel,
-                      int IsPenguin) {
+int weight::OneLoop(
+    const momentum &InL, const momentum &InR, const momentum &DirTran,
+    int LoopNum, int LVerLoopNum, int TauIndex, int LoopIndex, int DiagIndex,
+    int Level,
+    bool *Channel, // three flags, calculate t, u, s or not
+    int *VerType,  // -1: normal, 0: regularized, 1: projected, 2:
+                   // diff; three number: ver, leftver, rightver
+    bool IsPenguin = false) {
+
   double Weight = 0.0;
   double VerWeight = 0.0;
   double LVerWeight, RVerWeight;
@@ -241,67 +245,63 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
   int nLevel = Level + 1;
   int nDiagIndex = 0;
 
-  if (VerType == 1) {
+  if (VerType[0] == 1)
     // do projection
     SymFactor = -1.0; // projection always comes with a minus sign
-    if (RG == 1)
-      // derivative of a projection is zero
-      return 0;
-  }
 
-  momentum Internal = Var.LoopMom[LoopIndex];
+  momentum Internal = Var.LoopMom[LoopIndex + LVerLoopNum];
   momentum Internal2, VerLInL, VerLInR, VerLDiTran, VerRInL, VerRInR,
-      VerRDiTran;
-
-  momentum OutL = InL - DirTran;
-  momentum OutR = InR + DirTran;
+      VerRDiTran, OutL, OutR;
 
   for (int chan = 0; chan < 3; chan++) {
-    if (SubtractChannel == chan)
-      return;
-    if (VerType == 1 && chan == 2)
-      // projection is non-zero only for t and u channel
+    if (!Channel[chan])
       continue;
-    if ((Channel == -1 || Channel == 0) && chan == 0) {
+    switch (chan) {
+    case 0: {
       // t diagram
-      if (VerType == 1) {
-        InL = InL * (Para.Kf / InL.norm());
-        InR = InR * (Para.Kf / InR.norm());
+      if (VerType[0] == 1) {
+        VerLInL = InL * (Para.Kf / InL.norm());
+        VerRInR = InR * (Para.Kf / InR.norm());
+      } else {
+        VerLInL = InL;
+        VerRInR = InR;
       }
-      Internal2 = Internal + DirTran;
-      VerLInL = InL;
-      VerLInR = Internal;
+      Internal2 = DirTran - Internal;
+      VerLInR = Internal * (-1.0);
       VerLDiTran = DirTran;
 
       VerRInL = Internal2;
-      VerRInR = InR;
       VerRDiTran = DirTran;
       SymFactor *= -1.0;
-    } else if ((Channel == -1 || Channel == 1) && chan == 1) {
+    }
+    case 1: {
       // u diagram
-      if (VerType == 1) {
-        // do projection
-        momentum OldInL = InL;
-        momentum OldInR = InR;
-        InL = InL * (Para.Kf / InL.norm());
-        InR = InR * (Para.Kf / InR.norm());
-        // very important to change DirTran so that the exchange momentum does
-        // not change after the projection
-        DirTran = DirTran - OldInL + OldInR + InL - InR;
-        OutL = InL - DirTran;
-        OutR = InR + DirTran;
+      if (VerType[0] == 1) {
+        VerLInL = InL * (Para.Kf / InL.norm());
+        VerRInR = InR * (Para.Kf / InR.norm());
+        Internal2 = InL - InR - DirTran - Internal;
+        // after the projection, the exchange transfer momentum
+        // should remain the same
+      } else {
+        VerLInL = InL;
+        VerRInR = InR;
+        Internal2 = InL - InR - DirTran - Internal;
       }
-      Internal2 = Internal - DirTran + InL - InR;
-      VerLInL = InL;
-      VerLInR = Internal;
-      VerLDiTran = InL - OutR;
+      VerLInR = Internal * (-1.0);
+      VerLDiTran = Internal2 - Internal;
 
       VerRInL = Internal2;
-      VerRInR = InR;
-      VerRDiTran = Internal2 - Internal;
+      VerRDiTran = VerLDiTran;
       SymFactor *= 1.0;
-    } else if ((Channel == -1 || Channel == 2) && chan == 2) {
+    }
+    case 2: {
+      if (VerType[0] == 1)
+        // projection is non-zero only for t and u channel
+        continue;
       // s diagram
+
+      // OutL = InL - DirTran;
+      // OutR = InR + DirTran;
       Internal2 = InL + InR - Internal;
       VerLInL = InL;
       VerLInR = InR;
@@ -311,8 +311,7 @@ int weight::Ver4Loop1(momentum InL, momentum InR, momentum DirTran, int LoopNum,
       VerRInR = Internal;
       VerRDiTran = Internal2 - OutL;
       SymFactor *= 0.5;
-    } else {
-      continue;
+    }
     }
 
     int LVerStart = 0;
