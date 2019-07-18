@@ -113,6 +113,28 @@ private:
       int RVerType = -1   // -1: normal, 0: regularized, 1: projected, 2: diff
   );
 
+  int Bubble(
+      const momentum &InL, const momentum &InR, const momentum &DirTran,
+      int LoopNum, int TauIndex, int LoopIndex, int DiagIndex, int Level,
+      int RG = 0,         // 1: RG derivative
+      int Channel = -1,   //-1: all channel, 0: t, 1: u, 2: s
+      int LVerOrder = -1, // order of left vertex
+      int VerType = -1,   // -1: normal, 0: regularized, 1: projected, 2: diff
+      int LVerType = -1,  // -1: normal, 0: regularized, 1: projected, 2: diff
+      int RVerType = -1   // -1: normal, 0: regularized, 1: projected, 2: diff
+  );
+
+  int Penguin(
+      const momentum &InL, const momentum &InR, const momentum &DirTran,
+      int LoopNum, int TauIndex, int LoopIndex, int DiagIndex, int Level,
+      int RG = 0,         // 1: RG derivative
+      int Channel = -1,   //-1: all channel, 0: t, 1: u, 2: s
+      int LVerOrder = -1, // order of left vertex
+      int VerType = -1,   // -1: normal, 0: regularized, 1: projected, 2: diff
+      int LVerType = -1,  // -1: normal, 0: regularized, 1: projected, 2: diff
+      int RVerType = -1   // -1: normal, 0: regularized, 1: projected, 2: diff
+  );
+
   int Ver4Loop0(const momentum &InL, const momentum &InR,
                 const momentum &DirTran, int TauIndex, int LoopIndex, int Level,
                 int DiagIndex);

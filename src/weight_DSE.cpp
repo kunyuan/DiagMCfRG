@@ -125,6 +125,85 @@ int weight::Ver4Operator(const momentum &InL, const momentum &InR,
   return DiagIndex;
 }
 
+int weight::Bubble(const momentum &InL, const momentum &InR,
+                   const momentum &DirTran, int LoopNum, int TauIndex,
+                   int LoopIndex, int DiagIndex, int Level, int RG, int Channel,
+                   int LVerOrder, int VerType, int LVerType, int RVerType) {
+  for (int o = 0; o < LoopNum; o++) {
+    if (VerType == 0 || VerType == 1) {
+      // for normal vertex or projected vertex, just return
+      DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+                            DiagIndex, Level, RG, Channel,
+                            o,       // LVertex order 0
+                            VerType, // vertex type
+                            1,       // left vertex is always projected
+                            2        // right vertex is always diff
+      );
+      return DiagIndex;
+    } else if (VerType == 2) {
+      // do vertex diff
+      DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+                            DiagIndex, Level, RG, Channel,
+                            o, // LVertex order 0
+                            0, // normal vertex type
+                            1, // left vertex is always projected
+                            2  // right vertex is always diff
+      );
+      DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+                            DiagIndex, Level, RG, Channel,
+                            o, // LVertex order 0
+                            1, // projected vertex
+                            1, // left vertex is always projected
+                            2  // right vertex is always diff
+      );
+    }
+  }
+  return DiagIndex;
+}
+
+int weight::Penguin(const momentum &InL, const momentum &InR,
+                    const momentum &DirTran, int LoopNum, int TauIndex,
+                    int LoopIndex, int DiagIndex, int Level, int RG,
+                    int Channel, int LVerOrder, int VerType, int LVerType,
+                    int RVerType) {
+  if (LoopNum <= 1)
+    // penguin diagram starts with two loops
+    return 0;
+
+  // for (int o_R = 0; o_R < LoopNum - 1; o_R++) {
+  //   int o_L = LoopNum - 1 - o_R;
+  //   if (VerType == 0 || VerType == 1) {
+  //     // for normal vertex or projected vertex, just return
+  //     DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+  //                           DiagIndex, Level, RG, Channel,
+  //                           o,       // LVertex order 0
+  //                           VerType, // vertex type
+  //                           1,       // left vertex is always projected
+  //                           2        // right vertex is always diff
+  //     );
+  //     return DiagIndex;
+  //   } else if (VerType == 2) {
+  //     // do vertex diff
+  //     DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+  //                           DiagIndex, Level, RG, Channel,
+  //                           o, // LVertex order 0
+  //                           0, // normal vertex type
+  //                           1, // left vertex is always projected
+  //                           2  // right vertex is always diff
+  //     );
+  //     DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+  //                           DiagIndex, Level, RG, Channel,
+  //                           o, // LVertex order 0
+  //                           1, // projected vertex
+  //                           1, // left vertex is always projected
+  //                           2  // right vertex is always diff
+  //     );
+  //   }
+  // }
+  // }
+  return DiagIndex;
+}
+
 int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
                       const momentum &DirTran, int TauIndex, int LoopIndex,
                       int Level, int DiagIndex) {
