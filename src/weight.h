@@ -147,7 +147,9 @@ private:
       int LVerOrder = -1, // order of left vertex
       int VerType = -1,   // -1: normal, 0: regularized, 1: projected, 2: diff
       int LVerType = -1,  // -1: normal, 0: regularized, 1: projected, 2: diff
-      int RVerType = -1   // -1: normal, 0: regularized, 1: projected, 2: diff
+      int RVerType = -1,  // -1: normal, 0: regularized, 1: projected, 2: diff
+      int SubtractChannel = -1, // subtract certain channel
+      int IsPenguin = 0         // 0: not penguin diagram, 1: penguin diagram
   );
 
   double _Weight[MaxOrder][MaxDiagNum][2];
