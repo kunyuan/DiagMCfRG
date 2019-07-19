@@ -43,20 +43,25 @@ double weight::fRG(int LoopNum) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
                           T,  // t diagram only
                           -1, // normal diagram
-                          -1  // left vertex order
+                          // 1, // diff diagram
+                          -1 // left vertex order
       );
     } else if (LoopNum == 3) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
                           T,  // t diagram only
                           -1, // normal diagram
-                          -1  // left vertex order
+                          // 1, // diff diagram
+                          -1 // left vertex order
       );
     }
-    // int count = 0;
+    int count = 0;
     for (int diag = 0; diag < DiagIndex; diag++) {
       Weight += _Weight[Level][diag][1];
-      // count++;
+      count++;
     }
+    // if (LoopNum == 3 || LoopNum == 2)
+    //   cout << "order: " << LoopNum << ", RG number: " << count
+    //        << ", diag num: " << DiagIndex << endl;
 
     // cout << _Weight[Level][0] << ": " << _Weight[Level][1] << ": "
     //      << _Weight[Level][2] << endl;
@@ -86,7 +91,7 @@ int weight::Vertex4(
                          DiagIndex, Level, Channel,
                          VerType,   // VerType
                          LVerOrder, // no projection
-                         true       // not penguin diagram
+                         true       // penguin diagram
       );
       // for normal vertex or projected vertex, just return
       // penguin diagram
@@ -105,6 +110,9 @@ int weight::Bubble(
   for (int OL = 0; OL < LoopNum; OL++) {
     if (LVerOrder >= 0 && OL != LVerOrder)
       continue;
+    if (IsPenguin && OL < 1)
+      continue;
+
     if (VerType == -1 || VerType == 1) {
       // for normal vertex or projected vertex, just return
       DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
@@ -122,10 +130,6 @@ int weight::Bubble(
                           DiagIndex, Level, Channel,
                           true, // do projection
                           IsPenguin);
-      // if (LoopNum == 2) {
-      //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
-      //        << " OL:" << OL << endl;
-      // }
     }
   }
   return DiagIndex;
@@ -235,7 +239,9 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     //====================  DIRECT  Diagram =============================
     // left vertex
     bool *nChannel = ALL;
+    int LVerType = LEFT;
     if (IsPenguin == true) {
+      LVerType = -1; // normal left vertex;
       if (chan == 0 || chan == 1)
         nChannel = US;
       else
@@ -246,8 +252,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     int LIndex = nDiagIndex;
     nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
                          LoopIndex, nDiagIndex, nLevel, nChannel,
-                         LEFT, // VerType
-                         -1    // LVerOrder
+                         LVerType, // VerType
+                         -1        // LVerOrder
     );
     int LDiagIndex = nDiagIndex;
 
@@ -264,25 +270,35 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
 
     for (int left = LIndex; left < LDiagIndex; left++) {
       for (int right = RIndex; right < RDiagIndex; right++) {
+        if (chan == 0) {
+          _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
+          _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][left][OUTL];
+          _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][right][INR];
+          _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][right][OUTR];
+        } else if (chan == 1) {
+          _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
+          _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][right][OUTR];
+          _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][right][INR];
+          _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][left][OUTL];
+        } else if (chan == 2) {
+          _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
+          _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][right][OUTL];
+          _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][left][INR];
+          _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][right][OUTR];
+        }
         if (IsProjected == false) {
-          if (chan == 0) {
-            _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
-            _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][left][OUTL];
-            _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][right][INR];
-            _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][right][OUTR];
-          } else if (chan == 1) {
-            _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
-            _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][right][OUTR];
-            _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][right][INR];
-            _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][left][OUTL];
-          } else if (chan == 2) {
-            _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
-            _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][right][OUTL];
-            _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][left][INR];
-            _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][right][OUTR];
-          }
         } else {
-          double avg = _ExtTau[nLevel][left][INL];
+          // double avg = _ExtTau[nLevel][left][INL];
+          // _ExtTau[Level][DiagIndex][INL] = avg;
+          // _ExtTau[Level][DiagIndex][OUTL] = avg;
+          // _ExtTau[Level][DiagIndex][INR] = avg;
+          // _ExtTau[Level][DiagIndex][OUTR] = avg;
+
+          double avg = (_ExtTau[Level][DiagIndex][INL] +
+                        _ExtTau[Level][DiagIndex][OUTL] +
+                        _ExtTau[Level][DiagIndex][INR] +
+                        _ExtTau[Level][DiagIndex][OUTR]) /
+                       4.0;
           _ExtTau[Level][DiagIndex][INL] = avg;
           _ExtTau[Level][DiagIndex][OUTL] = avg;
           _ExtTau[Level][DiagIndex][INR] = avg;
