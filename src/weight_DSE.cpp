@@ -101,11 +101,11 @@ int weight::Vertex4(
                          LVerOrder, // no projection
                          true       // penguin diagram
       );
-      // if (LoopNum == 2 && Level == 1)
-      //   cout << "3 order: " << LoopNum << "diag:" << DiagIndex << endl;
-      // for normal vertex or projected vertex, just return
-      // penguin diagram
     }
+    // if (LoopNum == 2 && Level == 1)
+    //   cout << "3 order: " << LoopNum << "diag:" << DiagIndex << endl;
+    // for normal vertex or projected vertex, just return
+    // penguin diagram
     return DiagIndex;
   }
 }
@@ -252,6 +252,14 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
       // projection is non-zero only for t and u channel
       if (IsProjected)
         continue;
+      // if (IsProjected) {
+      //   VerLInL = InL * (Para.Kf / InL.norm());
+      //   VerRInR = InR * (Para.Kf / InR.norm());
+      // } else {
+      //   VerLInL = InL;
+      //   VerRInR = InR;
+      // }
+
       // s diagram
       Internal2 = InL + InR - Internal;
       VerLInL = InL;
@@ -270,7 +278,6 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     //====================  DIRECT  Diagram =============================
     // left vertex
     bool *nChannel = ALL;
-    nChannel = T;
     int LVerType = LEFT;
     int LIndex = nDiagIndex;
     if (IsPenguin) {
@@ -286,6 +293,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
                           false     // not penguin
       );
     } else {
+      nChannel = T;
       nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
                            LoopIndex, nDiagIndex, nLevel, nChannel,
                            LVerType, // VerType
@@ -348,15 +356,31 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
           // _ExtTau[Level][DiagIndex][INR] = avg;
           // _ExtTau[Level][DiagIndex][OUTR] = avg;
 
-          double avg = (_ExtTau[Level][DiagIndex][INL] +
-                        _ExtTau[Level][DiagIndex][OUTL] +
-                        _ExtTau[Level][DiagIndex][INR] +
-                        _ExtTau[Level][DiagIndex][OUTR]) /
-                       4.0;
-          _ExtTau[Level][DiagIndex][INL] = avg;
-          _ExtTau[Level][DiagIndex][OUTL] = avg;
-          _ExtTau[Level][DiagIndex][INR] = avg;
-          _ExtTau[Level][DiagIndex][OUTR] = avg;
+          // double avg = (_ExtTau[Level][DiagIndex][INL] +
+          //               _ExtTau[Level][DiagIndex][OUTL] +
+          //               _ExtTau[Level][DiagIndex][INR] +
+          //               _ExtTau[Level][DiagIndex][OUTR]) /
+          //              4.0;
+          // _ExtTau[Level][DiagIndex][INL] = avg;
+          // _ExtTau[Level][DiagIndex][OUTL] = avg;
+          // _ExtTau[Level][DiagIndex][INR] = avg;
+          // _ExtTau[Level][DiagIndex][OUTR] = avg;
+
+          if (chan == 0) {
+            double avg = _ExtTau[Level][DiagIndex][INL];
+            _ExtTau[Level][DiagIndex][INL] = avg;
+            _ExtTau[Level][DiagIndex][OUTL] = avg;
+            avg = _ExtTau[Level][DiagIndex][INR];
+            _ExtTau[Level][DiagIndex][INR] = avg;
+            _ExtTau[Level][DiagIndex][OUTR] = avg;
+          } else if (chan == 1) {
+            double avg = _ExtTau[Level][DiagIndex][INL];
+            _ExtTau[Level][DiagIndex][INL] = avg;
+            _ExtTau[Level][DiagIndex][OUTR] = avg;
+            avg = _ExtTau[Level][DiagIndex][INR];
+            _ExtTau[Level][DiagIndex][INR] = avg;
+            _ExtTau[Level][DiagIndex][OUTL] = avg;
+          }
         }
 
         if (chan == 2) {
