@@ -42,7 +42,7 @@ ExtMomBin = None
 AngleBin = None
 ScaleBin = None
 for f in files:
-    if re.match("vertex1"+"_pid[0-9]+.dat", f):
+    if re.match("vertex2"+"_pid[0-9]+.dat", f):
         print f
         with open(folder+f, "r") as file:
             line1 = file.readline()

@@ -71,7 +71,7 @@ int weight::Vertex4(
   } else if (LoopNum >= 1) {
     DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
                        DiagIndex, Level, Channel,
-                       VerType,   // LVertex order 0
+                       VerType,   // VerType
                        LVerOrder, // no projection
                        false      // not penguin diagram
     );
@@ -91,15 +91,21 @@ int weight::Bubble(
     int LVerOrder, // order of left vertex
     bool IsPenguin) {
   for (int OL = 0; OL < LoopNum; OL++) {
+    if (LVerOrder >= 0 && OL != LVerOrder)
+      continue;
     if (VerType == -1 || VerType == 1) {
       // for normal vertex or projected vertex, just return
       DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
-                          DiagIndex, Level, Channel, false, IsPenguin);
+                          DiagIndex, Level, Channel,
+                          false, // do not project
+                          IsPenguin);
     }
     if (VerType == 0 || VerType == 1) {
       // do projection
       DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
-                          DiagIndex, Level, Channel, true, IsPenguin);
+                          DiagIndex, Level, Channel,
+                          true, // do projection
+                          IsPenguin);
     }
   }
   return DiagIndex;
@@ -134,7 +140,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
                     bool *Channel, // three flags, calculate t, u, s or not
                     bool IsProjected, bool IsPenguin) {
 
-  double VerWeight = 0.0;
+  double VerWeight;
   double TauR2L, TauL2R;
   double SymFactor = 1.0;
   int nLevel = Level + 1;
@@ -151,8 +157,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
   for (int chan = 0; chan < 3; chan++) {
     if (!Channel[chan])
       continue;
-    switch (chan) {
-    case 0: {
+    if (chan == 0) {
       // t diagram
       if (IsProjected) {
         VerLInL = InL * (Para.Kf / InL.norm());
@@ -168,8 +173,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
       VerRInL = Internal;
       VerRDiTran = DirTran;
       SymFactor *= -1.0;
-    }
-    case 1: {
+    } else if (chan == 1) {
       // u diagram
       if (IsProjected) {
         VerLInL = InL * (Para.Kf / InL.norm());
@@ -183,12 +187,13 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
       // should remain the same
       VerLInR = Internal2;
       VerLDiTran = Internal - Internal2;
+      // after the projection, the direct transfer momentum on left and right
+      // vertex also remain the same !!!
 
       VerRInL = Internal;
       VerRDiTran = VerLDiTran;
       SymFactor *= 1.0;
-    }
-    case 2: {
+    } else if (chan == 2) {
       // projection is non-zero only for t and u channel
       if (IsProjected)
         continue;
@@ -203,14 +208,12 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
       VerRDiTran = Internal * (-1.0);
       SymFactor *= 0.5;
     }
-    }
 
     int LTauIndex = TauIndex;
     int RTauIndex = TauIndex + (LVerLoopNum + 1);
 
     //====================  DIRECT  Diagram =============================
     // left vertex
-    int LIndex = nDiagIndex;
     bool *nChannel = ALL;
     if (IsPenguin == true) {
       if (chan == 0 || chan == 1)
@@ -219,11 +222,13 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         nChannel = UT;
     }
 
-    nChannel = T;
+    nChannel = S;
+    int LIndex = nDiagIndex;
     nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
                          LoopIndex, nDiagIndex, nLevel, nChannel,
-                         LEFT, // VerType
-                         -1    // LVerOrder
+                         //  LEFT, // VerType
+                         -1,
+                         -1 // LVerOrder
     );
     int LDiagIndex = nDiagIndex;
 
@@ -239,7 +244,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
 
     for (int left = LIndex; left < LDiagIndex; left++) {
       for (int right = RIndex; right < RDiagIndex; right++) {
-        if (IsProjected) {
+        if (IsProjected == false) {
           if (chan == 0) {
             _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
             _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][left][OUTL];
@@ -263,6 +268,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
           _ExtTau[Level][DiagIndex][INR] = avg;
           _ExtTau[Level][DiagIndex][OUTR] = avg;
         }
+
         if (chan == 2) {
           TauR2L = _ExtTau[nLevel][right][INR] - _ExtTau[nLevel][left][OUTR];
           TauL2R = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTL];

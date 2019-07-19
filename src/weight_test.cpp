@@ -248,6 +248,26 @@ template <typename T> bool IsInPool(const T *Pointer, const T *Pool, int Num) {
 
 int weight::StaticTest() {
 
+  // momentum InL = (sin(1.5), cos(1.5)) * Para.Kf;
+  // momentum InR = (sin(2.5), cos(2.5)) * Para.Kf;
+  // momentum DirTran = Para.ExtMomTable[ExtMomBinSize / 2];
+  // Var.Tau[0] = Para.Beta / 3.0;
+  // Var.Tau[1] = Para.Beta / 2.0;
+  // int DiagIndex = 0;
+  // int Level = 0;
+  // int LoopNum = 1;
+  // int LVerLoopNum = 0;
+  // int TauIndex = 0;
+  // int LoopIndex = 0;
+  // double Tau=Var.Tau[1]-Var.Tau[0];
+
+  // double GL2R = Fermi.Green(Tau, Internal2, UP, 0, Var.CurrScale);
+  // double GR2L = Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
+
+  // int DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, LVerLoopNum, TauIndex,
+  //                         LoopIndex, DiagIndex, Level, T, false, false);
+  // ASSERT_ALLWAYS(abs(_Weight[Level][DiagIndex][0]-)
+
   // check if all pointer is initilized
   // for (auto &group : Groups) {
   //   for (auto &dig : group.Diag) {
