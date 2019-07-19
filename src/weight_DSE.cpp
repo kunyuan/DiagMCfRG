@@ -80,12 +80,20 @@ int weight::Vertex4(
   if (LoopNum == 0) {
     return Ver4Loop0(InL, InR, DirTran, TauIndex, LoopIndex, Level, DiagIndex);
   } else if (LoopNum >= 1) {
+
+    // if (LoopNum == 2 && Level == 1)
+    //   cout << "1 order: " << LoopNum << "diag:" << DiagIndex << endl;
+
     DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
                        DiagIndex, Level, Channel,
                        VerType,   // VerType
                        LVerOrder, // no projection
                        false      // not penguin diagram
     );
+
+    // if (LoopNum == 2 && Level == 1)
+    //   cout << "2 order: " << LoopNum << "diag:" << DiagIndex << endl;
+
     if (LoopNum >= 2) {
       DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
                          DiagIndex, Level, Channel,
@@ -93,6 +101,8 @@ int weight::Vertex4(
                          LVerOrder, // no projection
                          true       // penguin diagram
       );
+      // if (LoopNum == 2 && Level == 1)
+      //   cout << "3 order: " << LoopNum << "diag:" << DiagIndex << endl;
       // for normal vertex or projected vertex, just return
       // penguin diagram
     }
@@ -107,31 +117,45 @@ int weight::Bubble(
     int VerType,   // -1: normal, 0: left(to project), 1: right(to diff)
     int LVerOrder, // order of left vertex
     bool IsPenguin) {
+
   for (int OL = 0; OL < LoopNum; OL++) {
-    if (LVerOrder >= 0 && OL != LVerOrder)
-      continue;
     if (IsPenguin && OL < 1)
       continue;
-
-    if (VerType == -1 || VerType == 1) {
-      // for normal vertex or projected vertex, just return
-      DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
-                          DiagIndex, Level, Channel,
-                          false, // do not project
-                          IsPenguin);
-      // if (LoopNum == 2) {
-      //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
-      //        << " OL:" << OL << endl;
-      // }
-    }
-    if (VerType == 0 || VerType == 1) {
-      // do projection
-      DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
-                          DiagIndex, Level, Channel,
-                          true, // do projection
-                          IsPenguin);
-    }
+    if (!IsPenguin && OL > 0)
+      continue;
+    DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
+                        DiagIndex, Level, Channel,
+                        false, // do not project
+                        IsPenguin);
   }
+
+  // for (int OL = 0; OL < LoopNum; OL++) {
+  //   if (LVerOrder >= 0 && OL != LVerOrder)
+  //     continue;
+  //   if (IsPenguin && OL < 1)
+  //     continue;
+
+  //   if (VerType == -1 || VerType == 1) {
+  //     // for normal vertex or projected vertex, just return
+  //     DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex,
+  //     LoopIndex,
+  //                         DiagIndex, Level, Channel,
+  //                         false, // do not project
+  //                         IsPenguin);
+  //     // if (LoopNum == 2) {
+  //     //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
+  //     //        << " OL:" << OL << endl;
+  //     // }
+  //   }
+  //   if (VerType == 0 || VerType == 1) {
+  //     // do projection
+  //     DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex,
+  //     LoopIndex,
+  //                         DiagIndex, Level, Channel,
+  //                         true, // do projection
+  //                         IsPenguin);
+  //   }
+  // }
   return DiagIndex;
 }
 
@@ -169,6 +193,12 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
   double SymFactor = 1.0;
   int nLevel = Level + 1;
   int nDiagIndex = 0;
+
+  if (LoopNum < 1)
+    return DiagIndex;
+
+  if (IsPenguin && (LVerLoopNum < 1 || LoopNum < 2))
+    return DiagIndex;
 
   // do projection
   if (IsProjected)
@@ -240,21 +270,27 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     // left vertex
     bool *nChannel = ALL;
     int LVerType = LEFT;
-    if (IsPenguin == true) {
+    int LIndex = nDiagIndex;
+    // nChannel = T;
+    if (IsPenguin) {
       LVerType = -1; // normal left vertex;
       if (chan == 0 || chan == 1)
         nChannel = US;
       else
         nChannel = UT;
+      nDiagIndex = Bubble(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
+                          LoopIndex, nDiagIndex, nLevel, nChannel,
+                          LVerType, // VerType
+                          -1,       // LVerOrder
+                          false     // not penguin
+      );
+    } else {
+      nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
+                           LoopIndex, nDiagIndex, nLevel, nChannel,
+                           LVerType, // VerType
+                           -1        // LVerOrder
+      );
     }
-
-    // nChannel = T;
-    int LIndex = nDiagIndex;
-    nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
-                         LoopIndex, nDiagIndex, nLevel, nChannel,
-                         LVerType, // VerType
-                         -1        // LVerOrder
-    );
     int LDiagIndex = nDiagIndex;
 
     // right vertex

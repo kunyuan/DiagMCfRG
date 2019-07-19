@@ -207,8 +207,10 @@ class ver4():
                 # print "Reducible diagram: ", Permutation
                 continue
 
-            self.__FindVerSubDiag(Diag.GetPermu())
-
+            SubList, SubTypeList, _, _=self.__FindVerSubDiag(Diag.GetPermu())
+            # if(SubTypeList[-1]=="irr"):
+            #     print "2PI diagram:", SubList[-1]
+            # else:
             IrreDiagList.append([Diag, FeynList, FactorList])
         
 
@@ -402,6 +404,23 @@ class ver4():
                     # print "Same k on G for {0}: {1} on {2}; {3} on {4}".format(Permutation, kG[i],i,kG[j],j)
                     # print "Same k on W for {0}: {1}; 1, {2}".format(p, kG[i],kG[j])
                     return True
+
+        IsPH=False;
+        Trans=abs(kG[0]-kG[Permutation.index(0)])
+        for i in range(0, len(kG)):
+            for j in range(i+1, len(kG)):
+                if i==0 or Permutation[i]==0 or i==1 or Permutation[i]==1:
+                    continue
+                if j==0 or Permutation[j]==0 or j==1 or Permutation[j]==1:
+                    continue
+                if abs(abs(kG[i]+kG[j])-Trans)<1e-12:
+                    IsPH=True
+                if abs(abs(kG[i]-kG[j])-Trans)<1e-12:
+                    IsPH=True
+        if IsPH:
+            print "PH reducible: ", Permutation
+        else:
+            return True
         
 
         ##### only keep direct diagram #################
@@ -591,6 +610,8 @@ class ver4():
                         Flag=True
                         break
                     elif abs(abs(kG[elem1]-kG[elem2])-abs(TranMom))<1.0e-6:
+                        # print elem1, elem2
+                        # print kG[elem1], kG[elem2], TranMom
                         SubTypeList.append("phd")
                         Flag=True
                         break
@@ -602,13 +623,16 @@ class ver4():
                 SubTypeList.append("irr")
 
         for index in range(len(SubLegList)):
-            print "Subdiagram:", SubList[index]
-            print "Legs:", SubLegList[index]
-            print "Type:", SubTypeList[index]
-            print "Size:", SubSizeList[index]
+        #     print "Subdiagram:", SubList[index]
+        #     print "Legs:", SubLegList[index]
+        #     print "Type:", SubTypeList[index]
+        #     print "Size:", SubSizeList[index]
             if SubTypeList[index]=="irr":
                 print "IrreVer4: ", Permutation, sub
             print "\n"
+        
+        return SubList, SubTypeList, SubSizeList, SubLegList
+        
                         
     # def __FindDisconnect(self, Permutation, Legs):
     #     start=Legs[0]
