@@ -43,7 +43,7 @@ double weight::fRG(int LoopNum) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
                           T,  // t diagram only
                           -1, // normal diagram
-                          1   // left vertex order
+                          -1  // left vertex order
       );
     }
     // int count = 0;
@@ -76,12 +76,12 @@ int weight::Vertex4(
                        false      // not penguin diagram
     );
     if (LoopNum >= 2) {
-      DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                         DiagIndex, Level, Channel,
-                         VerType,   // VerType
-                         LVerOrder, // no projection
-                         true       // not penguin diagram
-      );
+      // DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+      //                    DiagIndex, Level, Channel,
+      //                    VerType,   // VerType
+      //                    LVerOrder, // no projection
+      //                    true       // not penguin diagram
+      // );
       // for normal vertex or projected vertex, just return
       // penguin diagram
     }
@@ -105,6 +105,10 @@ int weight::Bubble(
                           DiagIndex, Level, Channel,
                           false, // do not project
                           IsPenguin);
+      if (LoopNum == 2) {
+        cout << VerType << ", index=" << DiagIndex << ", level=" << Level
+             << " OL:" << OL << endl;
+      }
     }
     if (VerType == 0 || VerType == 1) {
       // do projection
@@ -112,6 +116,10 @@ int weight::Bubble(
                           DiagIndex, Level, Channel,
                           true, // do projection
                           IsPenguin);
+      if (LoopNum == 2) {
+        cout << VerType << ", index=" << DiagIndex << ", level=" << Level
+             << " OL:" << OL << endl;
+      }
     }
   }
   return DiagIndex;
@@ -129,9 +137,9 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
-  _Weight[Level][DiagIndex][0] = DiWeight - ExWeight;
+  // _Weight[Level][DiagIndex][0] = DiWeight - ExWeight;
+  _Weight[Level][DiagIndex][0] = DiWeight;
   _Weight[Level][DiagIndex][1] = 0.0;
-  // _Weight[Level][DiagIndex] = DiWeight;
 
   // ASSERT_ALLWAYS(abs(DirTran.norm() - Var.LoopMom[0].norm()) < 1.0e-5,
   //                "Ext Mom wrong!");
@@ -228,12 +236,11 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         nChannel = UT;
     }
 
-    // nChannel = S;
+    nChannel = T;
     int LIndex = nDiagIndex;
     nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
                          LoopIndex, nDiagIndex, nLevel, nChannel,
                          LEFT, // VerType
-                               //  -1,
                          -1    // LVerOrder
     );
     int LDiagIndex = nDiagIndex;
@@ -242,7 +249,9 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     int RIndex = LDiagIndex;
     nDiagIndex =
         Vertex4(VerRInL, VerRInR, VerRDiTran, LoopNum - 1 - LVerLoopNum,
-                RTauIndex, LoopIndex + 1 + LVerLoopNum, nDiagIndex, nLevel, ALL,
+                RTauIndex, LoopIndex + 1 + LVerLoopNum, nDiagIndex, nLevel,
+                // ALL,
+                nChannel,
                 RIGHT, // VerType
                 -1     // LVerOrder
         );
