@@ -126,6 +126,7 @@ private:
   bool ALL[3] = {true, true, true};
   bool US[3] = {false, true, true};
   bool UT[3] = {true, true, false};
+  bool ST[3] = {true, false, true};
   bool T[3] = {true, false, false};
   bool U[3] = {false, true, false};
   bool S[3] = {false, false, true};

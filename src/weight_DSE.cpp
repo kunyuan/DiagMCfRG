@@ -201,8 +201,9 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     return DiagIndex;
 
   // do projection
+  double ProjSign = 1.0;
   if (IsProjected)
-    SymFactor = -1.0; // projection always comes with a minus sign
+    ProjSign = -1.0; // projection always comes with a minus sign
 
   momentum Internal = Var.LoopMom[LoopIndex + LVerLoopNum];
   momentum Internal2, VerLInL, VerLInR, VerLDiTran, VerRInL, VerRInR,
@@ -226,7 +227,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
 
       VerRInL = Internal;
       VerRDiTran = DirTran;
-      SymFactor *= -1.0;
+      SymFactor = -1.0;
     } else if (chan == 1) {
       // u diagram
       if (IsProjected) {
@@ -246,7 +247,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
 
       VerRInL = Internal;
       VerRDiTran = VerLDiTran;
-      SymFactor *= 1.0;
+      SymFactor = 1.0;
     } else if (chan == 2) {
       // projection is non-zero only for t and u channel
       if (IsProjected)
@@ -260,7 +261,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
       VerRInL = Internal2;
       VerRInR = Internal;
       VerRDiTran = DirTran + InR - Internal;
-      SymFactor *= 0.5;
+      SymFactor = 0.5;
     }
 
     int LTauIndex = TauIndex;
@@ -269,9 +270,9 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     //====================  DIRECT  Diagram =============================
     // left vertex
     bool *nChannel = ALL;
+    nChannel = T;
     int LVerType = LEFT;
     int LIndex = nDiagIndex;
-    // nChannel = T;
     if (IsPenguin) {
       LVerType = -1; // normal left vertex;
       if (chan == 0 || chan == 1)
@@ -293,8 +294,12 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     }
     int LDiagIndex = nDiagIndex;
 
+    // nChannel = T;
     // right vertex
     int RIndex = LDiagIndex;
+    // if (LoopNum == 2 && LVerLoopNum == 0) {
+    //   int a = 2;
+    // }
     nDiagIndex =
         Vertex4(VerRInL, VerRInR, VerRDiTran, LoopNum - 1 - LVerLoopNum,
                 RTauIndex, LoopIndex + 1 + LVerLoopNum, nDiagIndex, nLevel, ALL,
@@ -302,6 +307,19 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
                 RIGHT, // VerType
                 -1     // LVerOrder
         );
+
+    // if (LVerLoopNum == 0 && LoopNum == 2) {
+    //   nChannel = U;
+    //   // right vertex
+    //   nDiagIndex =
+    //       Vertex4(VerRInL, VerRInR, VerRDiTran, LoopNum - 1 - LVerLoopNum,
+    //               RTauIndex, LoopIndex + 1 + LVerLoopNum, nDiagIndex, nLevel,
+    //               // ALL,
+    //               nChannel,
+    //               RIGHT, // VerType
+    //               -1     // LVerOrder
+    //       );
+    // }
     int RDiagIndex = nDiagIndex;
 
     for (int left = LIndex; left < LDiagIndex; left++) {
@@ -356,7 +374,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         double GR2L = Fermi.Green(TauR2L, Internal2, UP, 0, Var.CurrScale);
 
         VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
-        _Weight[Level][DiagIndex][0] += GL2R * GR2L * VerWeight * SymFactor;
+        _Weight[Level][DiagIndex][0] +=
+            GL2R * GR2L * VerWeight * SymFactor * ProjSign;
 
         if (IsProjected == false) {
           // if projected, then derivative must be zero!!!
@@ -367,13 +386,14 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
           // if both left and right vertex do not contain
           // derivative, then GG can contain derivative
           VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
-          _Weight[Level][DiagIndex][1] +=
-              (GL2R * GR2LDeri + GL2RDeri * GR2L) * VerWeight * SymFactor;
+          _Weight[Level][DiagIndex][1] += (GL2R * GR2LDeri + GL2RDeri * GR2L) *
+                                          VerWeight * SymFactor * ProjSign;
 
           // one of the vertex function contain derivative
           VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][1];
           VerWeight += _Weight[nLevel][left][1] * _Weight[nLevel][right][0];
-          _Weight[Level][DiagIndex][1] += GL2R * GR2L * VerWeight * SymFactor;
+          _Weight[Level][DiagIndex][1] +=
+              GL2R * GR2L * VerWeight * SymFactor * ProjSign;
         }
         DiagIndex++;
       }
