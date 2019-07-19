@@ -43,7 +43,7 @@ double weight::fRG(int LoopNum) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
                           T,  // t diagram only
                           -1, // normal diagram
-                          -1  // left vertex order
+                          1   // left vertex order
       );
     }
     // int count = 0;
@@ -110,9 +110,9 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
                       int Level, int DiagIndex) {
   //   return VerQTheta.Interaction(InL, InR, DirTran, 0, Var.CurrScale) -
   //   VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
-  momentum ExTran = InR + DirTran - InL;
   double DiWeight = -VerQTheta.Interaction(InL, InR, DirTran, 0, Var.CurrScale);
-  double ExWeight = -VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
+  double ExWeight =
+      -VerQTheta.Interaction(InL, InR, InR + DirTran - InL, 0, Var.CurrScale);
   _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];
@@ -219,6 +219,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         nChannel = UT;
     }
 
+    nChannel = T;
     nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
                          LoopIndex, nDiagIndex, nLevel, nChannel,
                          LEFT, // VerType
