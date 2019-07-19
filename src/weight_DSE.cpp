@@ -118,44 +118,44 @@ int weight::Bubble(
     int LVerOrder, // order of left vertex
     bool IsPenguin) {
 
-  for (int OL = 0; OL < LoopNum; OL++) {
-    if (IsPenguin && OL < 1)
-      continue;
-    if (!IsPenguin && OL > 0)
-      continue;
-    DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
-                        DiagIndex, Level, Channel,
-                        false, // do not project
-                        IsPenguin);
-  }
-
+  // calculate normal diagrams
   // for (int OL = 0; OL < LoopNum; OL++) {
-  //   if (LVerOrder >= 0 && OL != LVerOrder)
-  //     continue;
   //   if (IsPenguin && OL < 1)
   //     continue;
-
-  //   if (VerType == -1 || VerType == 1) {
-  //     // for normal vertex or projected vertex, just return
-  //     DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex,
-  //     LoopIndex,
-  //                         DiagIndex, Level, Channel,
-  //                         false, // do not project
-  //                         IsPenguin);
-  //     // if (LoopNum == 2) {
-  //     //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
-  //     //        << " OL:" << OL << endl;
-  //     // }
-  //   }
-  //   if (VerType == 0 || VerType == 1) {
-  //     // do projection
-  //     DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex,
-  //     LoopIndex,
-  //                         DiagIndex, Level, Channel,
-  //                         true, // do projection
-  //                         IsPenguin);
-  //   }
+  //   if (!IsPenguin && OL > 0)
+  //     continue;
+  //   DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
+  //                       DiagIndex, Level, Channel,
+  //                       false, // do not project
+  //                       IsPenguin);
   // }
+
+  // calculate renormalized diagrams
+  for (int OL = 0; OL < LoopNum; OL++) {
+    if (LVerOrder >= 0 && OL != LVerOrder)
+      continue;
+    if (IsPenguin && OL < 1)
+      continue;
+
+    if (VerType == -1 || VerType == 1) {
+      // for normal vertex or projected vertex, just return
+      DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
+                          DiagIndex, Level, Channel,
+                          false, // do not project
+                          IsPenguin);
+      // if (LoopNum == 2) {
+      //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
+      //        << " OL:" << OL << endl;
+      // }
+    }
+    if (VerType == 0 || VerType == 1) {
+      // do projection
+      DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
+                          DiagIndex, Level, Channel,
+                          true, // do projection
+                          IsPenguin);
+    }
+  }
   return DiagIndex;
 }
 
