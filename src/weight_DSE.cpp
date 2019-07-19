@@ -105,10 +105,10 @@ int weight::Bubble(
                           DiagIndex, Level, Channel,
                           false, // do not project
                           IsPenguin);
-      if (LoopNum == 2) {
-        cout << VerType << ", index=" << DiagIndex << ", level=" << Level
-             << " OL:" << OL << endl;
-      }
+      // if (LoopNum == 2) {
+      //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
+      //        << " OL:" << OL << endl;
+      // }
     }
     if (VerType == 0 || VerType == 1) {
       // do projection
@@ -116,10 +116,10 @@ int weight::Bubble(
                           DiagIndex, Level, Channel,
                           true, // do projection
                           IsPenguin);
-      if (LoopNum == 2) {
-        cout << VerType << ", index=" << DiagIndex << ", level=" << Level
-             << " OL:" << OL << endl;
-      }
+      // if (LoopNum == 2) {
+      //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
+      //        << " OL:" << OL << endl;
+      // }
     }
   }
   return DiagIndex;
@@ -318,8 +318,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
           VerWeight += _Weight[nLevel][left][1] * _Weight[nLevel][right][0];
           _Weight[Level][DiagIndex][1] += GL2R * GR2L * VerWeight * SymFactor;
         }
+        DiagIndex++;
       }
-      DiagIndex++;
     }
   }
   return DiagIndex;
