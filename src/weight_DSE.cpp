@@ -33,21 +33,18 @@ double weight::fRG(int LoopNum) {
     int DiagIndex = 0;
     double Weight = 0.0;
     if (LoopNum == 1) {
-      DiagIndex = Ver4Loop(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
-                           1, // do RG diagram
-                           0  // calculate u diagram only
+      DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
+                          T,  // t diagram only
+                          -1, // normal diagram
+                          -1  // left vertex order
       );
       // Weight = _Weight[Level][0];
     } else if (LoopNum == 2) {
-      DiagIndex = Ver4Loop(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
-                           1, // do RG diagram
-                           0, // calculate u diagram only
-                           1, // LverOrder
-                           -1 // VerType
+      DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
+                          T,  // t diagram only
+                          -1, // normal diagram
+                          -1  // left vertex order
       );
-      // Weight = _Weight[Level][2];
-      // cout << _Weight[Level][0] << ": " << _Weight[Level][1] << ": "
-      //      << _Weight[Level][2] << ": " << _Weight[Level][3] << endl;
     }
     // int count = 0;
     for (int diag = 0; diag < DiagIndex; diag++) {
@@ -58,148 +55,53 @@ double weight::fRG(int LoopNum) {
     // cout << _Weight[Level][0] << ": " << _Weight[Level][1] << ": "
     //      << _Weight[Level][2] << endl;
 
-    // if (LoopNum == 2)
-    //   cout << count << " diag: " << DiagIndex << endl;
     return Weight / pow(40.0, LoopNum);
   }
 }
 
-int weight::Ver4Loop(const momentum &InL, const momentum &InR,
-                     const momentum &DirTran, int LoopNum, int TauIndex,
-                     int LoopIndex, int DiagIndex, int Level, int RG,
-                     int Channel, int LVerOrder, int VerType) {
+int weight::Vertex4(
+    const momentum &InL, const momentum &InR, const momentum &DirTran,
+    int LoopNum, int TauIndex, int LoopIndex, int DiagIndex, int Level,
+    bool *Channel, // three flags, calculate t, u, s or not
+    int VerType,   // -1: normal, 0: left(to project), 1: right(to diff)
+    int LVerOrder  // order of left vertex
+) {
   if (LoopNum == 0) {
     return Ver4Loop0(InL, InR, DirTran, TauIndex, LoopIndex, Level, DiagIndex);
-  } else if (LoopNum == 1) {
-    return Ver4Operator(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                        DiagIndex, Level, RG, Channel,
-                        0, // LVertex order 0
-                        0  // no projection
+  } else if (LoopNum >= 1) {
+    DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+                       DiagIndex, Level, Channel,
+                       VerType,   // LVertex order 0
+                       LVerOrder, // no projection
+                       false      // not penguin diagram
     );
-  } else if (LoopNum == 2) {
-    // for normal vertex or projected vertex, just return
-    if (VerType == -1) {
-      DiagIndex = Ver4Operator(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                               DiagIndex, Level, RG, Channel,
-                               LVerOrder, // LVertex order 0
-                               -1,        // vertex type
-                               -1, -1);
-    }
-    return DiagIndex;
-  }
-}
-
-int weight::Ver4Operator(const momentum &InL, const momentum &InR,
-                         const momentum &DirTran, int LoopNum, int TauIndex,
-                         int LoopIndex, int DiagIndex, int Level, int RG,
-                         int Channel, int LVerOrder, int VerType, int LVerType,
-                         int RVerType) {
-  if (VerType == 0 || VerType == 1) {
-    // for normal vertex or projected vertex, just return
-    DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                          DiagIndex, Level, RG, Channel,
-                          LVerOrder, // LVertex order 0
-                          VerType,   // vertex type
-                          LVerType, RVerType);
-    return DiagIndex;
-  } else if (VerType == 2) {
-    // do vertex diff
-    DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                          DiagIndex, Level, RG, Channel,
-                          LVerOrder, // LVertex order 0
-                          0,         // normal vertex type
-                          LVerType, RVerType);
-    DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                          DiagIndex, Level, RG, Channel,
-                          LVerOrder, // LVertex order 0
-                          1,         // projected vertex
-                          LVerType, RVerType);
-    return DiagIndex;
-  } else if (VerType == -1) {
-    DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                          DiagIndex, Level, RG, Channel,
-                          LVerOrder, // LVertex order 0
-                          VerType,   // vertex type
-                          -1, -1);
-  }
-  return DiagIndex;
-}
-
-int weight::Bubble(const momentum &InL, const momentum &InR,
-                   const momentum &DirTran, int LoopNum, int TauIndex,
-                   int LoopIndex, int DiagIndex, int Level, int RG, int Channel,
-                   int LVerOrder, int VerType, int LVerType, int RVerType) {
-  for (int o = 0; o < LoopNum; o++) {
-    if (VerType == 0 || VerType == 1) {
+    if (LoopNum >= 2) {
       // for normal vertex or projected vertex, just return
-      DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                            DiagIndex, Level, RG, Channel,
-                            o,       // LVertex order 0
-                            VerType, // vertex type
-                            1,       // left vertex is always projected
-                            2        // right vertex is always diff
-      );
-      return DiagIndex;
-    } else if (VerType == 2) {
-      // do vertex diff
-      DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                            DiagIndex, Level, RG, Channel,
-                            o, // LVertex order 0
-                            0, // normal vertex type
-                            1, // left vertex is always projected
-                            2  // right vertex is always diff
-      );
-      DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                            DiagIndex, Level, RG, Channel,
-                            o, // LVertex order 0
-                            1, // projected vertex
-                            1, // left vertex is always projected
-                            2  // right vertex is always diff
-      );
+      // penguin diagram
     }
+    return DiagIndex;
   }
-  return DiagIndex;
 }
 
-int weight::Penguin(const momentum &InL, const momentum &InR,
-                    const momentum &DirTran, int LoopNum, int TauIndex,
-                    int LoopIndex, int DiagIndex, int Level, int RG,
-                    int Channel, int LVerOrder, int VerType, int LVerType,
-                    int RVerType) {
-  // if (LoopNum <= 1)
-  //   // penguin diagram starts with two loops
-  //   return 0;
-
-  // for (int o_R = 0; o_R < LoopNum - 1; o_R++) {
-  //   int o_L = LoopNum - 1 - o_R;
-  //   if (VerType == 0 || VerType == 1) {
-  //     // for normal vertex or projected vertex, just return
-  //     DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-  //                           DiagIndex, Level, RG, Channel,
-  //                           o,       // LVertex order 0
-  //                           VerType, // vertex type
-  //                           1,       // left vertex is always projected
-  //                           2        // right vertex is always diff
-  //     );
-  //     return DiagIndex;
-  //   } else if (VerType == 2) {
-  //     // do vertex diff
-  //     DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-  //                           DiagIndex, Level, RG, Channel,
-  //                           o, // LVertex order 0
-  //                           0, // normal vertex type
-  //                           1, // left vertex is always projected
-  //                           2  // right vertex is always diff
-  //     );
-  //     DiagIndex = Ver4Loop1(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-  //                           DiagIndex, Level, RG, Channel,
-  //                           o, // LVertex order 0
-  //                           1, // projected vertex
-  //                           1, // left vertex is always projected
-  //                           2  // right vertex is always diff
-  //     );
-  //   }
-  // }
+int weight::Bubble(
+    const momentum &InL, const momentum &InR, const momentum &DirTran,
+    int LoopNum, int TauIndex, int LoopIndex, int DiagIndex, int Level,
+    bool *Channel, // three flags, calculate t, u, s or not
+    int VerType,   // -1: normal, 0: left(to project), 1: right(to diff)
+    int LVerOrder, // order of left vertex
+    bool IsPenguin) {
+  for (int OL = 0; OL < LoopNum; OL++) {
+    if (VerType == -1 || VerType == 1) {
+      // for normal vertex or projected vertex, just return
+      DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
+                          DiagIndex, Level, Channel, false, IsPenguin);
+    }
+    if (VerType == 0 || VerType == 1) {
+      // do projection
+      DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
+                          DiagIndex, Level, Channel, true, IsPenguin);
+    }
+  }
   return DiagIndex;
 }
 
@@ -226,32 +128,25 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   return DiagIndex;
 }
 
-int weight::OneLoop(
-    const momentum &InL, const momentum &InR, const momentum &DirTran,
-    int LoopNum, int LVerLoopNum, int TauIndex, int LoopIndex, int DiagIndex,
-    int Level,
-    bool *Channel, // three flags, calculate t, u, s or not
-    int *VerType,  // -1: normal, 0: regularized, 1: projected, 2:
-                   // diff; three number: ver, leftver, rightver
-    bool IsPenguin = false) {
+int weight::OneLoop(const momentum &InL, const momentum &InR,
+                    const momentum &DirTran, int LoopNum, int LVerLoopNum,
+                    int TauIndex, int LoopIndex, int DiagIndex, int Level,
+                    bool *Channel, // three flags, calculate t, u, s or not
+                    bool IsProjected, bool IsPenguin) {
 
-  double Weight = 0.0;
   double VerWeight = 0.0;
-  double LVerWeight, RVerWeight;
-  double GWeight = 0.0;
-  double GWeightRG = 0.0;
   double TauR2L, TauL2R;
   double SymFactor = 1.0;
   int nLevel = Level + 1;
   int nDiagIndex = 0;
 
-  if (VerType[0] == 1)
-    // do projection
+  // do projection
+  if (IsProjected)
     SymFactor = -1.0; // projection always comes with a minus sign
 
   momentum Internal = Var.LoopMom[LoopIndex + LVerLoopNum];
   momentum Internal2, VerLInL, VerLInR, VerLDiTran, VerRInL, VerRInR,
-      VerRDiTran, OutL, OutR;
+      VerRDiTran;
 
   for (int chan = 0; chan < 3; chan++) {
     if (!Channel[chan])
@@ -259,49 +154,45 @@ int weight::OneLoop(
     switch (chan) {
     case 0: {
       // t diagram
-      if (VerType[0] == 1) {
+      if (IsProjected) {
         VerLInL = InL * (Para.Kf / InL.norm());
         VerRInR = InR * (Para.Kf / InR.norm());
       } else {
         VerLInL = InL;
         VerRInR = InR;
       }
-      Internal2 = DirTran - Internal;
-      VerLInR = Internal * (-1.0);
+      Internal2 = Internal - DirTran;
+      VerLInR = Internal2;
       VerLDiTran = DirTran;
 
-      VerRInL = Internal2;
+      VerRInL = Internal;
       VerRDiTran = DirTran;
       SymFactor *= -1.0;
     }
     case 1: {
       // u diagram
-      if (VerType[0] == 1) {
+      if (IsProjected) {
         VerLInL = InL * (Para.Kf / InL.norm());
         VerRInR = InR * (Para.Kf / InR.norm());
-        Internal2 = InL - InR - DirTran - Internal;
-        // after the projection, the exchange transfer momentum
-        // should remain the same
       } else {
         VerLInL = InL;
         VerRInR = InR;
-        Internal2 = InL - InR - DirTran - Internal;
       }
-      VerLInR = Internal * (-1.0);
-      VerLDiTran = Internal2 - Internal;
+      Internal2 = Internal + DirTran - InL + InR;
+      // after the projection, the exchange transfer momentum
+      // should remain the same
+      VerLInR = Internal2;
+      VerLDiTran = Internal - Internal2;
 
-      VerRInL = Internal2;
+      VerRInL = Internal;
       VerRDiTran = VerLDiTran;
       SymFactor *= 1.0;
     }
     case 2: {
-      if (VerType[0] == 1)
-        // projection is non-zero only for t and u channel
+      // projection is non-zero only for t and u channel
+      if (IsProjected)
         continue;
       // s diagram
-
-      // OutL = InL - DirTran;
-      // OutR = InR + DirTran;
       Internal2 = InL + InR - Internal;
       VerLInL = InL;
       VerLInR = InR;
@@ -309,126 +200,104 @@ int weight::OneLoop(
 
       VerRInL = Internal2;
       VerRInR = Internal;
-      VerRDiTran = Internal2 - OutL;
+      VerRDiTran = Internal * (-1.0);
       SymFactor *= 0.5;
     }
     }
 
-    int LVerStart = 0;
-    int LVerEnd = LoopNum;
-    if (LVerOrder >= 0) {
-      LVerStart = LVerOrder;
-      LVerEnd = LVerOrder + 1;
+    int LTauIndex = TauIndex;
+    int RTauIndex = TauIndex + (LVerLoopNum + 1);
+
+    //====================  DIRECT  Diagram =============================
+    // left vertex
+    int LIndex = nDiagIndex;
+    bool *nChannel = ALL;
+    if (IsPenguin == true) {
+      if (chan == 0 || chan == 1)
+        nChannel = US;
+      else
+        nChannel = UT;
     }
-    // iterate all possible left vertex order
-    for (int loop = LVerStart; loop < LVerEnd; loop++) {
-      int LTauIndex = TauIndex;
-      int RTauIndex = TauIndex + (loop + 1);
 
-      //====================  DIRECT  Diagram =============================
-      // left vertex
-      int LIndex = nDiagIndex;
-      int LeftSubtractChannel = -1;
-      if (IsPenguin == 1) {
-        if (chan == 0 || chan == 1)
-          LeftSubtractChannel = 0;
-        else
-          LeftSubtractChannel == 2;
+    nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
+                         LoopIndex, nDiagIndex, nLevel, nChannel,
+                         LEFT, // VerType
+                         -1    // LVerOrder
+    );
+    int LDiagIndex = nDiagIndex;
 
-        nDiagIndex = Ver4Loop1(VerLInL, VerLInR, VerLDiTran, loop, LTauIndex,
-                               LoopIndex + 1, nDiagIndex, nLevel, RG,
-                               -1, // calculate u, s, t sub-ver-diagram
-                               -1, // LVerOrder
-                               LVerType);
-      } else {
-        nDiagIndex = Ver4Loop(VerLInL, VerLInR, VerLDiTran, loop, LTauIndex,
-                              LoopIndex + 1, nDiagIndex, nLevel, RG,
-                              -1, // calculate u, s, t sub-ver-diagram
-                              -1, // LVerOrder
-                              LVerType);
-      }
-      int LDiagIndex = nDiagIndex;
+    // right vertex
+    int RIndex = LDiagIndex;
+    nDiagIndex =
+        Vertex4(VerRInL, VerRInR, VerRDiTran, LoopNum - 1 - LVerLoopNum,
+                RTauIndex, LoopIndex + 1 + LVerLoopNum, nDiagIndex, nLevel, ALL,
+                RIGHT, // VerType
+                -1     // LVerOrder
+        );
+    int RDiagIndex = nDiagIndex;
 
-      // int RG, int Channel, int LVerOrder, int VerType,
-      // int LVerType, int RVerType, int SubtractChannel,
-      // int IsPenguin) {
-
-      // right vertex
-      int RIndex = LDiagIndex;
-      nDiagIndex =
-          Ver4Loop(VerRInL, VerRInR, VerRDiTran, LoopNum - 1 - loop, RTauIndex,
-                   LoopIndex + 1 + loop, nDiagIndex, nLevel, RG,
-                   -1, // calculate u, s, t sub-ver-diagram
-                   -1, // LVerOrder
-                   RVerType);
-      int RDiagIndex = nDiagIndex;
-
-      for (int left = LIndex; left < LDiagIndex; left++) {
-        for (int right = RIndex; right < RDiagIndex; right++) {
-          if ((Channel == -1 || Channel == 0) && chan == 0) {
+    for (int left = LIndex; left < LDiagIndex; left++) {
+      for (int right = RIndex; right < RDiagIndex; right++) {
+        if (IsProjected) {
+          if (chan == 0) {
             _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
             _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][left][OUTL];
             _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][right][INR];
             _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][right][OUTR];
-          } else if ((Channel == -1 || Channel == 1) && chan == 1) {
+          } else if (chan == 1) {
             _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
             _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][right][OUTR];
             _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][right][INR];
             _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][left][OUTL];
-          } else if ((Channel == -1 || Channel == 2) && chan == 2) {
+          } else if (chan == 2) {
             _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
             _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][right][OUTL];
             _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][left][INR];
             _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][right][OUTR];
           }
-          if (VerType == 1) {
-            double avg = (_ExtTau[Level][DiagIndex][INL] +
-                          _ExtTau[Level][DiagIndex][OUTL] +
-                          _ExtTau[Level][DiagIndex][INR] +
-                          _ExtTau[Level][DiagIndex][OUTR]) /
-                         4.0;
-            _ExtTau[Level][DiagIndex][INL] = avg;
-            _ExtTau[Level][DiagIndex][OUTL] = avg;
-            _ExtTau[Level][DiagIndex][INR] = avg;
-            _ExtTau[Level][DiagIndex][OUTR] = avg;
-          }
-          if ((Channel == -1 || Channel == 2) && chan == 2) {
-            TauR2L = _ExtTau[nLevel][right][INR] - _ExtTau[nLevel][left][OUTR];
-            TauL2R = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTL];
-          } else {
-            TauR2L = _ExtTau[nLevel][left][INR] - _ExtTau[nLevel][right][OUTL];
-            TauL2R = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTR];
-          }
-
-          _Weight[Level][DiagIndex][0] = 0.0;
-          _Weight[Level][DiagIndex][1] = 0.0;
-
-          GWeight = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
-                    Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
-          VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
-          _Weight[Level][DiagIndex][0] += GWeight * VerWeight * SymFactor;
-          Weight += _Weight[Level][DiagIndex][0];
-
-          if (RG == 1) {
-            GWeightRG = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale) *
-                        Fermi.Green(TauR2L, Internal, UP, 2, Var.CurrScale);
-            GWeightRG += Fermi.Green(TauL2R, Internal2, UP, 2, Var.CurrScale) *
-                         Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
-
-            // if both left and right vertex do not contain
-            // derivative, then GG can contain derivative
-            VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
-            _Weight[Level][DiagIndex][1] += GWeightRG * VerWeight * SymFactor;
-            Weight += _Weight[Level][DiagIndex][1];
-
-            VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][1];
-            VerWeight += _Weight[nLevel][left][1] * _Weight[nLevel][right][0];
-            _Weight[Level][DiagIndex][1] += GWeight * VerWeight * SymFactor;
-            Weight += _Weight[Level][DiagIndex][1];
-          }
+        } else {
+          double avg = _ExtTau[nLevel][left][INL];
+          _ExtTau[Level][DiagIndex][INL] = avg;
+          _ExtTau[Level][DiagIndex][OUTL] = avg;
+          _ExtTau[Level][DiagIndex][INR] = avg;
+          _ExtTau[Level][DiagIndex][OUTR] = avg;
         }
-        DiagIndex++;
+        if (chan == 2) {
+          TauR2L = _ExtTau[nLevel][right][INR] - _ExtTau[nLevel][left][OUTR];
+          TauL2R = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTL];
+        } else {
+          TauR2L = _ExtTau[nLevel][left][INR] - _ExtTau[nLevel][right][OUTL];
+          TauL2R = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTR];
+        }
+
+        _Weight[Level][DiagIndex][0] = 0.0;
+        _Weight[Level][DiagIndex][1] = 0.0;
+
+        double GL2R = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale);
+        double GR2L = Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
+
+        VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
+        _Weight[Level][DiagIndex][0] += GL2R * GR2L * VerWeight * SymFactor;
+
+        if (IsProjected == false) {
+          // if projected, then derivative must be zero!!!
+          // take derivative
+          double GL2RDeri =
+              Fermi.Green(TauL2R, Internal2, UP, 2, Var.CurrScale);
+          double GR2LDeri = Fermi.Green(TauR2L, Internal, UP, 2, Var.CurrScale);
+          // if both left and right vertex do not contain
+          // derivative, then GG can contain derivative
+          VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
+          _Weight[Level][DiagIndex][1] +=
+              (GL2R * GR2LDeri + GL2RDeri * GR2L) * VerWeight * SymFactor;
+
+          // one of the vertex function contain derivative
+          VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][1];
+          VerWeight += _Weight[nLevel][left][1] * _Weight[nLevel][right][0];
+          _Weight[Level][DiagIndex][1] += GL2R * GR2L * VerWeight * SymFactor;
+        }
       }
+      DiagIndex++;
     }
   }
   return DiagIndex;
