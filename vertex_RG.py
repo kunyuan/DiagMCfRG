@@ -42,7 +42,7 @@ ExtMomBin = None
 AngleBin = None
 ScaleBin = None
 for f in files:
-    if re.match("vertex2"+"_pid[0-9]+.dat", f):
+    if re.match("vertex"+"_pid[0-9]+.dat", f):
         print f
         with open(folder+f, "r") as file:
             line1 = file.readline()
@@ -148,7 +148,7 @@ elif (XType == "Mom"):
     yphy = 8.0*np.pi/(x*x*kF*kF+Lambda+y*8.0*np.pi)
 
     # ax.plot(x, yphy, 'k-', lw=2, label="physical")
-    # ax.plot(x, y0, 'b-', lw=2, label="original")
+    ax.plot(x, y0, 'b-', lw=2, label="original")
 
     # ax.plot(x,ym,'r-', lw=2, label="wrong")
 
