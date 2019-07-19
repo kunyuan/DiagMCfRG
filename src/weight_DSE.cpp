@@ -73,8 +73,8 @@ int weight::Vertex4(
                        DiagIndex, Level, Channel,
                        VerType,   // VerType
                        LVerOrder, // no projection
-                       false      // not penguin diagram
-    );
+                       //  false      // not penguin diagram
+                       true);
     if (LoopNum >= 2) {
       // for normal vertex or projected vertex, just return
       // penguin diagram
@@ -222,13 +222,13 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         nChannel = UT;
     }
 
-    nChannel = S;
+    // nChannel = S;
     int LIndex = nDiagIndex;
     nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
                          LoopIndex, nDiagIndex, nLevel, nChannel,
-                         //  LEFT, // VerType
-                         -1,
-                         -1 // LVerOrder
+                         LEFT, // VerType
+                               //  -1,
+                         -1    // LVerOrder
     );
     int LDiagIndex = nDiagIndex;
 
