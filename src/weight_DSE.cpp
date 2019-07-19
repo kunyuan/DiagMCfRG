@@ -73,9 +73,15 @@ int weight::Vertex4(
                        DiagIndex, Level, Channel,
                        VerType,   // VerType
                        LVerOrder, // no projection
-                       //  false      // not penguin diagram
-                       true);
+                       false      // not penguin diagram
+    );
     if (LoopNum >= 2) {
+      DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+                         DiagIndex, Level, Channel,
+                         VerType,   // VerType
+                         LVerOrder, // no projection
+                         true       // not penguin diagram
+      );
       // for normal vertex or projected vertex, just return
       // penguin diagram
     }
