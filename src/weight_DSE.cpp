@@ -205,7 +205,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
 
       VerRInL = Internal2;
       VerRInR = Internal;
-      VerRDiTran = Internal * (-1.0);
+      VerRDiTran = DirTran + InR - Internal;
       SymFactor *= 0.5;
     }
 
@@ -270,8 +270,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         }
 
         if (chan == 2) {
-          TauR2L = _ExtTau[nLevel][right][INR] - _ExtTau[nLevel][left][OUTR];
-          TauL2R = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTL];
+          TauR2L = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTL];
+          TauL2R = _ExtTau[nLevel][right][INR] - _ExtTau[nLevel][left][OUTR];
         } else {
           TauR2L = _ExtTau[nLevel][left][INR] - _ExtTau[nLevel][right][OUTL];
           TauL2R = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTR];
@@ -280,8 +280,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         _Weight[Level][DiagIndex][0] = 0.0;
         _Weight[Level][DiagIndex][1] = 0.0;
 
-        double GL2R = Fermi.Green(TauL2R, Internal2, UP, 0, Var.CurrScale);
-        double GR2L = Fermi.Green(TauR2L, Internal, UP, 0, Var.CurrScale);
+        double GL2R = Fermi.Green(TauL2R, Internal, UP, 0, Var.CurrScale);
+        double GR2L = Fermi.Green(TauR2L, Internal2, UP, 0, Var.CurrScale);
 
         VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
         _Weight[Level][DiagIndex][0] += GL2R * GR2L * VerWeight * SymFactor;
@@ -289,9 +289,9 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         if (IsProjected == false) {
           // if projected, then derivative must be zero!!!
           // take derivative
-          double GL2RDeri =
-              Fermi.Green(TauL2R, Internal2, UP, 2, Var.CurrScale);
-          double GR2LDeri = Fermi.Green(TauR2L, Internal, UP, 2, Var.CurrScale);
+          double GL2RDeri = Fermi.Green(TauL2R, Internal, UP, 2, Var.CurrScale);
+          double GR2LDeri =
+              Fermi.Green(TauR2L, Internal2, UP, 2, Var.CurrScale);
           // if both left and right vertex do not contain
           // derivative, then GG can contain derivative
           VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
