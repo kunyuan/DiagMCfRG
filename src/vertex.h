@@ -38,20 +38,34 @@ class verQTheta {
 public:
   verQTheta();
   double Interaction(const momentum &InL, const momentum &InR,
-                     const momentum &Transfer, int VerType, double Scale = 0);
+                     const momentum &Transfer, int VerType, double Tau,
+                     double Scale = 0);
 
   void Measure(const momentum &InL, const momentum &InR, const int QIndex,
-               double Scale, int Order, double WeightFactor);
+               double Tau, double Scale, int Order, double WeightFactor);
   void Update(double Ratio = 1.0);
   void Save();
   void ClearStatis();
   void ResetIRScale(int IRScaleBin);
-  double EffInteraction[ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
-  double DiffInteraction[MaxOrder][ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
-  double IntInteraction[MaxOrder][ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
+  double *EffInteraction;
+  double *DiffInteraction;
+  double *IntInteraction;
+
+  double &EffInter(int Scale, int Angle, int ExtQ, int Tau);
+  double &DiffInter(int Order, int Scale, int Angle, int ExtQ, int Tau);
+  double &IntInter(int Order, int Scale, int Angle, int ExtQ, int Tau);
+  // double EffInteraction[ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
+  // double DiffInteraction[MaxOrder][ScaleBinSize +
+  // 1][AngBinSize][ExtMomBinSize]; double IntInteraction[MaxOrder][ScaleBinSize
+  // + 1][AngBinSize][ExtMomBinSize];
 
   double Normalization;
   double PhyWeight;
+
+  int QIndex = TauBinSize;
+  int AngleIndex = TauBinSize * ExtMomBinSize;
+  int ScaleIndex = TauBinSize * ExtMomBinSize * AngleBinSize;
+  int OrderIndex = TauBinSize * ExtMomBinSize * AngleBinSize * ScaleBinSize;
 };
 
 class verQ {
@@ -87,6 +101,9 @@ int Mom2Index(const double &K);
 
 double Index2Scale(const int &Index);
 int Scale2Index(const double &Scale);
+
+double Index2Tau(const int &Index);
+int Tau2Index(const double &Tau);
 
 }; // namespace diag
 #endif

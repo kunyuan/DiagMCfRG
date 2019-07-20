@@ -59,18 +59,52 @@ verQTheta::verQTheta() {
 
   PhyWeight = ExtMomBinSize * 2.0 * PI * Para.Kf * 4.0;
 
+  EffInteraction =
+      new double[(ScaleBinSize + 1) * AngBinSize * ExtMomBinSize * TauBinSize];
+
+  DiffInteraction = new double[MaxOrder * (ScaleBinSize + 1) * AngBinSize *
+                               ExtMomBinSize * TauBinSize];
+  IntInteraction = new double[MaxOrder * (ScaleBinSize + 1) * AngBinSize *
+                              ExtMomBinSize * TauBinSize];
+  // double DiffInteraction[MaxOrder][ScaleBinSize +
+  // 1][AngBinSize][ExtMomBinSize]; double IntInteraction[MaxOrder][ScaleBinSize
+  // + 1][AngBinSize][ExtMomBinSize];
+
   // initialize interaction table
   for (int scale = 0; scale < ScaleBinSize + 1; ++scale) {
     for (int inin = 0; inin < AngBinSize; ++inin)
       for (int qIndex = 0; qIndex < ExtMomBinSize; ++qIndex) {
-        double k = Index2Mom(qIndex);
-        EffInteraction[scale][inin][qIndex] = 8.0 * PI / (k * k + Para.Mass2);
-        for (int order = 0; order < MaxOrder; ++order) {
-          DiffInteraction[order][scale][inin][qIndex] = 0.0;
-          IntInteraction[order][scale][inin][qIndex] = 0.0;
+        for (int tIndex = 0; tIndex < TauBinSize; ++tIndex) {
+          double k = Index2Mom(qIndex);
+          if (tIndex == 0 || tIndex == TauBinSize - 1)
+            EffInter(scale, inin, qIndex, tIndex) =
+                8.0 * PI / (k * k + Para.Mass2);
+          else
+            EffInter(scale, inin, qIndex, tIndex) = 0.0;
+          for (int order = 0; order < MaxOrder; ++order) {
+            DiffInter(order, scale, inin, qIndex, tIndex) = 0.0;
+            IntInter(order, scale, inin, qIndex, tIndex) = 0.0;
+          }
         }
       }
   }
+}
+
+double &verQTheta::EffInter(int Scale, int Angle, int ExtQ, int Tau) {
+  return EffInteraction[Scale * ScaleIndex + Angle * AngleIndex +
+                        ExtQ * QIndex + Tau];
+}
+
+double &verQTheta::DiffInter(int Order, int Scale, int Angle, int ExtQ,
+                             int Tau) {
+  return DiffInteraction[Order * OrderIndex + Scale * ScaleIndex +
+                         Angle * AngleIndex + ExtQ * QIndex + Tau];
+}
+double &verQTheta::IntInter(int Order, int Scale, int Angle, int ExtQ,
+                            int Tau) {
+
+  return IntInteraction[Order * OrderIndex + Scale * ScaleIndex +
+                        Angle * AngleIndex + ExtQ * QIndex + Tau];
 }
 
 double verQTheta::Interaction(const momentum &InL, const momentum &InR,
@@ -88,7 +122,7 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
       // (k * k + Para.Mass2 +
       // 0.159 * (1 - sqrt(1 - 4.0 * Para.Kf * Para.Kf / k / k)));
       int ScaleIndex = Scale2Index(Scale);
-      double Upper = EffInteraction[ScaleIndex + 1][AngleIndex][Mom2Index(k)];
+      double Upper = EffInter(ScaleIndex + 1, AngleIndex, Mom2Index(k), );
       double Lower = EffInteraction[ScaleIndex][AngleIndex][Mom2Index(k)];
       double UpperScale = Para.ScaleTable[ScaleIndex + 1];
       double LowerScale = Para.ScaleTable[ScaleIndex];
@@ -526,6 +560,10 @@ double diag::Index2Scale(const int &Index) {
 }
 int diag::Scale2Index(const double &Scale) {
   return int((Scale / Para.UVScale) * ScaleBinSize);
+}
+
+int diag::Tau2Index(const double &Tau) {
+  return int((Tau / Para.Beta) * TauBinSize);
 }
 
 void diag::_TestAngle2D() {
