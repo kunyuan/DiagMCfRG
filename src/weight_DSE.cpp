@@ -56,9 +56,31 @@ double weight::fRG(int LoopNum) {
     }
     int count = 0;
     for (int diag = 0; diag < DiagIndex; diag++) {
-      Weight += _Weight[Level][diag][1];
       count++;
+      // double t1 =
+      //     (_ExtTau[Level][DiagIndex][INL] + _ExtTau[Level][DiagIndex][OUTL])
+      //     / 2.0;
+      // double t2 =
+      //     (_ExtTau[Level][DiagIndex][INR] + _ExtTau[Level][DiagIndex][OUTR])
+      //     / 2.0;
+      double t1 = _ExtTau[Level][diag][INL];
+      double t2 = _ExtTau[Level][diag][INR];
+      double c = 0.01;
+      // double ProjFactor =
+      //     (-pow(t1 - t2, 2) / c * exp(-Var.CurrScale * pow(t1 - t2, 2) / c) -
+      //      pow(Para.Beta - t1 + t2, 2) / c *
+
+      //          exp(-Var.CurrScale * pow(Para.Beta - t1 + t2, 2) / c)) /
+      //     2.0;
+      double ProjFactor = -1.0 * Var.CurrScale * (t1 - t2) * (t1 - t2) / c /
+                          pow(1.0 + pow(Var.CurrScale * (t1 - t2), 2) / c, 2);
+      ProjFactor +=
+          -1.0 * Var.CurrScale * (Para.Beta - t1 + t2) * (Para.Beta - t1 + t2) /
+          c / pow(1.0 + pow(Var.CurrScale * (Para.Beta - t1 + t2), 2) / c, 2);
+      // double ProjFactor=
+      Weight += _Weight[Level][diag][0] * ProjFactor;
     }
+
     // if (LoopNum == 3 || LoopNum == 2)
     //   cout << "order: " << LoopNum << ", RG number: " << count
     //        << ", diag num: " << DiagIndex << endl;
@@ -67,6 +89,7 @@ double weight::fRG(int LoopNum) {
     //      << _Weight[Level][2] << endl;
 
     return Weight / pow(40.0, LoopNum);
+    // return Weight;
   }
 }
 
@@ -201,6 +224,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     return DiagIndex;
 
   // do projection
+  double ProjFactor = 1.0;
   double ProjSign = 1.0;
   if (IsProjected)
     ProjSign = -1.0; // projection always comes with a minus sign
@@ -350,37 +374,26 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         }
         if (IsProjected == false) {
         } else {
-          // double avg = _ExtTau[nLevel][left][INL];
-          // _ExtTau[Level][DiagIndex][INL] = avg;
-          // _ExtTau[Level][DiagIndex][OUTL] = avg;
-          // _ExtTau[Level][DiagIndex][INR] = avg;
-          // _ExtTau[Level][DiagIndex][OUTR] = avg;
-
-          // double avg = (_ExtTau[Level][DiagIndex][INL] +
-          //               _ExtTau[Level][DiagIndex][OUTL] +
-          //               _ExtTau[Level][DiagIndex][INR] +
-          //               _ExtTau[Level][DiagIndex][OUTR]) /
-          //              4.0;
-          // _ExtTau[Level][DiagIndex][INL] = avg;
-          // _ExtTau[Level][DiagIndex][OUTL] = avg;
-          // _ExtTau[Level][DiagIndex][INR] = avg;
-          // _ExtTau[Level][DiagIndex][OUTR] = avg;
-
+          double t1, t2;
           if (chan == 0) {
-            double avg = _ExtTau[Level][DiagIndex][INL];
-            _ExtTau[Level][DiagIndex][INL] = avg;
-            _ExtTau[Level][DiagIndex][OUTL] = avg;
-            avg = _ExtTau[Level][DiagIndex][INR];
-            _ExtTau[Level][DiagIndex][INR] = avg;
-            _ExtTau[Level][DiagIndex][OUTR] = avg;
+            t1 = (_ExtTau[Level][DiagIndex][INL] +
+                  _ExtTau[Level][DiagIndex][OUTL]) /
+                 2.0;
+            t2 = (_ExtTau[Level][DiagIndex][INR] +
+                  _ExtTau[Level][DiagIndex][OUTR]) /
+                 2.0;
           } else if (chan == 1) {
-            double avg = _ExtTau[Level][DiagIndex][INL];
-            _ExtTau[Level][DiagIndex][INL] = avg;
-            _ExtTau[Level][DiagIndex][OUTR] = avg;
-            avg = _ExtTau[Level][DiagIndex][INR];
-            _ExtTau[Level][DiagIndex][INR] = avg;
-            _ExtTau[Level][DiagIndex][OUTL] = avg;
+            t1 = (_ExtTau[Level][DiagIndex][INL] +
+                  _ExtTau[Level][DiagIndex][OUTR]) /
+                 2.0;
+            t2 = (_ExtTau[Level][DiagIndex][INR] +
+                  _ExtTau[Level][DiagIndex][OUTL]) /
+                 2.0;
           }
+          ProjFactor = (exp(-Var.CurrScale * (t1 - t2)) +
+
+                        exp(-Var.CurrScale * (Para.Beta - t1 + t2))) /
+                       2.0;
         }
 
         if (chan == 2) {
@@ -399,26 +412,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
 
         VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
         _Weight[Level][DiagIndex][0] +=
-            GL2R * GR2L * VerWeight * SymFactor * ProjSign;
+            GL2R * GR2L * VerWeight * SymFactor * ProjSign * ProjFactor;
 
-        if (IsProjected == false) {
-          // if projected, then derivative must be zero!!!
-          // take derivative
-          double GL2RDeri = Fermi.Green(TauL2R, Internal, UP, 2, Var.CurrScale);
-          double GR2LDeri =
-              Fermi.Green(TauR2L, Internal2, UP, 2, Var.CurrScale);
-          // if both left and right vertex do not contain
-          // derivative, then GG can contain derivative
-          VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
-          _Weight[Level][DiagIndex][1] += (GL2R * GR2LDeri + GL2RDeri * GR2L) *
-                                          VerWeight * SymFactor * ProjSign;
-
-          // one of the vertex function contain derivative
-          VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][1];
-          VerWeight += _Weight[nLevel][left][1] * _Weight[nLevel][right][0];
-          _Weight[Level][DiagIndex][1] +=
-              GL2R * GR2L * VerWeight * SymFactor * ProjSign;
-        }
         DiagIndex++;
       }
     }

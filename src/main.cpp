@@ -51,7 +51,7 @@ void InitPara() {
   Para.DiagFileFormat = "groups/DiagLoop{}.txt";
   // Para.GroupName = {"0", "1", "2", "3"};
   // Para.GroupName = {"1", "2"};
-  Para.GroupName = {"0", "1", "2"};
+  Para.GroupName = {"0", "1"};
   Para.ReWeight = {1.0, 2.0, 2.0, 1.0, 1.0};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
@@ -74,7 +74,7 @@ void InitPara() {
 
   // scale all energy with E_F
   Para.Beta /= Para.Ef;
-  Para.UVScale = 2.0 * Para.Kf;
+  Para.UVScale = 0.1 * Para.Kf;
   Para.UVCoupling = 1.0 * Para.Ef;
 
   double dScale = Para.UVScale / ScaleBinSize;
