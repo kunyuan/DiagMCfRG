@@ -118,14 +118,6 @@ int weight::DynamicTest() {
                      Var.CurrExtMomBin, Para.ExtMomTable[Var.CurrExtMomBin][0],
                      Var.LoopMom[0][0]));
 
-  for (int scale = 0; scale < ScaleBinSize; ++scale)
-    for (int angle = 0; angle < AngBinSize; ++angle)
-      for (int q = 0; q < ExtMomBinSize; ++q) {
-        ASSERT_ALLWAYS(!std::isnan(VerQTheta.EffInteraction[scale][angle][q]),
-                       ERR("VerQTheta contains a NaN! Index: {0}, {1}, {2}\n",
-                           scale, angle, q));
-      }
-
   // ASSERT_ALLWAYS(
   //     Equal(Var.LoopMom[1].norm(), Para.Kf, 1.0e-8),
   //     ERR("ExtLegMom 1 is not on the Fermi surface! {0} not on Kf: {1}\n",

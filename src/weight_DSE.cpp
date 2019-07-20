@@ -56,7 +56,7 @@ double weight::fRG(int LoopNum) {
     }
     int count = 0;
     for (int diag = 0; diag < DiagIndex; diag++) {
-      Weight += _Weight[Level][diag][1];
+      Weight += _Weight[Level][diag][0];
       count++;
     }
     // if (LoopNum == 3 || LoopNum == 2)
@@ -66,7 +66,8 @@ double weight::fRG(int LoopNum) {
     // cout << _Weight[Level][0] << ": " << _Weight[Level][1] << ": "
     //      << _Weight[Level][2] << endl;
 
-    return Weight / pow(40.0, LoopNum);
+    // return Weight / pow(40.0, LoopNum);
+    return Weight;
   }
 }
 
@@ -172,14 +173,19 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex + 1];
   _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex + 1];
-  _Weight[Level][DiagIndex][0] = DiWeight - ExWeight;
+  _Weight[Level][DiagIndex][0] = DiWeight;
   // _Weight[Level][DiagIndex][0] = DiWeight;
   _Weight[Level][DiagIndex][1] = 0.0;
 
-  // ASSERT_ALLWAYS(abs(DirTran.norm() - Var.LoopMom[0].norm()) < 1.0e-5,
-  //                "Ext Mom wrong!");
-
   DiagIndex += 1;
+
+  // _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
+  // _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex + 1];
+  // _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex + 1];
+  // _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
+  // _Weight[Level][DiagIndex][0] = -ExWeight;
+
+  // DiagIndex += 1;
   return DiagIndex;
 }
 
@@ -274,7 +280,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     }
 
     int LTauIndex = TauIndex;
-    int RTauIndex = TauIndex + (LVerLoopNum + 1);
+    int RTauIndex = TauIndex + (LVerLoopNum + 1) * 2;
 
     //====================  DIRECT  Diagram =============================
     // left vertex
@@ -393,7 +399,6 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         }
 
         _Weight[Level][DiagIndex][0] = 0.0;
-        _Weight[Level][DiagIndex][1] = 0.0;
 
         double GL2R = Fermi.Green(TauL2R, Internal, UP, 0, Var.CurrScale);
         double GR2L = Fermi.Green(TauR2L, Internal2, UP, 0, Var.CurrScale);
@@ -402,24 +407,6 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         _Weight[Level][DiagIndex][0] +=
             GL2R * GR2L * VerWeight * SymFactor * ProjSign;
 
-        if (IsProjected == false) {
-          // if projected, then derivative must be zero!!!
-          // take derivative
-          double GL2RDeri = Fermi.Green(TauL2R, Internal, UP, 2, Var.CurrScale);
-          double GR2LDeri =
-              Fermi.Green(TauR2L, Internal2, UP, 2, Var.CurrScale);
-          // if both left and right vertex do not contain
-          // derivative, then GG can contain derivative
-          VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][0];
-          _Weight[Level][DiagIndex][1] += (GL2R * GR2LDeri + GL2RDeri * GR2L) *
-                                          VerWeight * SymFactor * ProjSign;
-
-          // one of the vertex function contain derivative
-          VerWeight = _Weight[nLevel][left][0] * _Weight[nLevel][right][1];
-          VerWeight += _Weight[nLevel][left][1] * _Weight[nLevel][right][0];
-          _Weight[Level][DiagIndex][1] +=
-              GL2R * GR2L * VerWeight * SymFactor * ProjSign;
-        }
         DiagIndex++;
       }
     }

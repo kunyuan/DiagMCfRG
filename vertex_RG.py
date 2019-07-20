@@ -12,8 +12,8 @@ size = 12
 
 rs = 1.0
 Lambda = 2
-Beta = 20
-# XType = "Scale"
+Beta = 10
+# XType = "Tau"
 XType = "Mom"
 # XType = "Angle"
 
@@ -40,14 +40,14 @@ Num = 0
 Data = None
 ExtMomBin = None
 AngleBin = None
-ScaleBin = None
+TauBin = None
 for f in files:
-    if re.match("vertex1"+"_pid[0-9]+.dat", f):
+    if re.match("vertex"+"_pid[0-9]+.dat", f):
         print f
         with open(folder+f, "r") as file:
             line1 = file.readline()
             line2 = file.readline()
-            ScaleBin = np.fromstring(line2.split(":")[1], sep=' ')
+            TauBin = np.fromstring(line2.split(":")[1], sep=' ')
             line3 = file.readline()
             AngleBin = np.fromstring(line3.split(":")[1], sep=' ')
             line4 = file.readline()
@@ -60,26 +60,19 @@ for f in files:
             Data += d
 
 AngleBinSize = len(AngleBin)
-ScaleBinSize = len(ScaleBin)
+TauBinSize = len(TauBin)
 ExtMomBinSize = len(ExtMomBin)
 ExtMomBin /= kF
 
 print "Found {0} files.".format(Num)
 Data /= Num
 
-Data = Data.reshape((ScaleBinSize, AngleBinSize, ExtMomBinSize))
-
-ScaleBin[-1] = ScaleBin[-2]*2
-Data[-1, :, :] = 0.0
+Data = Data.reshape((AngleBinSize, ExtMomBinSize, TauBinSize))
 
 qData = np.array(Data)
 # qData = np.sum(qData, axis=1)/AngleBinSize*2.0*np.pi
-qData = np.mean(qData, axis=1)
+qData = np.mean(qData, axis=0)
 # qData = np.mean(qData, axis=1)*2
-
-diffData = np.array(qData)
-for i in range(ScaleBinSize-1):
-    diffData[i, :] = (qData[i+1, :]-qData[i, :])/(ScaleBin[i+1]-ScaleBin[i])
 
 # verData=np.zeros(len(ExtMomBin))
 # for i in range(len(ExtMomBin)):
@@ -114,13 +107,17 @@ if(XType == "Scale"):
     ax.set_xlim([0.0, ScaleBin[-2]])
     ax.set_xlabel("$Scale$", size=size)
 elif (XType == "Mom"):
-    for i in range(ScaleBinSize/32):
-        # print i, index
-        # print ScaleBin[index]
-        index = 32*i
-    # for i in range(ScaleBinSize+1):
-        ErrorPlot(ax, ExtMomBin, qData[index, :],
-                  ColorList[i], 's', "Scale {0}".format(ScaleBin[index]))
+
+    qData = np.mean(qData, axis=1)
+    ErrorPlot(ax, ExtMomBin, qData[:],
+                ColorList[0], 's', "Mom")
+    # for i in range(ScaleBinSize/32):
+    #     # print i, index
+    #     # print ScaleBin[index]
+    #     index = 32*i
+    # # for i in range(ScaleBinSize+1):
+    #     ErrorPlot(ax, ExtMomBin, qData[index, :],
+    #               ColorList[i], 's', "Scale {0}".format(ScaleBin[index]))
         # ErrorPlot(ax, AngleBin, Data[i, :, 8],
         #           ColorList[i], 's', "Order {0}".format(i))
         # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))

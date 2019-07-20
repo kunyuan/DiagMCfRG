@@ -172,12 +172,12 @@ void markov::ChangeGroup() {
     // change to a new group with one higher order
     Name = INCREASE_ORDER;
     static momentum NewMom;
-    double NewTau;
+    double NewTau1, NewTau2;
     // Generate New Tau
-    Prop = GetNewTau(NewTau);
+    Prop = GetNewTau(NewTau1, NewTau2);
     int NewTauIndex = Var.CurrGroup->TauNum;
-    // ASSUME: NewTauIndex will never equal to 0 or 1
-    Var.Tau[NewTauIndex] = NewTau;
+    Var.Tau[NewTauIndex] = NewTau1;
+    Var.Tau[NewTauIndex + 1] = NewTau2;
     // Generate New Mom
     Prop *= GetNewK(NewMom);
     Var.LoopMom[Var.CurrGroup->LoopNum] = NewMom;
@@ -185,8 +185,8 @@ void markov::ChangeGroup() {
     // change to a new group with one lower order
     Name = DECREASE_ORDER;
     // Remove OldTau
-    int TauToRemove = Var.CurrGroup->TauNum - 1;
-    Prop = RemoveOldTau(Var.Tau[TauToRemove]);
+    int TauToRemove = Var.CurrGroup->TauNum - 2;
+    Prop = RemoveOldTau(Var.Tau[TauToRemove], Var.Tau[TauToRemove + 1]);
     // Remove OldMom
     int LoopToRemove = Var.CurrGroup->LoopNum - 1;
     Prop *= RemoveOldK(Var.LoopMom[LoopToRemove]);
@@ -202,6 +202,10 @@ void markov::ChangeGroup() {
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
              Var.CurrGroup->ReWeight;
 
+  // if (Name == INCREASE_ORDER) {
+  //   cout << "time:" << Var.Tau[2] << ", " << Var.Tau[3] << endl;
+  //   cout << NewWeight << endl;
+  // }
   // if (NewGroup.Order == 2)
   //   cout << NewWeight << endl;
 
@@ -319,11 +323,24 @@ void markov::ChangeScale() {
   return;
 }
 
-double markov::GetNewTau(double &NewTau) {
-  NewTau = Random.urn() * Para.Beta;
-  return Para.Beta;
-};
-double markov::RemoveOldTau(double &OldTau) { return 1.0 / Para.Beta; }
+double markov::GetNewTau(double &NewTau1, double &NewTau2) {
+  double Step = 0.1;
+  NewTau1 = Random.urn() * Para.Beta;
+  NewTau2 = (Random.urn() - 0.5) * Step + NewTau1;
+  if (NewTau2 < 0.0)
+    NewTau2 += Para.Beta;
+  if (NewTau2 > Para.Beta)
+    NewTau2 -= Para.Beta;
+  return Para.Beta * Step;
+}
+
+double markov::RemoveOldTau(double &OldTau1, double &OldTau2) {
+  double Step = 0.1;
+  if (abs(OldTau2 - OldTau1) > Step)
+    return 0.0;
+  else
+    return 1.0 / Para.Beta / Step;
+}
 
 double markov::GetNewK(momentum &NewMom) {
   //====== The hard Way ======================//

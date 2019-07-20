@@ -60,9 +60,9 @@ public:
   double Normalization;
   double PhyWeight;
 
-  int QIndex = TauBinSize;
-  int AngleIndex = TauBinSize * ExtMomBinSize;
-  int OrderIndex = TauBinSize * ExtMomBinSize * AngleBinSize;
+  int QIndex;
+  int AngleIndex;
+  int OrderIndex;
 };
 
 class verQ {

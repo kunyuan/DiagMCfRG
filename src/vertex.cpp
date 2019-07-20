@@ -59,13 +59,14 @@ verQTheta::verQTheta() {
 
   PhyWeight = ExtMomBinSize * 2.0 * PI;
 
-  EffInteraction =
-      new double[(ScaleBinSize + 1) * AngBinSize * ExtMomBinSize * TauBinSize];
+  QIndex = TauBinSize;
+  AngleIndex = TauBinSize * ExtMomBinSize;
+  OrderIndex = TauBinSize * ExtMomBinSize * AngBinSize;
 
-  DiffInteraction = new double[MaxOrder * (ScaleBinSize + 1) * AngBinSize *
-                               ExtMomBinSize * TauBinSize];
-  IntInteraction = new double[MaxOrder * (ScaleBinSize + 1) * AngBinSize *
-                              ExtMomBinSize * TauBinSize];
+  EffInteraction = new double[AngBinSize * ExtMomBinSize * TauBinSize];
+
+  DiffInteraction =
+      new double[MaxOrder * AngBinSize * ExtMomBinSize * TauBinSize];
   // double DiffInteraction[MaxOrder][ScaleBinSize +
   // 1][AngBinSize][ExtMomBinSize]; double IntInteraction[MaxOrder][ScaleBinSize
   // + 1][AngBinSize][ExtMomBinSize];
@@ -104,7 +105,10 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
   if (VerType >= 0) {
 
     double k = Transfer.norm();
-    return 8.0 * PI / (k * k + Para.Mass2);
+    // return 8.0 * PI / (k * k + Para.Mass2) /
+    //        (1 + pow(Tau * 10.0, 2) * 10.0 / PI);
+    return 0.5 / (1 + pow(Tau * 10.0, 2) * 10.0 / PI) +
+           0.5 / (1 + pow((Para.Beta - Tau) * 10.0, 2) * 10.0 / PI);
     // return 1.0;
 
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
@@ -130,7 +134,9 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
     return 1.0;
   } else if (VerType == -2) {
     // return exp(-Transfer.norm() / Para.Kf);
-    return 1.0;
+    // double k = Transfer.norm();
+    return 0.5 / (1 + pow(Tau * 10.0, 2) * 10.0 / PI) +
+           0.5 / (1 + pow((Para.Beta - Tau) * 10.0, 2) * 10.0 / PI);
   } else {
     ABORT("VerType can not be " << VerType);
   }
@@ -179,7 +185,7 @@ void verQTheta::Save() {
           "#PID:%d, Type:%d, rs:%.3f, Beta: %.3f, Step: %d\n", Para.PID,
           Para.ObsType, Para.Rs, Para.Beta, Para.Counter);
       VerFile << "# TauTable: ";
-      for (int tau = 0; tau < TauBinSize + 1; ++tau)
+      for (int tau = 0; tau < TauBinSize; ++tau)
         VerFile << Index2Tau(tau) << " ";
       VerFile << endl;
       VerFile << "# AngleTable: ";
@@ -209,7 +215,7 @@ void verQTheta::Save() {
                             Para.PID, Para.ObsType, Para.Rs, Para.Beta,
                             Para.Counter);
     VerFile << "# TauTable: ";
-    for (int tau = 0; tau < TauBinSize + 1; ++tau)
+    for (int tau = 0; tau < TauBinSize; ++tau)
       VerFile << Index2Tau(tau) << " ";
     VerFile << endl;
     VerFile << "# AngleTable: ";
@@ -384,34 +390,6 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int GType,
   // cout << "x: " << x << ", y: " << y << ", G: " << green << endl;
   // cout << "G: " << green << endl;
 
-  if (Para.Type == RG) {
-    // double kScale = Para.ScaleTable[Scale];
-    double kScale = Scale;
-    // double dK2 = (k - Para.Kf) * (k - Para.Kf) / kScale / kScale;
-    // double expFactor = 0.0;
-    // if (dK2 < 100.0)
-    //   expFactor = exp(-dK2);
-    // green *= (1 - expFactor);
-    // if (GType == 2)
-    //   green *= -expFactor * 2.0 * dK2 / kScale;
-    double dK2 = (k - Para.Kf) * (k - Para.Kf);
-    // if (GType == 2)
-    //   green *= -dK2 * 2.0 * kScale / (dK2 + kScale * kScale) /
-    //            (dK2 + kScale * kScale);
-    // else
-    //   green *= dK2 / (dK2 + kScale * kScale);
-
-    if (GType == 2)
-      green *= -dK2 * 4.0 * pow(kScale, 3) / pow((dK2 + pow(kScale, 4)), 2);
-    else
-      green *= dK2 / (dK2 + pow(kScale, 4));
-
-    // if (GType == 2)
-    //   green *= -dK2 / (dK2 + kScale) / (dK2 + kScale);
-    // else
-    //   green *= dK2 / (dK2 + kScale);
-  }
-
   if (std::isnan(green))
     ABORT("Step:" << Para.Counter << ", Green is too large! Tau=" << Tau
                   << ", Ek=" << Ek << ", Green=" << green << ", Mom"
@@ -529,7 +507,7 @@ int diag::Tau2Index(const double &Tau) {
   return int((Tau / Para.Beta) * TauBinSize);
 }
 
-double Index2Tau(const int &Index) {
+double diag::Index2Tau(const int &Index) {
   return (Index + 0.5) * Para.Beta / TauBinSize;
 }
 

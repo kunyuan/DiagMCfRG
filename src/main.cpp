@@ -51,8 +51,8 @@ void InitPara() {
   Para.DiagFileFormat = "groups/DiagLoop{}.txt";
   // Para.GroupName = {"0", "1", "2", "3"};
   // Para.GroupName = {"1", "2"};
-  Para.GroupName = {"0", "1", "2"};
-  Para.ReWeight = {1.0, 2.0, 2.0, 1.0, 1.0};
+  Para.GroupName = {"0", "1"};
+  Para.ReWeight = {0.1, 2.0, 2.0, 1.0, 1.0};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 
@@ -193,8 +193,8 @@ void MonteCarlo() {
       } else if (x < 3.0 / 4.0) {
         Markov.ChangeTau();
         // ;
-      } else if (x < 4.0 / 4.0) {
-        Markov.ChangeScale();
+        // } else if (x < 4.0 / 4.0) {
+        //   Markov.ChangeScale();
         // ;
       }
 
