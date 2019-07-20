@@ -45,7 +45,6 @@ public:
   void Measure(double WeightFactor);
   void Update(double Ratio);
   void ClearStatis();
-  void ResetIRScale(int IRScaleBin);
   void Save();
 
   // run test in MC updates

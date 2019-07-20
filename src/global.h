@@ -22,7 +22,7 @@ const int ExtMomBinSize = 32;
 const int AngBinSize = 8;
 // number of energy scales, only useful in RG approach
 const int ScaleBinSize = 128;
-const int TauBinSize = 64;
+const int TauBinSize = 256;
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
 enum type { RG, POLAR };

@@ -43,25 +43,6 @@ void weight::Initialization() {
   LOG_INFO("Initializating diagram states ...")
   for (auto &group : Groups) {
     group.ReWeight = 1.0;
-    // for (auto &diag : group.Diag) {
-    //   for (int i = 0; i < group.GNum; i++) {
-    //     diag.G[i]->Excited = false;
-    //     diag.G[i]->Version = -1;
-    //     diag.G[i]->Weight = 1.0e-10;
-    //   }
-    //   for (int i = 0; i < group.Ver4Num; i++) {
-    //     diag.Ver4[i]->Excited = {false, false};
-    //     diag.Ver4[i]->Version = -1;
-    //     diag.Ver4[i]->Weight = {1.0e-10, -1.0e-10};
-    //   }
-    // }
-
-    // if (Para.ObsType == EQUALTIME) {
-    //   for (int i = 0; i < group.Ver4Num; ++i)
-    //     if (group.IsExtTau[i])
-    //       // to measure equal-time observable, lock all external tau
-    //       group.IsLockedTau[i] = true;
-    // }
   }
 
   LOG_INFO("Initializating MC variables ...")
@@ -411,8 +392,8 @@ void weight::Measure(double WeightFactor) {
   if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
     if (Var.CurrScale >= Para.ScaleTable[Var.CurrIRScaleBin])
       VerQTheta.Measure(Var.LoopMom[1], Var.LoopMom[2], Var.CurrExtMomBin,
-                        abs(Var.Tau[0] - Var.Tau[1]), Var.CurrScale,
-                        Var.CurrGroup->Order, WeightFactor);
+                        abs(Var.Tau[0] - Var.Tau[1]), Var.CurrGroup->Order,
+                        WeightFactor);
   }
 }
 
@@ -431,13 +412,6 @@ void weight::Save() {
 void weight::ClearStatis() {
   if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
     VerQTheta.ClearStatis();
-  }
-}
-
-void weight::ResetIRScale(int IRScaleBin) {
-  Var.CurrIRScaleBin = IRScaleBin;
-  if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
-    VerQTheta.ResetIRScale(IRScaleBin);
   }
 }
 

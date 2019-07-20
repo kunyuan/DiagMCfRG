@@ -219,7 +219,6 @@ void MonteCarlo() {
           // Markov.ClearStatis();
         }
         if (i % (WaitStep * 10)) {
-          Markov.Weight.ResetIRScale(int(Markov.Var.CurrIRScaleBin / 1.5));
           // LOG_INFO("Current IR Scale: " << Markov.Var.CurrIRScaleBin);
         }
 

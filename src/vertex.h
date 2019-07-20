@@ -38,11 +38,10 @@ class verQTheta {
 public:
   verQTheta();
   double Interaction(const momentum &InL, const momentum &InR,
-                     const momentum &Transfer, int VerType, double Tau,
-                     double Scale = 0);
+                     const momentum &Transfer, double Tau, int VerType);
 
   void Measure(const momentum &InL, const momentum &InR, const int QIndex,
-               double Tau, double Scale, int Order, double WeightFactor);
+               double Tau, int Order, double WeightFactor);
   void Update(double Ratio = 1.0);
   void Save();
   void ClearStatis();
@@ -51,9 +50,8 @@ public:
   double *DiffInteraction;
   double *IntInteraction;
 
-  double &EffInter(int Scale, int Angle, int ExtQ, int Tau);
-  double &DiffInter(int Order, int Scale, int Angle, int ExtQ, int Tau);
-  double &IntInter(int Order, int Scale, int Angle, int ExtQ, int Tau);
+  double &EffInter(int Angle, int ExtQ, int Tau);
+  double &DiffInter(int Order, int Angle, int ExtQ, int Tau);
   // double EffInteraction[ScaleBinSize + 1][AngBinSize][ExtMomBinSize];
   // double DiffInteraction[MaxOrder][ScaleBinSize +
   // 1][AngBinSize][ExtMomBinSize]; double IntInteraction[MaxOrder][ScaleBinSize
@@ -64,8 +62,7 @@ public:
 
   int QIndex = TauBinSize;
   int AngleIndex = TauBinSize * ExtMomBinSize;
-  int ScaleIndex = TauBinSize * ExtMomBinSize * AngleBinSize;
-  int OrderIndex = TauBinSize * ExtMomBinSize * AngleBinSize * ScaleBinSize;
+  int OrderIndex = TauBinSize * ExtMomBinSize * AngleBinSize;
 };
 
 class verQ {
