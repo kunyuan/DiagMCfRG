@@ -271,7 +271,7 @@ void weight::ChangeTau(group &Group, int TauIndex) {
 }
 
 double weight::GetNewWeight(group &Group) {
-  Group.NewWeight = fRG(Group.Order);
+  Group.NewWeight = fRG(Group.Order, Group.ID);
   return Group.NewWeight;
 }
 
@@ -390,10 +390,10 @@ void weight::RejectChange(group &Group) {
 
 void weight::Measure(double WeightFactor) {
   if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
-    if (Var.CurrScale >= Para.ScaleTable[Var.CurrIRScaleBin])
-      VerQTheta.Measure(Var.LoopMom[1], Var.LoopMom[2], Var.CurrExtMomBin,
-                        abs(Var.Tau[0] - Var.Tau[3]), Var.CurrGroup->Order,
-                        WeightFactor);
+    // if (Var.CurrScale >= Para.ScaleTable[Var.CurrIRScaleBin])
+    VerQTheta.Measure(Var.LoopMom[1], Var.LoopMom[2], Var.CurrExtMomBin,
+                      abs(Var.Tau[0] - Var.Tau[3]), Var.CurrGroup->ID,
+                      WeightFactor);
   }
 }
 

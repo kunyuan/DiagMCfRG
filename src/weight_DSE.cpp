@@ -20,7 +20,7 @@ double weight::Evaluate(group &Group) {
   }
 }
 
-double weight::fRG(int LoopNum) {
+double weight::fRG(int LoopNum, int ID) {
 
   const momentum &DirTran = Var.LoopMom[0];
   const momentum &InL = Var.LoopMom[1];
@@ -38,6 +38,8 @@ double weight::fRG(int LoopNum) {
                           -1, // normal diagram
                           -1  // left vertex order
       );
+      if (ID == 0)
+        return _Weight[0][0][0];
       // Weight = _Weight[Level][0];
     } else if (LoopNum == 2) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
@@ -179,13 +181,13 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
 
   DiagIndex += 1;
 
-  // _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
-  // _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex + 1];
-  // _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex + 1];
-  // _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
-  // _Weight[Level][DiagIndex][0] = -ExWeight;
+  _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
+  _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex + 1];
+  _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex + 1];
+  _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
+  _Weight[Level][DiagIndex][0] = -ExWeight;
 
-  // DiagIndex += 1;
+  DiagIndex += 1;
   return DiagIndex;
 }
 

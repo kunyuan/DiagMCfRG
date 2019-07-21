@@ -324,22 +324,25 @@ void markov::ChangeScale() {
 }
 
 double markov::GetNewTau(double &NewTau1, double &NewTau2) {
-  double Step = 0.1;
+  double Step = 0.5;
   NewTau1 = Random.urn() * Para.Beta;
+  // NewTau2 = Random.urn() * Para.Beta;
   NewTau2 = (Random.urn() - 0.5) * Step + NewTau1;
   if (NewTau2 < 0.0)
     NewTau2 += Para.Beta;
   if (NewTau2 > Para.Beta)
     NewTau2 -= Para.Beta;
   return Para.Beta * Step;
+  // return Para.Beta * Para.Beta;
 }
 
 double markov::RemoveOldTau(double &OldTau1, double &OldTau2) {
-  double Step = 0.1;
-  if (abs(OldTau2 - OldTau1) > Step)
+  double Step = 0.5;
+  if (abs(OldTau2 - OldTau1) > Step / 2.0)
     return 0.0;
   else
     return 1.0 / Para.Beta / Step;
+  // return 1.0 / Para.Beta / Para.Beta;
 }
 
 double markov::GetNewK(momentum &NewMom) {
@@ -347,13 +350,14 @@ double markov::GetNewK(momentum &NewMom) {
   // double dK = Para.Kf / sqrt(Para.Beta) / 4.0;
   // if (dK > Para.Kf / 2)
   // dK = Para.Kf / 2; // to avoid dK>Kf situation
-  double dK = 1.0 * Var.CurrScale;
+  // double dK = 1.0 * Var.CurrScale;
   // double x = Random.urn();
   // double KAmp = dK / 2.0 + dK * x;
   // if (x < 0)
   //   KAmp = Para.Kf + KAmp;
   // else
   //   KAmp = Para.Kf - KAmp;
+  double dK = Para.Kf / 2.0;
   double KAmp = Para.Kf + (Random.urn() - 0.5) * 2.0 * dK;
   if (KAmp <= 0.0) {
     return 0.0;
@@ -390,10 +394,11 @@ double markov::GetNewK(momentum &NewMom) {
 
 double markov::RemoveOldK(momentum &OldMom) {
   //====== The hard Way ======================//
-  double dK = 1.0 * Var.CurrScale;
+  // double dK = 1.0 * Var.CurrScale;
   // double dK = Para.Kf / sqrt(Para.Beta) / 4.0;
   // if (dK > Para.Kf / 2)
   //   dK = Para.Kf / 2; // to avoid dK>Kf situation
+  double dK = Para.Kf / 2.0;
   double KAmp = OldMom.norm();
   if (KAmp < Para.Kf - dK || KAmp > Para.Kf + dK)
     // if (KAmp < Para.Kf - 1.5 * dK ||
@@ -494,7 +499,7 @@ double markov::ShiftExtLegK(const momentum &OldExtMom, momentum &NewExtMom) {
 double markov::ShiftTau(const double &OldTau, double &NewTau) {
   double x = Random.urn();
   if (x < 1.0 / 3) {
-    double DeltaT = Para.Beta / 3.0;
+    double DeltaT = Para.Beta / 10.0;
     NewTau = OldTau + DeltaT * (Random.urn() - 0.5);
   } else if (x < 2.0 / 3) {
     NewTau = -OldTau;

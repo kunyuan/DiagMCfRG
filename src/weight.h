@@ -91,7 +91,7 @@ private:
   verQTheta VerQTheta;
   verfunc VerFunc;
 
-  double fRG(int LoopNum);
+  double fRG(int LoopNum, int ID);
   int Vertex4(
       const momentum &InL, const momentum &InR, const momentum &DirTran,
       int LoopNum, int TauIndex, int LoopIndex, int DiagIndex, int Level,

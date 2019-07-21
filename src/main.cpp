@@ -212,6 +212,11 @@ void MonteCarlo() {
       // Markov.DynamicTest();
 
       if (i % 1000 == 0) {
+        // cout << Markov.Weight.Var.Tau[0] << " vs " <<
+        // Markov.Weight.Var.Tau[1]
+        //      << endl;
+        // cout << Markov.Weight.Var.Tau[2] << " , " << Markov.Weight.Var.Tau[3]
+        //      << endl;
 
         if (i % WaitStep == 0) {
           Markov.UpdateWeight(1.0);

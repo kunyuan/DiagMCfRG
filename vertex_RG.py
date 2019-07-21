@@ -12,7 +12,7 @@ size = 12
 
 rs = 1.0
 Lambda = 2
-Beta = 10
+Beta = 20
 # XType = "Tau"
 XType = "Mom"
 # XType = "Angle"
@@ -37,12 +37,12 @@ folder = "./Beta{0}_rs{1}_lambda{2}/".format(Beta, rs, Lambda)
 
 files = os.listdir(folder)
 Num = 0
-Data = None
+Data0 = None
 ExtMomBin = None
 AngleBin = None
 TauBin = None
 for f in files:
-    if re.match("vertex"+"_pid[0-9]+.dat", f):
+    if re.match("vertex0"+"_pid[0-9]+.dat", f):
         print f
         with open(folder+f, "r") as file:
             line1 = file.readline()
@@ -54,24 +54,38 @@ for f in files:
             ExtMomBin = np.fromstring(line4.split(":")[1], sep=' ')
         Num += 1
         d = np.loadtxt(folder+f)
-        if Data is None:
-            Data = d
+        if Data0 is None:
+            Data0 = d
         else:
-            Data += d
+            Data0 += d
 
 AngleBinSize = len(AngleBin)
 TauBinSize = len(TauBin)
 ExtMomBinSize = len(ExtMomBin)
 ExtMomBin /= kF
 
+Data = None
+for f in files:
+    if re.match("vertex1"+"_pid[0-9]+.dat", f):
+        print f
+        d = np.loadtxt(folder+f)
+        if Data is None:
+            Data = d
+        else:
+            Data += d
+
 print "Found {0} files.".format(Num)
 Data /= Num
+Data0 /= Num
 
 Data = Data.reshape((AngleBinSize, ExtMomBinSize, TauBinSize))
+Data0 = Data.reshape((AngleBinSize, ExtMomBinSize, TauBinSize))
 
 qData = np.array(Data)
+qData0 = np.array(Data0)
 # qData = np.sum(qData, axis=1)/AngleBinSize*2.0*np.pi
 qData = np.mean(qData, axis=0)
+qData0 = np.mean(qData0, axis=0)
 # qData = np.mean(qData, axis=1)*2
 
 # verData=np.zeros(len(ExtMomBin))
@@ -108,9 +122,12 @@ if(XType == "Scale"):
     ax.set_xlabel("$Scale$", size=size)
 elif (XType == "Mom"):
 
-    qData = np.mean(qData, axis=1)
-    ErrorPlot(ax, ExtMomBin, qData[:],
-                ColorList[0], 's', "Mom")
+    qData = np.sum(qData, axis=1)
+    qData0 = np.sum(qData0, axis=1)
+    # qData = qData/qData0[0]*12.50
+
+    ErrorPlot(ax, ExtMomBin, qData0[:],
+              ColorList[0], 's', "Mom")
     # for i in range(ScaleBinSize/32):
     #     # print i, index
     #     # print ScaleBin[index]
@@ -118,17 +135,17 @@ elif (XType == "Mom"):
     # # for i in range(ScaleBinSize+1):
     #     ErrorPlot(ax, ExtMomBin, qData[index, :],
     #               ColorList[i], 's', "Scale {0}".format(ScaleBin[index]))
-        # ErrorPlot(ax, AngleBin, Data[i, :, 8],
-        #           ColorList[i], 's', "Order {0}".format(i))
-        # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
+    # ErrorPlot(ax, AngleBin, Data[i, :, 8],
+    #           ColorList[i], 's', "Order {0}".format(i))
+    # ErrorPlot(ax, DataAtOrder[o], ColorList[i], 's', "Order {0}".format(o))
 
     # ErrorPlot(ax, ExtMomBin, verData, 'y', 'o', "Sum")
 
     # x = np.arange(0, 3.0, 0.001)
     # y = x*0.0+Bubble
     # for i in range(len(x)):
-        # if x[i]>2.0:
-        # y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
+    # if x[i]>2.0:
+    # y[i]=Bubble*(1-np.sqrt(1-4/x[i]**2))
 
     # z=1.0/(1.0+y)
     # y=1.0-y
@@ -147,7 +164,7 @@ elif (XType == "Mom"):
     # ax.plot(x, yphy, 'k-', lw=2, label="physical")
     # ax.plot(x, y0, 'b-', lw=2, label="original")
 
-    # ax.plot(x,ym,'r-', lw=2, label="wrong")
+    ax.plot(x, y0*y0*y, 'r-', lw=2, label="wrong")
 
     ax.set_xlim([0.0, ExtMomBin[-1]])
     ax.set_xlabel("$q/k_F$", size=size)
