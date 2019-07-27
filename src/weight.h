@@ -113,8 +113,8 @@ private:
                 int DiagIndex);
 
   int OneLoop(const momentum &InL, const momentum &InR, const momentum &DirTran,
-              int LoopNum, int LVerLoopNum, int TauIndex, int LoopIndex,
-              int DiagIndex, int Level,
+              int InTauL, int InTauR, int LoopNum, int LVerLoopNum,
+              int TauIndex, int LoopIndex, int DiagIndex, int Level,
               bool *Channel, // three flags, calculate t, u, s or not
               bool IsProjected = false, bool IsPenguin = false);
 

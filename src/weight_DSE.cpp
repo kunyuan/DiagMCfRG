@@ -193,8 +193,9 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
 }
 
 int weight::OneLoop(const momentum &InL, const momentum &InR,
-                    const momentum &DirTran, int LoopNum, int LVerLoopNum,
-                    int TauIndex, int LoopIndex, int DiagIndex, int Level,
+                    const momentum &DirTran, int InTauL, int InTauR,
+                    int LoopNum, int LVerLoopNum, int TauIndex, int LoopIndex,
+                    int DiagIndex, int Level,
                     bool *Channel, // three flags, calculate t, u, s or not
                     bool IsProjected, bool IsPenguin) {
 
@@ -203,6 +204,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
   double SymFactor = 1.0;
   int nLevel = Level + 1;
   int nDiagIndex = 0;
+  int LTauInL, LTauInR, RTauInL, RTauInR, LTauIndex, RTauIndex;
 
   if (LoopNum < 1)
     return DiagIndex;
@@ -237,6 +239,15 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
 
       VerRInL = Internal;
       VerRDiTran = DirTran;
+
+      LTauInL = InTauL;
+      LTauInR = TauIndex;
+      LTauIndex = TauIndex + 1;
+
+      RTauInL = TauIndex + (LVerLoopNum + 1) * 2;
+
+      RTauIndex = ;
+
       SymFactor = -1.0;
     } else if (chan == 1) {
       // u diagram
@@ -281,9 +292,6 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
       VerRDiTran = DirTran + InR - Internal;
       SymFactor = 0.5;
     }
-
-    int LTauIndex = TauIndex;
-    int RTauIndex = TauIndex + (LVerLoopNum + 1) * 2;
 
     //====================  DIRECT  Diagram =============================
     // left vertex
