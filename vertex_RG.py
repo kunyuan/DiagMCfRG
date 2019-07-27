@@ -13,8 +13,8 @@ size = 12
 rs = 1.0
 Lambda = 2
 Beta = 20
-# XType = "Tau"
-XType = "Mom"
+XType = "Tau"
+# XType = "Mom"
 # XType = "Angle"
 
 ##############   3D    ##################################
@@ -120,11 +120,18 @@ if(XType == "Scale"):
                   ColorList[i], 's', "Q {0}".format(ExtMomBin[index]))
     ax.set_xlim([0.0, ScaleBin[-2]])
     ax.set_xlabel("$Scale$", size=size)
+elif(XType == "Tau"):
+    for i in range(ExtMomBinSize/4):
+        index = 4*i
+        ErrorPlot(ax, TauBin, qData[index, :],
+                  ColorList[i], 's', "Q {0}".format(ExtMomBin[index]))
+    ax.set_xlim([0.0, TauBin[-1]])
+    ax.set_xlabel("$Tau$", size=size)
 elif (XType == "Mom"):
 
     qData = np.sum(qData, axis=1)
     qData0 = np.sum(qData0, axis=1)
-    # qData = qData/qData0[0]*12.50
+    qData0 = qData0/qData0[0]*12.50
 
     ErrorPlot(ax, ExtMomBin, qData0[:],
               ColorList[0], 's', "Mom")

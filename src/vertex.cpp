@@ -57,9 +57,8 @@ verQTheta::verQTheta() {
   // PhyWeight =
   //     1.0 / Para.Beta / Para.Beta * ExtMomBinSize * 2.0 * PI * Para.Kf * 4.0;
 
-  // PhyWeight =
-  //     ExtMomBinSize * 2.0 * PI / TauBinSize * Para.Beta * Para.Beta * 1.603;
-  PhyWeight = 1.0;
+  PhyWeight = ExtMomBinSize * 2.0 * PI / TauBinSize * Para.Beta * Para.Beta;
+  // PhyWeight = 1.0;
 
   QIndex = TauBinSize;
   AngleIndex = TauBinSize * ExtMomBinSize;
@@ -110,10 +109,11 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
     double k = Transfer.norm();
     // return 8.0 * PI / (k * k + Para.Mass2) /
     //        (1 + pow(Tau * 10.0, 2) * 10.0 / PI);
-    return 8.0 * PI / (k * k + Para.Mass2) *
-           (0.5 / (1 + pow(abs(Tau) * 10.0, 2) * 10.0 / PI) +
-            0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI));
-    // return 1.0;
+    return 8.0 * PI / (k * k + Para.Mass2) / Para.Beta;
+    // return 8.0 * PI / (k * k + Para.Mass2) *
+    //        (0.5 / (1 + pow(abs(Tau) * 10.0, 2) * 10.0 / PI) +
+    //         0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI));
+    // return 1.0 / Para.Beta;
 
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
     if (k < Para.MaxExtMom) {
@@ -139,9 +139,10 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
   } else if (VerType == -2) {
     // return exp(-Transfer.norm() / Para.Kf);
     double k = Transfer.norm();
-    return 8.0 * PI / (k * k + Para.Mass2) *
-           (0.5 / (1 + pow(abs(Tau) * 10.0, 2) * 10.0 / PI) +
-            0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI));
+    return 1.0 / Para.Beta;
+    // return 8.0 * PI / (k * k + Para.Mass2) *
+    //        (0.5 / (1 + pow(abs(Tau) * 10.0, 2) * 10.0 / PI) +
+    //         0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI));
     // return 0.5 / (1 + pow(abs(Tau) * 10.0, 2) * 10.0 / PI) +
     //        0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI);
   } else {
@@ -155,6 +156,8 @@ void verQTheta::Measure(const momentum &InL, const momentum &InR,
   if (Order == 0) {
     Normalization += WeightFactor;
   }
+  if (Tau < 0.0)
+    Tau = Tau + Para.Beta;
   // } else {
   int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
   int tIndex = Tau2Index(Tau);
@@ -180,10 +183,10 @@ void verQTheta::Update(double Ratio) {
         double OldValue = EffInter(angle, qindex, tindex);
         double NewValue = 0.0;
         for (int order = 1; order < MaxOrder; ++order) {
-          // NewValue += DiffInter(order, angle, qindex, tindex) / Normalization
-          // *
-          //             PhyWeight;
-          NewValue += DiffInter(order, angle, qindex, tindex) / Normalization;
+          NewValue += DiffInter(order, angle, qindex, tindex) / Normalization *
+                      PhyWeight;
+          // NewValue += DiffInter(order, angle, qindex, tindex) /
+          // Normalization;
         }
         EffInter(angle, qindex, tindex) =
             OldValue * (1 - Ratio) + NewValue * Ratio;
