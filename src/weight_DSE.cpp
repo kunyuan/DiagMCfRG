@@ -168,21 +168,21 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   //   return VerQTheta.Interaction(InL, InR, DirTran, 0, Var.CurrScale) -
   //   VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
   double Tau = Var.Tau[TauIndex] - Var.Tau[TauIndex + 1];
-  double DiWeight = -VerQTheta.Interaction(InL, InR, DirTran, abs(Tau), 0);
+  double DiWeight = -VerQTheta.Interaction(InL, InR, DirTran, Tau, 0);
   double ExWeight =
-      -VerQTheta.Interaction(InL, InR, InR + DirTran - InL, abs(Tau), 0);
+      -VerQTheta.Interaction(InL, InR, InR + DirTran - InL, Tau, 0);
   _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
-  _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex + 1];
-  _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex + 1];
+  _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];
+  _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
   _Weight[Level][DiagIndex][0] = DiWeight;
   // _Weight[Level][DiagIndex][0] = DiWeight;
 
   DiagIndex += 1;
 
   _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
-  _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex + 1];
-  _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex + 1];
+  _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
+  _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
   _Weight[Level][DiagIndex][1] = -ExWeight;
 
