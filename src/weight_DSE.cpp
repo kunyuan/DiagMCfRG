@@ -45,8 +45,8 @@ double weight::fRG(int LoopNum, int ID) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
                           T,  // t diagram only
                           -1, // normal diagram
-                          // 1, // diff diagram
-                          -1 // left vertex order
+                          -1  // left vertex order
+                              // 1 // left vertex order
       );
     } else if (LoopNum == 3) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
@@ -175,27 +175,26 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
+  // _Weight[Level][DiagIndex][0] = DiWeight - ExWeight;
   _Weight[Level][DiagIndex][0] = DiWeight;
-  // _Weight[Level][DiagIndex][0] = DiWeight;
 
   DiagIndex += 1;
 
-  _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
-  _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
-  _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];
-  _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
-  _Weight[Level][DiagIndex][1] = -ExWeight;
+  // _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
+  // _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
+  // _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];
+  // _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
+  // _Weight[Level][DiagIndex][1] = -ExWeight;
 
   // _Weight[Level][DiagIndex][1] = 0.0;
-  DiagIndex += 1;
+  // DiagIndex += 1;
 
   return DiagIndex;
 }
 
 int weight::OneLoop(const momentum &InL, const momentum &InR,
-                    const momentum &DirTran, int InTauL, int InTauR,
-                    int LoopNum, int LVerLoopNum, int TauIndex, int LoopIndex,
-                    int DiagIndex, int Level,
+                    const momentum &DirTran, int LoopNum, int LVerLoopNum,
+                    int TauIndex, int LoopIndex, int DiagIndex, int Level,
                     bool *Channel, // three flags, calculate t, u, s or not
                     bool IsProjected, bool IsPenguin) {
 
@@ -204,7 +203,6 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
   double SymFactor = 1.0;
   int nLevel = Level + 1;
   int nDiagIndex = 0;
-  int LTauInL, LTauInR, RTauInL, RTauInR, LTauIndex, RTauIndex;
 
   if (LoopNum < 1)
     return DiagIndex;
@@ -220,6 +218,9 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
   momentum Internal = Var.LoopMom[LoopIndex + LVerLoopNum];
   momentum Internal2, VerLInL, VerLInR, VerLDiTran, VerRInL, VerRInR,
       VerRDiTran;
+
+  int LTauIndex = TauIndex;
+  int RTauIndex = TauIndex + (LVerLoopNum + 1) * 2;
 
   for (int chan = 0; chan < 3; chan++) {
     if (!Channel[chan])
@@ -239,14 +240,6 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
 
       VerRInL = Internal;
       VerRDiTran = DirTran;
-
-      LTauInL = InTauL;
-      LTauInR = TauIndex;
-      LTauIndex = TauIndex + 1;
-
-      RTauInL = TauIndex + (LVerLoopNum + 1) * 2;
-
-      RTauIndex = ;
 
       SymFactor = -1.0;
     } else if (chan == 1) {
@@ -311,7 +304,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
                           false     // not penguin
       );
     } else {
-      // nChannel = T;
+      // nChannel = U;
       nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
                            LoopIndex, nDiagIndex, nLevel, nChannel,
                            LVerType, // VerType

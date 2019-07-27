@@ -57,7 +57,8 @@ verQTheta::verQTheta() {
   // PhyWeight =
   //     1.0 / Para.Beta / Para.Beta * ExtMomBinSize * 2.0 * PI * Para.Kf * 4.0;
 
-  PhyWeight = ExtMomBinSize * 2.0 * PI / TauBinSize * Para.Beta * Para.Beta;
+  // PhyWeight = ExtMomBinSize * 2.0 * PI * Para.Beta;
+  PhyWeight = 2.0 * PI;
   // PhyWeight = 1.0;
 
   QIndex = TauBinSize;
@@ -139,7 +140,7 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
   } else if (VerType == -2) {
     // return exp(-Transfer.norm() / Para.Kf);
     double k = Transfer.norm();
-    return 1.0 / Para.Beta;
+    return 1.0;
     // return 8.0 * PI / (k * k + Para.Mass2) *
     //        (0.5 / (1 + pow(abs(Tau) * 10.0, 2) * 10.0 / PI) +
     //         0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI));

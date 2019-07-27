@@ -324,7 +324,7 @@ void markov::ChangeScale() {
 }
 
 double markov::GetNewTau(double &NewTau1, double &NewTau2) {
-  double Step = 0.5;
+  double Step = 1.0;
   NewTau1 = Random.urn() * Para.Beta;
   // NewTau2 = Random.urn() * Para.Beta;
   NewTau2 = (Random.urn() - 0.5) * Step + NewTau1;
@@ -337,7 +337,7 @@ double markov::GetNewTau(double &NewTau1, double &NewTau2) {
 }
 
 double markov::RemoveOldTau(double &OldTau1, double &OldTau2) {
-  double Step = 0.5;
+  double Step = 1.0;
   if (abs(OldTau2 - OldTau1) > Step / 2.0)
     return 0.0;
   else

@@ -13,8 +13,8 @@ size = 12
 rs = 1.0
 Lambda = 2
 Beta = 20
-XType = "Tau"
-# XType = "Mom"
+# XType = "Tau"
+XType = "Mom"
 # XType = "Angle"
 
 ##############   3D    ##################################
@@ -32,6 +32,7 @@ XType = "Tau"
 kF = np.sqrt(2.0)/rs  # 2D
 # Bubble=0.11635  #2D, Beta=0.5, rs=1
 Bubble = 0.15916/2  # 2D, Beta=10, rs=1
+
 
 folder = "./Beta{0}_rs{1}_lambda{2}/".format(Beta, rs, Lambda)
 
@@ -130,8 +131,8 @@ elif(XType == "Tau"):
 elif (XType == "Mom"):
 
     qData = np.sum(qData, axis=1)
-    qData0 = np.sum(qData0, axis=1)
-    qData0 = qData0/qData0[0]*12.50
+    qData0 = np.sum(qData0, axis=1)*Beta/kF**2/TauBinSize
+    # qData0 = qData0/qData0[0]*12.50
 
     ErrorPlot(ax, ExtMomBin, qData0[:],
               ColorList[0], 's', "Mom")
