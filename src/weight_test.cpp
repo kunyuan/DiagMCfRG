@@ -160,7 +160,7 @@ int weight::DynamicTest() {
   }
 
   //===============  Test if the weight is reproducible ============//
-  ChangeGroup(*Var.CurrGroup, true); // force to recalculate newweight
+  // ChangeGroup(*Var.CurrGroup, true); // force to recalculate newweight
   double Weight = GetNewWeight(*Var.CurrGroup);
 
   // for (auto &diag : Var.CurrGroup->Diag) {

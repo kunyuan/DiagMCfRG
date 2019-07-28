@@ -16,6 +16,9 @@ struct variable {
   double CurrTau;    // current external tau
   double CurrScale;  // Current (Reference) Scale: Index=1, ..., ScaleBinSize
   int CurrIRScaleBin;
+  int CurrDiagNum;
+  double CurrWeight[MaxDiagNum];
+  double CurrExtTau[MaxDiagNum];
   array<momentum, MaxLoopNum> LoopMom; // all momentum loop variables
   array<double, MaxTauNum> Tau;        // all tau variables
   array<int, MaxLoopNum> LoopSpin;     // all spin variables
@@ -120,6 +123,7 @@ private:
 
   double _Weight[MaxOrder][MaxDiagNum][2];
   double _ExtTau[MaxOrder][MaxDiagNum][4];
+  int _DiagNum;
   // double Ver4Loop2();
   // double Ver6Loop1();
   bool ALL[3] = {true, true, true};

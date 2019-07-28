@@ -27,6 +27,7 @@ double weight::fRG(int LoopNum, int ID) {
   const momentum &InR = Var.LoopMom[2];
   if (LoopNum == 0) {
     // normalization
+    _DiagNum = 0;
     return VerQTheta.Interaction(InL, InR, DirTran, 0.0, -2);
   } else {
     int Level = 0;
@@ -58,10 +59,17 @@ double weight::fRG(int LoopNum, int ID) {
       );
     }
     int count = 0;
+    double inL = _ExtTau[Level][0][INL];
     for (int diag = 0; diag < DiagIndex; diag++) {
       Weight += _Weight[Level][diag][0];
       count++;
+      // if (abs(_ExtTau[Level][diag][INL] - inL) > 1.0e-10) {
+      //   ABORT("left time different! DiagNum: " << diag << " with " << inL
+      //                                          << " vs "
+      //                                          << _ExtTau[Level][diag][INL]);
+      // }
     }
+    _DiagNum = count;
     // if (LoopNum == 3 || LoopNum == 2)
     //   cout << "order: " << LoopNum << ", RG number: " << count
     //        << ", diag num: " << DiagIndex << endl;
