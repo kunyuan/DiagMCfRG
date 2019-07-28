@@ -127,8 +127,8 @@ void weight::Measure(double WeightFactor) {
   if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
     // if (Var.CurrScale >= Para.ScaleTable[Var.CurrIRScaleBin])
     VerQTheta.Measure(Var.LoopMom[1], Var.LoopMom[2], Var.CurrExtMomBin,
-                      Var.Tau[0] - Var.Tau[2], Var.CurrGroup->Order,
-                      WeightFactor);
+                      Var.CurrGroup->Order, Var.CurrDiagNum, Var.CurrExtTau,
+                      Var.CurrWeight, WeightFactor);
   }
 }
 

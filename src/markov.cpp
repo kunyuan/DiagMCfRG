@@ -109,7 +109,7 @@ void markov::Measure() {
   Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
   PolarStatic[Var.CurrGroup->ID] += WeightFactor;
 
-  Weight.Measure(WeightFactor);
+  Weight.Measure(1.0 / MCWeight);
 };
 
 void markov::UpdateWeight(double Ratio) { Weight.Update(Ratio); }

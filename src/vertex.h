@@ -41,7 +41,8 @@ public:
                      const momentum &Transfer, double Tau, int VerType);
 
   void Measure(const momentum &InL, const momentum &InR, const int QIndex,
-               double Tau, int Order, double WeightFactor);
+               int Order, int DiagNum, double *Tau, double *Weight,
+               double WeightFactor);
   void Update(double Ratio = 1.0);
   void Save();
   void ClearStatis();

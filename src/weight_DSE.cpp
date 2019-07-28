@@ -28,7 +28,8 @@ double weight::fRG(int LoopNum, int ID) {
   if (LoopNum == 0) {
     // normalization
     _DiagNum = 0;
-    return VerQTheta.Interaction(InL, InR, DirTran, 0.0, -2);
+    Var.CurrWeight[0] = VerQTheta.Interaction(InL, InR, DirTran, 0.0, -2);
+    return Var.CurrWeight[0];
   } else {
     int Level = 0;
     int DiagIndex = 0;
