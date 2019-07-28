@@ -57,8 +57,8 @@ verQTheta::verQTheta() {
   // PhyWeight =
   //     1.0 / Para.Beta / Para.Beta * ExtMomBinSize * 2.0 * PI * Para.Kf * 4.0;
 
-  // PhyWeight = ExtMomBinSize * 2.0 * PI * Para.Beta;
-  PhyWeight = 2.0 * PI;
+  PhyWeight = ExtMomBinSize * 2.0 * PI * Para.Beta;
+  // PhyWeight = 2.0 * PI / TauBinSize * 64;
   // PhyWeight = 1.0;
 
   QIndex = TauBinSize;
@@ -156,28 +156,31 @@ void verQTheta::Measure(const momentum &InL, const momentum &InR,
                         double WeightFactor) {
   if (Order == 0) {
     Normalization += WeightFactor;
+  } else {
+    if (Tau < 0.0)
+      Tau = Tau + Para.Beta;
+    // } else {
+    int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
+    int tIndex = Tau2Index(Tau);
+    // cout << AngleIndex << endl;
+    // cout << InL[0] << "," << InL[1] << endl;
+    // cout << InR[0] << "," << InR[1] << endl;
+    // cout << "angle: " << Angle2D(InL, InR) << endl;
+    DiffInter(Order, AngleIndex, QIndex, tIndex) +=
+        WeightFactor / Para.dAngleTable[AngleIndex] / (Para.Beta / TauBinSize);
+    // }
+    DiffInter(0, AngleIndex, QIndex, tIndex) +=
+        WeightFactor / Para.dAngleTable[AngleIndex];
   }
-  if (Tau < 0.0)
-    Tau = Tau + Para.Beta;
-  // } else {
-  int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
-  int tIndex = Tau2Index(Tau);
-  // cout << AngleIndex << endl;
-  // cout << InL[0] << "," << InL[1] << endl;
-  // cout << InR[0] << "," << InR[1] << endl;
-  // cout << "angle: " << Angle2D(InL, InR) << endl;
-  DiffInter(Order, AngleIndex, QIndex, tIndex) +=
-      WeightFactor / Para.dAngleTable[AngleIndex] / (Para.Beta / TauBinSize);
-  // }
   return;
 }
 
 void verQTheta::Update(double Ratio) {
-  double Normalization = 0.0;
-  for (int angle = 0; angle < AngBinSize; ++angle)
-    for (int tindex = 0; tindex < TauBinSize; ++tindex) {
-      Normalization += DiffInter(0, angle, 0, tindex) / AngBinSize;
-    }
+  // double Normalization = 0.0;
+  // for (int angle = 0; angle < AngBinSize; ++angle)
+  //   for (int tindex = 0; tindex < TauBinSize; ++tindex) {
+  //     Normalization += DiffInter(0, angle, 0, tindex) / AngBinSize;
+  //   }
   for (int angle = 0; angle < AngBinSize; ++angle)
     for (int qindex = 0; qindex < ExtMomBinSize; ++qindex)
       for (int tindex = 0; tindex < TauBinSize; ++tindex) {
@@ -186,8 +189,6 @@ void verQTheta::Update(double Ratio) {
         for (int order = 1; order < MaxOrder; ++order) {
           NewValue += DiffInter(order, angle, qindex, tindex) / Normalization *
                       PhyWeight;
-          // NewValue += DiffInter(order, angle, qindex, tindex) /
-          // Normalization;
         }
         EffInter(angle, qindex, tindex) =
             OldValue * (1 - Ratio) + NewValue * Ratio;
@@ -195,12 +196,6 @@ void verQTheta::Update(double Ratio) {
 }
 
 void verQTheta::Save() {
-
-  double Normalization = 0.0;
-  for (int angle = 0; angle < AngBinSize; ++angle)
-    for (int tindex = 0; tindex < TauBinSize; ++tindex) {
-      Normalization += DiffInter(0, angle, 0, tindex) / AngBinSize;
-    }
 
   for (int order = 0; order < 4; order++) {
     string FileName = fmt::format("vertex{0}_pid{1}.dat", order, Para.PID);

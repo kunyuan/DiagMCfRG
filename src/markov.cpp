@@ -326,23 +326,23 @@ void markov::ChangeScale() {
 double markov::GetNewTau(double &NewTau1, double &NewTau2) {
   double Step = 1.0;
   NewTau1 = Random.urn() * Para.Beta;
-  // NewTau2 = Random.urn() * Para.Beta;
-  NewTau2 = (Random.urn() - 0.5) * Step + NewTau1;
-  if (NewTau2 < 0.0)
-    NewTau2 += Para.Beta;
-  if (NewTau2 > Para.Beta)
-    NewTau2 -= Para.Beta;
-  return Para.Beta * Step;
-  // return Para.Beta * Para.Beta;
+  NewTau2 = Random.urn() * Para.Beta;
+  // NewTau2 = (Random.urn() - 0.5) * Step + NewTau1;
+  // if (NewTau2 < 0.0)
+  //   NewTau2 += Para.Beta;
+  // if (NewTau2 > Para.Beta)
+  //   NewTau2 -= Para.Beta;
+  // return Para.Beta * Step;
+  return Para.Beta * Para.Beta;
 }
 
 double markov::RemoveOldTau(double &OldTau1, double &OldTau2) {
-  double Step = 1.0;
-  if (abs(OldTau2 - OldTau1) > Step / 2.0)
-    return 0.0;
-  else
-    return 1.0 / Para.Beta / Step;
-  // return 1.0 / Para.Beta / Para.Beta;
+  // double Step = 1.0;
+  // if (abs(OldTau2 - OldTau1) > Step / 2.0)
+  //   return 0.0;
+  // else
+  //   return 1.0 / Para.Beta / Step;
+  return 1.0 / Para.Beta / Para.Beta;
 }
 
 double markov::GetNewK(momentum &NewMom) {
@@ -506,6 +506,8 @@ double markov::ShiftTau(const double &OldTau, double &NewTau) {
   } else {
     NewTau = Random.urn() * Para.Beta;
   }
+
+  // NewTau = Random.urn() * Para.Beta;
   if (NewTau < 0.0)
     NewTau += Para.Beta;
   if (NewTau > Para.Beta)

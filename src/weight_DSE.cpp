@@ -46,7 +46,7 @@ double weight::fRG(int LoopNum, int ID) {
                           T,  // t diagram only
                           -1, // normal diagram
                           -1  // left vertex order
-                              // 1 // left vertex order
+                              // 1   // left vertex order
       );
     } else if (LoopNum == 3) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,

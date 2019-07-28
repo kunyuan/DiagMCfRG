@@ -21,8 +21,8 @@ const int ExtMomBinSize = 32;
 // number of bins for the angle between InL and InR legs
 const int AngBinSize = 16;
 // number of energy scales, only useful in RG approach
-const int ScaleBinSize = 128;
-const int TauBinSize = 256;
+const int ScaleBinSize = 64;
+const int TauBinSize = 32;
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
 enum type { RG, POLAR };

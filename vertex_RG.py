@@ -31,7 +31,8 @@ XType = "Mom"
 ###### Bare Green's function    #########################
 kF = np.sqrt(2.0)/rs  # 2D
 # Bubble=0.11635  #2D, Beta=0.5, rs=1
-Bubble = 0.15916/2  # 2D, Beta=10, rs=1
+# Bubble = 0.15916/2  # 2D, Beta=10, rs=1
+Bubble = 0.0795775  # 2D, Beta=20, rs=1
 
 
 folder = "./Beta{0}_rs{1}_lambda{2}/".format(Beta, rs, Lambda)
@@ -43,7 +44,7 @@ ExtMomBin = None
 AngleBin = None
 TauBin = None
 for f in files:
-    if re.match("vertex0"+"_pid[0-9]+.dat", f):
+    if re.match("vertex1"+"_pid[0-9]+.dat", f):
         print f
         with open(folder+f, "r") as file:
             line1 = file.readline()
@@ -67,7 +68,7 @@ ExtMomBin /= kF
 
 Data = None
 for f in files:
-    if re.match("vertex1"+"_pid[0-9]+.dat", f):
+    if re.match("vertex0"+"_pid[0-9]+.dat", f):
         print f
         d = np.loadtxt(folder+f)
         if Data is None:
@@ -80,7 +81,7 @@ Data /= Num
 Data0 /= Num
 
 Data = Data.reshape((AngleBinSize, ExtMomBinSize, TauBinSize))
-Data0 = Data.reshape((AngleBinSize, ExtMomBinSize, TauBinSize))
+Data0 = Data0.reshape((AngleBinSize, ExtMomBinSize, TauBinSize))
 
 qData = np.array(Data)
 qData0 = np.array(Data0)
@@ -130,12 +131,16 @@ elif(XType == "Tau"):
     ax.set_xlabel("$Tau$", size=size)
 elif (XType == "Mom"):
 
-    qData = np.sum(qData, axis=1)
-    qData0 = np.sum(qData0, axis=1)*Beta/kF**2/TauBinSize
+    qData = np.sum(qData, axis=1)/(128.0/np.pi)
+    # qData0 = np.sum(qData0, axis=1)*Beta/kF**2/TauBinSize/40.65
+    qData0 = np.sum(qData0, axis=1)*Beta/kF**2/TauBinSize/39.3
     # qData0 = qData0/qData0[0]*12.50
 
     ErrorPlot(ax, ExtMomBin, qData0[:],
               ColorList[0], 's', "Mom")
+
+    # ErrorPlot(ax, ExtMomBin, qData[:],
+    #           ColorList[1], 's', "Mom 0")
     # for i in range(ScaleBinSize/32):
     #     # print i, index
     #     # print ScaleBin[index]
