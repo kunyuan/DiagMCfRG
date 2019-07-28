@@ -68,7 +68,7 @@ ExtMomBin /= kF
 
 Data = None
 for f in files:
-    if re.match("vertex0"+"_pid[0-9]+.dat", f):
+    if re.match("vertex2"+"_pid[0-9]+.dat", f):
         print f
         d = np.loadtxt(folder+f)
         if Data is None:
@@ -131,16 +131,17 @@ elif(XType == "Tau"):
     ax.set_xlabel("$Tau$", size=size)
 elif (XType == "Mom"):
 
-    qData = np.sum(qData, axis=1)/(128.0/np.pi)
+    # qData = np.sum(qData, axis=1)/(128.0/np.pi)
     # qData0 = np.sum(qData0, axis=1)*Beta/kF**2/TauBinSize/40.65
-    qData0 = np.sum(qData0, axis=1)*Beta/kF**2/TauBinSize/39.3
+    qData = np.sum(qData, axis=1)*Beta/kF**2/TauBinSize
+    qData0 = np.sum(qData0, axis=1)*Beta/kF**2/TauBinSize
     # qData0 = qData0/qData0[0]*12.50
 
     ErrorPlot(ax, ExtMomBin, qData0[:],
-              ColorList[0], 's', "Mom")
+              ColorList[0], 's', "Order 2")
 
-    # ErrorPlot(ax, ExtMomBin, qData[:],
-    #           ColorList[1], 's', "Mom 0")
+    ErrorPlot(ax, ExtMomBin, qData[:],
+              ColorList[1], 's', "Order 3")
     # for i in range(ScaleBinSize/32):
     #     # print i, index
     #     # print ScaleBin[index]
@@ -177,7 +178,7 @@ elif (XType == "Mom"):
     # ax.plot(x, yphy, 'k-', lw=2, label="physical")
     # ax.plot(x, y0, 'b-', lw=2, label="original")
 
-    ax.plot(x, y0*y0*y, 'r-', lw=2, label="wrong")
+    # ax.plot(x, y0*y0*y, 'r-', lw=2, label="wrong")
 
     ax.set_xlim([0.0, ExtMomBin[-1]])
     ax.set_xlabel("$q/k_F$", size=size)

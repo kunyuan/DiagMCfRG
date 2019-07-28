@@ -45,8 +45,8 @@ double weight::fRG(int LoopNum, int ID) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
                           T,  // t diagram only
                           -1, // normal diagram
-                          -1  // left vertex order
-                              // 1   // left vertex order
+                              // -1  // left vertex order
+                          1   // left vertex order
       );
     } else if (LoopNum == 3) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
@@ -68,8 +68,9 @@ double weight::fRG(int LoopNum, int ID) {
     // cout << _Weight[Level][0] << ": " << _Weight[Level][1] << ": "
     //      << _Weight[Level][2] << endl;
 
-    // return Weight / pow(40.0, LoopNum);
-    return Weight;
+    // cout << Weight << endl;
+    return Weight / pow(39.4, LoopNum);
+    // return Weight;
   }
 }
 
@@ -97,14 +98,14 @@ int weight::Vertex4(
     // if (LoopNum == 2 && Level == 1)
     //   cout << "2 order: " << LoopNum << "diag:" << DiagIndex << endl;
 
-    if (LoopNum >= 2) {
-      DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                         DiagIndex, Level, Channel,
-                         VerType,   // VerType
-                         LVerOrder, // no projection
-                         true       // penguin diagram
-      );
-    }
+    // if (LoopNum >= 2) {
+    //   DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+    //                      DiagIndex, Level, Channel,
+    //                      VerType,   // VerType
+    //                      LVerOrder, // no projection
+    //                      true       // penguin diagram
+    //   );
+    // }
     // if (LoopNum == 2 && Level == 1)
     //   cout << "3 order: " << LoopNum << "diag:" << DiagIndex << endl;
     // for normal vertex or projected vertex, just return
@@ -175,8 +176,8 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
-  // _Weight[Level][DiagIndex][0] = DiWeight - ExWeight;
-  _Weight[Level][DiagIndex][0] = DiWeight;
+  _Weight[Level][DiagIndex][0] = DiWeight - ExWeight;
+  // _Weight[Level][DiagIndex][0] = DiWeight;
 
   DiagIndex += 1;
 
@@ -304,7 +305,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
                           false     // not penguin
       );
     } else {
-      // nChannel = U;
+      // nChannel = S;
+      // LVerType = -1;
       nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
                            LoopIndex, nDiagIndex, nLevel, nChannel,
                            LVerType, // VerType
