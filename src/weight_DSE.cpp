@@ -150,7 +150,7 @@ int weight::Bubble(
                           DiagIndex, Level, Channel,
                           false, // do not project
                           IsPenguin);
-      // if (LoopNum == 2) {
+      // if (LoopNum == 2 && Level == 0) {
       //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
       //        << " OL:" << OL << endl;
       // }
@@ -161,6 +161,10 @@ int weight::Bubble(
                           DiagIndex, Level, Channel,
                           true, // do projection
                           IsPenguin);
+      // if (LoopNum == 2 && Level == 0) {
+      //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
+      //        << " OL:" << OL << endl;
+      // }
     }
   }
   return DiagIndex;
