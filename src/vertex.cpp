@@ -105,9 +105,9 @@ double &verQTheta::DiffInter(int Order, int Angle, int ExtQ, int Tau) {
 double verQTheta::Interaction(const momentum &InL, const momentum &InR,
                               const momentum &Transfer, double Tau,
                               int VerType) {
-  if (VerType >= 0) {
 
-    double k = Transfer.norm();
+  double k = Transfer.norm();
+  if (VerType == 0) {
     // return 8.0 * PI / (k * k + Para.Mass2) /
     //        (1 + pow(Tau * 10.0, 2) * 10.0 / PI);
     return 8.0 * PI / (k * k + Para.Mass2) / Para.Beta;
@@ -115,35 +115,33 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
     //        (0.5 / (1 + pow(abs(Tau) * 10.0, 2) * 10.0 / PI) +
     //         0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI));
     // return 1.0 / Para.Beta;
-
-    int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
+  } else if (VerType == 1) {
+    // return 0.0;
     if (k < Para.MaxExtMom) {
-      // return 8.0 * PI /
-      // (k * k + Para.Mass2 +
-      // 0.159 * (1 - sqrt(1 - 4.0 * Para.Kf * Para.Kf / k / k)));
-      // int ScaleIndex = Scale2Index(Scale);
-      // double Upper =
-      //     EffInter(ScaleIndex + 1, AngleIndex, Mom2Index(k), Tau2Index(Tau));
-      // double Lower =
-      //     EffInter(ScaleIndex, AngleIndex, Mom2Index(k), Tau2Index(Tau));
-      // double UpperScale = Para.ScaleTable[ScaleIndex + 1];
-      // double LowerScale = Para.ScaleTable[ScaleIndex];
+      if (Tau < 0.0)
+        Tau += Para.Beta;
+      int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
+      int TauIndex = Tau2Index(Tau);
+      return EffInter(AngleIndex, Mom2Index(k), TauIndex);
+      // double Upper = EffInter(AngleIndex, Mom2Index(k), Tau2Index(Tau));
+      // double Lower = EffInter(AngleIndex, Mom2Index(k), Tau2Index(Tau));
+      // double UpperTau = Index2Tau(TauIndex + 1);
+      // double LowerTau = Index2Tau(TauIndex);
       // // cout << Upper << " : " << Lower << endl;
-      // return Lower +
-      //        (Upper - Lower) / (UpperScale - LowerScale) * (Scale -
-      //        LowerScale);
-    } else
-      return 8.0 * PI / (k * k + Para.Mass2);
-
+      // return Lower + (Upper - Lower) / (UpperTau - LowerTau) * (Tau -
+      // LowerTau);
+    } else {
+      return 0.0;
+    }
   } else if (VerType == -1) {
     return 1.0;
   } else if (VerType == -2) {
     // return exp(-Transfer.norm() / Para.Kf);
-    double k = Transfer.norm();
     return 1.0;
     // return 8.0 * PI / (k * k + Para.Mass2) *
     //        (0.5 / (1 + pow(abs(Tau) * 10.0, 2) * 10.0 / PI) +
-    //         0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI));
+    //         0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 /
+    //         PI));
     // return 0.5 / (1 + pow(abs(Tau) * 10.0, 2) * 10.0 / PI) +
     //        0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI);
   } else {
@@ -186,11 +184,6 @@ void verQTheta::Measure(const momentum &InL, const momentum &InR,
 }
 
 void verQTheta::Update(double Ratio) {
-  // double Normalization = 0.0;
-  // for (int angle = 0; angle < AngBinSize; ++angle)
-  //   for (int tindex = 0; tindex < TauBinSize; ++tindex) {
-  //     Normalization += DiffInter(0, angle, 0, tindex) / AngBinSize;
-  //   }
   for (int angle = 0; angle < AngBinSize; ++angle)
     for (int qindex = 0; qindex < ExtMomBinSize; ++qindex)
       for (int tindex = 0; tindex < TauBinSize; ++tindex) {

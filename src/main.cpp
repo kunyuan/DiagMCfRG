@@ -51,7 +51,10 @@ void InitPara() {
   Para.DiagFileFormat = "groups/DiagLoop{}.txt";
   // Para.GroupName = {"0", "1", "2", "3"};
   // Para.GroupName = {"1", "2"};
-  Para.GroupName = {"0", "1", "2"};
+  Para.GroupName = {
+      "0",
+      "1",
+  };
   Para.ReWeight = {5, 2.0, 10.0, 1.0, 1.0};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
@@ -174,6 +177,7 @@ void MonteCarlo() {
 
   LOG_INFO("Start simulation ...")
   int WaitStep = 1000000;
+  int Flag = 0;
 
   for (int Block = 0; Block < Para.TotalStep; Block++) {
     for (int i = 0; i < 1000000; i++) {
@@ -218,9 +222,10 @@ void MonteCarlo() {
         // cout << Markov.Weight.Var.Tau[2] << " , " << Markov.Weight.Var.Tau[3]
         //      << endl;
 
-        if (i % WaitStep == 0) {
-          Markov.UpdateWeight(1.0);
-          // WaitStep*=2;
+        if (i % (WaitStep * 10) == 0) {
+          if (Flag == 0)
+            Markov.UpdateWeight(1.0);
+          Flag = 1;
           // Markov.ClearStatis();
         }
         if (i % (WaitStep * 10)) {
