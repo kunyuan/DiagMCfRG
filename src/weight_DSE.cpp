@@ -48,9 +48,9 @@ double weight::fRG(int LoopNum, int ID) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
                           T,  // t diagram only
                           -1, // normal diagram
-                              // RIGHT, // normal diagram
-                              // -1     // left vertex order
-                          1   // left vertex order
+                          // RIGHT, // normal diagram
+                          -1 // left vertex order
+                             // 1   // left vertex order
       );
     } else if (LoopNum == 3) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
@@ -80,8 +80,10 @@ double weight::fRG(int LoopNum, int ID) {
     //      << _Weight[Level][2] << endl;
 
     // if (LoopNum == 2)
+    //   // cout << Weight << endl;
     //   cout << count << endl;
-    return Weight;
+    double Factor = 1.0 / pow(39.4, LoopNum);
+    return Weight * Factor;
     // return Weight;
   }
 }
@@ -111,14 +113,14 @@ int weight::Vertex4(
     // if (LoopNum == 2 && Level == 0)
     //   cout << "2 order: " << LoopNum << "diag:" << DiagIndex << endl;
 
-    // if (LoopNum >= 2) {
-    //   DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-    //                      DiagIndex, Level, Channel,
-    //                      VerType,   // VerType
-    //                      LVerOrder, // no projection
-    //                      true       // penguin diagram
-    //   );
-    // }
+    if (LoopNum >= 2) {
+      DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+                         DiagIndex, Level, Channel,
+                         VerType,   // VerType
+                         LVerOrder, // no projection
+                         true       // penguin diagram
+      );
+    }
     // if (LoopNum == 2 && Level == 0)
     //   cout << "2 order: " << LoopNum << "diag:" << DiagIndex << endl;
     // for normal vertex or projected vertex, just return
@@ -134,18 +136,6 @@ int weight::Bubble(
     int VerType,   // -1: normal, 0: left(to project), 1: right(to diff)
     int LVerOrder, // order of left vertex
     bool IsPenguin) {
-
-  // calculate normal diagrams
-  // for (int OL = 0; OL < LoopNum; OL++) {
-  //   if (IsPenguin && OL < 1)
-  //     continue;
-  //   if (!IsPenguin && OL > 0)
-  //     continue;
-  //   DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
-  //                       DiagIndex, Level, Channel,
-  //                       false, // do not project
-  //                       IsPenguin);
-  // }
 
   // calculate renormalized diagrams
   for (int OL = 0; OL < LoopNum; OL++) {
@@ -165,6 +155,8 @@ int weight::Bubble(
       //        << " OL:" << OL << endl;
       // }
     }
+
+    /////// comment this block to calculate original diagrams  //////
     if (VerType == 0 || VerType == 1) {
       // do projection
       DiagIndex = OneLoop(InL, InR, DirTran, LoopNum, OL, TauIndex, LoopIndex,
@@ -323,8 +315,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
                           false     // not penguin
       );
     } else {
-      nChannel = US;
-      LVerType = -1;
+      // nChannel = U;
+      // LVerType = -1;
       nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
                            LoopIndex, nDiagIndex, nLevel, nChannel,
                            LVerType, // VerType
