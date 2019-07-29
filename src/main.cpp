@@ -176,7 +176,7 @@ void MonteCarlo() {
   ReweightTimer.start();
 
   LOG_INFO("Start simulation ...")
-  int WaitStep = 1000000;
+  long int WaitStep = 1000000;
   int Flag = 0;
 
   for (int Block = 0; Block < Para.TotalStep; Block++) {
@@ -222,16 +222,6 @@ void MonteCarlo() {
         // cout << Markov.Weight.Var.Tau[2] << " , " << Markov.Weight.Var.Tau[3]
         //      << endl;
 
-        if (i % (WaitStep * 10) == 0) {
-          if (Flag == 0)
-            Markov.UpdateWeight(1.0);
-          Flag = 1;
-          // Markov.ClearStatis();
-        }
-        if (i % (WaitStep * 10)) {
-          // LOG_INFO("Current IR Scale: " << Markov.Var.CurrIRScaleBin);
-        }
-
         // Markov.PrintDeBugMCInfo();
         if (PrinterTimer.check(Para.PrinterTimer)) {
           Markov.DynamicTest();
@@ -252,6 +242,16 @@ void MonteCarlo() {
         }
       }
     }
+    if (Block % 10 == 0) {
+      // if (Flag == 0)
+      Markov.UpdateWeight(1.0);
+      LOG_INFO("Update weight, " << Block);
+      // Flag = 1;
+      // Markov.ClearStatis();
+    }
+    // if (i % (WaitStep * 10)) {
+    //   // LOG_INFO("Current IR Scale: " << Markov.Var.CurrIRScaleBin);
+    // }
   }
 
   LOG_INFO("Simulation is ended!");
