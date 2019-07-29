@@ -154,9 +154,12 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
 void verQTheta::Measure(const momentum &InL, const momentum &InR,
                         const int QIndex, int Order, int DiagNum, double *Tau,
                         double *Weight, double WeightFactor) {
+  // cout << Order << ", " << DiagNum << endl;
   if (Order == 0) {
     Normalization += Weight[0] * WeightFactor;
+    // Normalization += WeightFactor;
   } else {
+    double Factor = 1.0 / pow(39.4, Order);
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
     for (int diag = 0; diag < DiagNum; ++diag) {
       if (Tau[diag] < 0.0)
@@ -169,10 +172,14 @@ void verQTheta::Measure(const momentum &InL, const momentum &InR,
       // cout << "angle: " << Angle2D(InL, InR) << endl;
       DiffInter(Order, AngleIndex, QIndex, tIndex) +=
           Weight[diag] * WeightFactor / Para.dAngleTable[AngleIndex] /
-          (Para.Beta / TauBinSize);
+          (Para.Beta / TauBinSize) * Factor;
+
+      // DiffInter(Order, AngleIndex, QIndex, tIndex) +=
+      //     WeightFactor / Para.dAngleTable[AngleIndex] /
+      //     (Para.Beta / TauBinSize) * Factor;
       // }
       DiffInter(0, AngleIndex, QIndex, tIndex) +=
-          Weight[diag] * WeightFactor / Para.dAngleTable[AngleIndex];
+          Weight[diag] * WeightFactor / Para.dAngleTable[AngleIndex] * Factor;
     }
   }
   return;

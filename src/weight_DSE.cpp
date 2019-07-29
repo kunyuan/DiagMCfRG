@@ -27,9 +27,10 @@ double weight::fRG(int LoopNum, int ID) {
   const momentum &InR = Var.LoopMom[2];
   if (LoopNum == 0) {
     // normalization
-    _DiagNum = 0;
-    Var.CurrWeight[0] = VerQTheta.Interaction(InL, InR, DirTran, 0.0, -2);
-    return Var.CurrWeight[0];
+    _DiagNum = 1;
+    _Weight[0][0][0] = VerQTheta.Interaction(InL, InR, DirTran, 0.0, -2);
+    // _ExtTau[0][0][INL]=0.0;
+    return _Weight[0][0][0];
   } else {
     int Level = 0;
     int DiagIndex = 0;
@@ -47,9 +48,9 @@ double weight::fRG(int LoopNum, int ID) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
                           T,  // t diagram only
                           -1, // normal diagram
-                          // RIGHT, // normal diagram
-                          -1 // left vertex order
-                             // 1   // left vertex order
+                              // RIGHT, // normal diagram
+                              // -1     // left vertex order
+                          1   // left vertex order
       );
     } else if (LoopNum == 3) {
       DiagIndex = Vertex4(InL, InR, DirTran, LoopNum, 0, 3, DiagIndex, Level,
@@ -60,7 +61,7 @@ double weight::fRG(int LoopNum, int ID) {
       );
     }
     int count = 0;
-    double inL = _ExtTau[Level][0][INL];
+    // double inL = _ExtTau[Level][0][INL];
     for (int diag = 0; diag < DiagIndex; diag++) {
       Weight += _Weight[Level][diag][0];
       count++;
@@ -80,7 +81,7 @@ double weight::fRG(int LoopNum, int ID) {
 
     // if (LoopNum == 2)
     //   cout << count << endl;
-    return Weight / pow(39.4, LoopNum);
+    return Weight;
     // return Weight;
   }
 }
@@ -110,14 +111,14 @@ int weight::Vertex4(
     // if (LoopNum == 2 && Level == 0)
     //   cout << "2 order: " << LoopNum << "diag:" << DiagIndex << endl;
 
-    if (LoopNum >= 2) {
-      DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
-                         DiagIndex, Level, Channel,
-                         VerType,   // VerType
-                         LVerOrder, // no projection
-                         true       // penguin diagram
-      );
-    }
+    // if (LoopNum >= 2) {
+    //   DiagIndex = Bubble(InL, InR, DirTran, LoopNum, TauIndex, LoopIndex,
+    //                      DiagIndex, Level, Channel,
+    //                      VerType,   // VerType
+    //                      LVerOrder, // no projection
+    //                      true       // penguin diagram
+    //   );
+    // }
     // if (LoopNum == 2 && Level == 0)
     //   cout << "2 order: " << LoopNum << "diag:" << DiagIndex << endl;
     // for normal vertex or projected vertex, just return
@@ -322,8 +323,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
                           false     // not penguin
       );
     } else {
-      // nChannel = S;
-      // LVerType = -1;
+      nChannel = US;
+      LVerType = -1;
       nDiagIndex = Vertex4(VerLInL, VerLInR, VerLDiTran, LVerLoopNum, LTauIndex,
                            LoopIndex, nDiagIndex, nLevel, nChannel,
                            LVerType, // VerType

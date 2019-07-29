@@ -13,8 +13,8 @@ size = 12
 rs = 1.0
 Lambda = 2
 Beta = 20
-# XType = "Tau"
-XType = "Mom"
+XType = "Tau"
+# XType = "Mom"
 # XType = "Angle"
 
 ##############   3D    ##################################
@@ -112,7 +112,7 @@ fig, ax = plt.subplots()
 # ax = fig.add_subplot(122)
 
 # plt.subplot(1,2,2)
-ColorList = ['k', 'r', 'b', 'g', 'm', 'c']
+ColorList = ['k', 'r', 'b', 'g', 'm', 'c', 'navy', 'y']
 ColorList = ColorList*40
 
 if(XType == "Scale"):
@@ -123,11 +123,13 @@ if(XType == "Scale"):
     ax.set_xlim([0.0, ScaleBin[-2]])
     ax.set_xlabel("$Scale$", size=size)
 elif(XType == "Tau"):
-    for i in range(ExtMomBinSize/4):
-        index = 4*i
+    for i in range(ExtMomBinSize/8):
+        index = 8*i
+        ErrorPlot(ax, TauBin, qData0[index, :],
+                  ColorList[2*i], 's', "Order 1, Q {0}".format(ExtMomBin[index]))
         ErrorPlot(ax, TauBin, qData[index, :],
-                  ColorList[i], 's', "Q {0}".format(ExtMomBin[index]))
-    ax.set_xlim([0.0, TauBin[-1]])
+                  ColorList[2*i+1], 's', "Order 2, Q {0}".format(ExtMomBin[index]))
+    ax.set_xlim([0.0, TauBin[-1]+0.1])
     ax.set_xlabel("$Tau$", size=size)
 elif (XType == "Mom"):
 
