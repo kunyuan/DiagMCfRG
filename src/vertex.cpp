@@ -189,7 +189,8 @@ void verQTheta::Update(double Ratio) {
       for (int tindex = 0; tindex < TauBinSize; ++tindex) {
         double OldValue = EffInter(angle, qindex, tindex);
         double NewValue = 0.0;
-        for (int order = 1; order < MaxOrder; ++order) {
+        //for (int order = 1; order < MaxOrder; ++order) {
+        for (int order = 1; order < 2; ++order) {
           NewValue += DiffInter(order, angle, qindex, tindex) / Normalization *
                       PhyWeight;
         }
