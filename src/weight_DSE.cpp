@@ -192,7 +192,7 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   DiagIndex += 1;
 
   ////////////// dressed interaction ///////////
-  DiWeight = -VerQTheta.Interaction(InL, InR, DirTran, Tau, 1);
+  DiWeight = VerQTheta.Interaction(InL, InR, DirTran, Tau, 1);
   _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex + 1];
@@ -200,7 +200,7 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   _Weight[Level][DiagIndex][0] = DiWeight;
   DiagIndex += 1;
 
-  ExWeight = -VerQTheta.Interaction(InL, InR, InR + DirTran - InL, Tau, 1);
+  ExWeight = VerQTheta.Interaction(InL, InR, InR + DirTran - InL, Tau, 1);
   _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex + 1];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex + 1];
