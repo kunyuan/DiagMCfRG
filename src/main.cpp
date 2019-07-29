@@ -54,8 +54,9 @@ void InitPara() {
   Para.GroupName = {
       "0",
       "1",
+      "2",
   };
-  Para.ReWeight = {5, 2.0, 10.0, 1.0, 1.0};
+  Para.ReWeight = {1, 2.0, 10.0, 1.0, 1.0};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 

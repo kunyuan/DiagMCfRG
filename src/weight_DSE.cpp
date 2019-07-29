@@ -81,7 +81,7 @@ double weight::fRG(int LoopNum, int ID) {
 
     // if (LoopNum == 2)
     //   // cout << Weight << endl;
-    //   cout << count << endl;
+      // cout << count << endl;
     double Factor = 1.0 / pow(39.4, LoopNum);
     return Weight * Factor;
     // return Weight;

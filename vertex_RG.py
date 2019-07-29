@@ -13,8 +13,8 @@ size = 12
 rs = 1.0
 Lambda = 2
 Beta = 20
-XType = "Tau"
-# XType = "Mom"
+# XType = "Tau"
+XType = "Mom"
 # XType = "Angle"
 
 ##############   3D    ##################################
@@ -68,7 +68,7 @@ ExtMomBin /= kF
 
 Data = None
 for f in files:
-    if re.match("vertex2"+"_pid[0-9]+.dat", f):
+    if re.match("vertex1"+"_pid[0-9]+.dat", f):
         print f
         d = np.loadtxt(folder+f)
         if Data is None:
@@ -138,12 +138,14 @@ elif (XType == "Mom"):
     qData = np.sum(qData, axis=1)*Beta/kF**2/TauBinSize
     qData0 = np.sum(qData0, axis=1)*Beta/kF**2/TauBinSize
     # qData0 = qData0/qData0[0]*12.50
+    qData0=8.0*np.pi/(ExtMomBin**2*kF**2+Lambda)-qData0
+    # qData=8.0*np.pi/(ExtMomBin**2*kF**2+Lambda)-qData
 
     ErrorPlot(ax, ExtMomBin, qData0[:],
-              ColorList[0], 's', "Order 2")
+              ColorList[1], 's', "Order 2")
 
     ErrorPlot(ax, ExtMomBin, qData[:],
-              ColorList[1], 's', "Order 3")
+              ColorList[2], 's', "Order 3")
     # for i in range(ScaleBinSize/32):
     #     # print i, index
     #     # print ScaleBin[index]
@@ -178,7 +180,7 @@ elif (XType == "Mom"):
     yphy = 8.0*np.pi/(x*x*kF*kF+Lambda+y*8.0*np.pi)
 
     # ax.plot(x, yphy, 'k-', lw=2, label="physical")
-    # ax.plot(x, y0, 'b-', lw=2, label="original")
+    ax.plot(x, y0, 'k-', lw=2, label="original")
 
     # ax.plot(x, y0*y0*y, 'r-', lw=2, label="wrong")
 
