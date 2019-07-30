@@ -68,7 +68,7 @@ ExtMomBin /= kF
 
 Data = None
 for f in files:
-    if re.match("vertex1"+"_pid[0-9]+.dat", f):
+    if re.match("vertex2"+"_pid[0-9]+.dat", f):
         print f
         d = np.loadtxt(folder+f)
         if Data is None:
@@ -138,7 +138,7 @@ elif (XType == "Mom"):
     qData = np.sum(qData, axis=1)*Beta/kF**2/TauBinSize
     qData0 = np.sum(qData0, axis=1)*Beta/kF**2/TauBinSize
     # qData0 = qData0/qData0[0]*12.50
-    qData0=8.0*np.pi/(ExtMomBin**2*kF**2+Lambda)-qData0
+    qData0 = 8.0*np.pi/(ExtMomBin**2*kF**2+Lambda)-qData0
     # qData=8.0*np.pi/(ExtMomBin**2*kF**2+Lambda)-qData
 
     ErrorPlot(ax, ExtMomBin, qData0[:],

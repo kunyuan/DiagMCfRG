@@ -182,7 +182,6 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   double DiWeight = VerQTheta.Interaction(InL, InR, DirTran, Tau, 0);
   double ExWeight =
       VerQTheta.Interaction(InL, InR, InR + DirTran - InL, Tau, 0);
-  _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
@@ -193,7 +192,6 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
 
   ////////////// dressed interaction ///////////
   DiWeight = VerQTheta.Interaction(InL, InR, DirTran, Tau, 1);
-  _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex + 1];
   _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex + 1];
@@ -201,7 +199,6 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   DiagIndex += 1;
 
   ExWeight = VerQTheta.Interaction(InL, InR, InR + DirTran - InL, Tau, 1);
-  _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex + 1];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex + 1];
   _ExtTau[Level][DiagIndex][OUTR] = Var.Tau[TauIndex];
@@ -240,6 +237,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
 
   int LTauIndex = TauIndex;
   int RTauIndex = TauIndex + (LVerLoopNum + 1) * 2;
+  double LTauInL = Var.Tau[LTauIndex];
+  double RTauInL = Var.Tau[RTauIndex];
 
   for (int chan = 0; chan < 3; chan++) {
     if (!Channel[chan])
@@ -366,17 +365,14 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     for (int left = LIndex; left < LDiagIndex; left++) {
       for (int right = RIndex; right < RDiagIndex; right++) {
         if (chan == 0) {
-          _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
           _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][left][OUTL];
           _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][right][INR];
           _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][right][OUTR];
         } else if (chan == 1) {
-          _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
           _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][right][OUTR];
           _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][right][INR];
           _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][left][OUTL];
         } else if (chan == 2) {
-          _ExtTau[Level][DiagIndex][INL] = _ExtTau[nLevel][left][INL];
           _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[nLevel][right][OUTL];
           _ExtTau[Level][DiagIndex][INR] = _ExtTau[nLevel][left][INR];
           _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[nLevel][right][OUTR];
@@ -400,28 +396,20 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
           // _ExtTau[Level][DiagIndex][OUTR] = avg;
 
           if (chan == 0) {
-            double avg = _ExtTau[Level][DiagIndex][INL];
-            _ExtTau[Level][DiagIndex][INL] = avg;
-            _ExtTau[Level][DiagIndex][OUTL] = avg;
-            avg = _ExtTau[Level][DiagIndex][INR];
-            _ExtTau[Level][DiagIndex][INR] = avg;
-            _ExtTau[Level][DiagIndex][OUTR] = avg;
+            _ExtTau[Level][DiagIndex][OUTL] = LTauInL;
+            _ExtTau[Level][DiagIndex][OUTR] = _ExtTau[Level][DiagIndex][INR];
           } else if (chan == 1) {
-            double avg = _ExtTau[Level][DiagIndex][INL];
-            _ExtTau[Level][DiagIndex][INL] = avg;
-            _ExtTau[Level][DiagIndex][OUTR] = avg;
-            avg = _ExtTau[Level][DiagIndex][INR];
-            _ExtTau[Level][DiagIndex][INR] = avg;
-            _ExtTau[Level][DiagIndex][OUTL] = avg;
+            _ExtTau[Level][DiagIndex][OUTR] = LTauInL;
+            _ExtTau[Level][DiagIndex][OUTL] = _ExtTau[Level][DiagIndex][INR];
           }
         }
 
         if (chan == 2) {
-          TauR2L = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTL];
+          TauR2L = RTauInL - _ExtTau[nLevel][left][OUTL];
           TauL2R = _ExtTau[nLevel][right][INR] - _ExtTau[nLevel][left][OUTR];
         } else {
           TauR2L = _ExtTau[nLevel][left][INR] - _ExtTau[nLevel][right][OUTL];
-          TauL2R = _ExtTau[nLevel][right][INL] - _ExtTau[nLevel][left][OUTR];
+          TauL2R = RTauInL - _ExtTau[nLevel][left][OUTR];
         }
 
         _Weight[Level][DiagIndex][0] = 0.0;

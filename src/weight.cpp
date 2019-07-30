@@ -114,7 +114,7 @@ void weight::AcceptChange(group &Group) {
   Group.Weight = Group.NewWeight; // accept group  newweight
   Var.CurrDiagNum = _DiagNum;
 
-  double inL = _ExtTau[0][0][INL];
+  double inL = Var.Tau[0];
   for (int i = 0; i < _DiagNum; ++i) {
     Var.CurrWeight[i] = _Weight[0][i][0];
     Var.CurrExtTau[i] = _ExtTau[0][i][INR] - inL;
