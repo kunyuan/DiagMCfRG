@@ -4,6 +4,7 @@
 #include "diagram.h"
 #include "utility/rng.h"
 #include "vertex.h"
+#include <vector>
 extern parameter Para;
 extern RandomFactory Random;
 
@@ -16,9 +17,7 @@ struct variable {
   double CurrTau;    // current external tau
   double CurrScale;  // Current (Reference) Scale: Index=1, ..., ScaleBinSize
   int CurrIRScaleBin;
-  int CurrDiagNum;
-  double CurrWeight[MaxDiagNum];
-  double CurrExtTau[MaxDiagNum];
+  double CurrWeight[MaxTauNum];
   array<momentum, MaxLoopNum> LoopMom; // all momentum loop variables
   array<double, MaxTauNum> Tau;        // all tau variables
   array<int, MaxLoopNum> LoopSpin;     // all spin variables
@@ -97,7 +96,7 @@ private:
   double fRG(int LoopNum, int ID);
   int Vertex4(
       const momentum &InL, const momentum &InR, const momentum &DirTran,
-      int LoopNum, int TauIndex, int LoopIndex, int DiagIndex, int Level,
+      int LoopNum, int TauIndex, int LoopIndex, int Level,
       bool *Channel,     // three flags, calculate t, u, s or not
       int VerType = -1,  // -1: normal, 0: left(to project), 1: right(to diff)
       int LVerOrder = -1 // order of left vertex
@@ -105,25 +104,29 @@ private:
 
   int Bubble(
       const momentum &InL, const momentum &InR, const momentum &DirTran,
-      int LoopNum, int TauIndex, int LoopIndex, int DiagIndex, int Level,
+      int LoopNum, int TauIndex, int LoopIndex, int Level,
       bool *Channel,      // three flags, calculate t, u, s or not
       int VerType = -1,   // -1: normal, 0: left(to project), 1: right(to diff)
       int LVerOrder = -1, // order of left vertex
       bool IsPenguin = false);
 
   int Ver4Loop0(const momentum &InL, const momentum &InR,
-                const momentum &DirTran, int TauIndex, int LoopIndex, int Level,
-                int DiagIndex);
+                const momentum &DirTran, int TauIndex, int LoopIndex,
+                int Level);
 
   int OneLoop(const momentum &InL, const momentum &InR, const momentum &DirTran,
               int LoopNum, int LVerLoopNum, int TauIndex, int LoopIndex,
-              int DiagIndex, int Level,
+              int Level,
               bool *Channel, // three flags, calculate t, u, s or not
               bool IsProjected = false, bool IsPenguin = false);
 
-  double _Weight[MaxOrder][MaxDiagNum][2];
-  double _ExtTau[MaxOrder][MaxDiagNum][4];
+  int _DiagIndex[MaxLevel];
+  int _ExtTau[MaxOrder][MaxLevel][MaxDiagNum][4];
+  double _Weight[MaxLevel][MaxDiagNum][2];
   int _DiagNum;
+  int _GlobalOrder;
+  double _GL2R[MaxTauNum][MaxTauNum];
+  double _GR2L[MaxTauNum][MaxTauNum];
   // double Ver4Loop2();
   // double Ver6Loop1();
   bool ALL[3] = {true, true, true};
