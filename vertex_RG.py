@@ -44,7 +44,7 @@ ExtMomBin = None
 AngleBin = None
 TauBin = None
 for f in files:
-    if re.match("vertex"+"_pid[0-9]+.dat", f):
+    if re.match("vertex1"+"_pid[0-9]+.dat", f):
         print f
         with open(folder+f, "r") as file:
             line1 = file.readline()
@@ -68,7 +68,7 @@ ExtMomBin /= kF
 
 Data = None
 for f in files:
-    if re.match("vertex1"+"_pid[0-9]+.dat", f):
+    if re.match("vertex2"+"_pid[0-9]+.dat", f):
         print f
         d = np.loadtxt(folder+f)
         if Data is None:

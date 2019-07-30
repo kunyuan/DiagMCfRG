@@ -59,9 +59,9 @@ double weight::fRG(int Order, int ID) {
       Vertex4(InL, InR, DirTran, Order, 0, 3, Level,
               T,  // t diagram only
               -1, // normal diagram
-              // RIGHT, // normal diagram
-              -1 // left vertex order
-                 // 1   // left vertex order
+                  // RIGHT, // normal diagram
+                  // -1 // left vertex order
+              1   // left vertex order
       );
     } else if (Order == 3) {
       Vertex4(InL, InR, DirTran, Order, 0, 3, Level,
@@ -123,13 +123,13 @@ int weight::Vertex4(
     // if (LoopNum == 2 && Level == 0)
     //   cout << "2 order: " << LoopNum << "diag:" << DiagIndex << endl;
 
-    if (Order >= 2) {
-      Bubble(InL, InR, DirTran, Order, TauIndex, LoopIndex, Level, Channel,
-             VerType,   // VerType
-             LVerOrder, // no projection
-             true       // penguin diagram
-      );
-    }
+    // if (Order >= 2) {
+    //   Bubble(InL, InR, DirTran, Order, TauIndex, LoopIndex, Level, Channel,
+    //          VerType,   // VerType
+    //          LVerOrder, // no projection
+    //          true       // penguin diagram
+    //   );
+    // }
     // if (LoopNum == 2 && Level == 0)
     //   cout << "2 order: " << LoopNum << "diag:" << DiagIndex << endl;
     // for normal vertex or projected vertex, just return
@@ -324,8 +324,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
              false     // not penguin
       );
     } else {
-      // nChannel = U;
-      // LVerType = -1;
+      nChannel = S;
+      LVerType = -1;
       Vertex4(VerLInL, VerLInR, VerLDiTran, LVerOrder, LTauIndex, LoopIndex,
               nLevel, nChannel,
               LVerType, // VerType
@@ -369,6 +369,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
                                     Var.CurrScale);
         _GR2L[tR][tL] = Fermi.Green(Var.Tau[tL] - Var.Tau[tR], Internal2, UP, 0,
                                     Var.CurrScale);
+        cout << tR << "-" << tL << ", " << _GR2L[tR][tL] << endl;
       }
 
     for (int l = LIndex; l < LDiagIndex; l++) {
@@ -409,6 +410,27 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
         _Weight[Level][Index][0] = _Weight[nLevel][l][0] *
                                    _Weight[nLevel][r][0] * GL2R * GR2L *
                                    SymFactor * ProjSign;
+
+        if (_GlobalOrder == 2 && l == LIndex && r == RIndex) {
+          cout << "Lindex: " << LIndex << " Weight:" << _Weight[Level][Index][0]
+               << endl;
+          cout << Var.Tau[_ExtTauL[OUTR]] << ", " << Var.Tau[_ExtTauR[INL]]
+               << ", Mom=" << Internal.norm() << ": GL2R=" << GL2R << endl;
+          // cout << Fermi.Green(Var.Tau[_ExtTauR[INL]] -
+          // Var.Tau[_ExtTauL[OUTR]],
+          //                     Internal, UP, 0, Var.CurrScale)
+          //      << endl;
+          cout << Var.Tau[_ExtTauR[OUTL]] << ", " << Var.Tau[_ExtTauL[INR]]
+               << ", Mom=" << Internal2.norm() << ": GR2L=" << GR2L << endl;
+          cout << Fermi.Green(Var.Tau[_ExtTauL[INR]] - Var.Tau[_ExtTauR[OUTL]],
+                              Internal2, UP, 0, Var.CurrScale)
+               << endl;
+          cout << _Weight[nLevel][l][0] << endl;
+          cout << _Weight[nLevel][r][0] << endl;
+          // cout << GL2R << " vs " << GR2L << endl;
+          cout << "end" << endl;
+          cout << endl;
+        }
 
         Index++;
       }

@@ -116,7 +116,7 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
     //         0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI));
     // return 1.0 / Para.Beta;
   } else if (VerType == 1) {
-    // return 0.0;
+    return 0.0;
     if (k < Para.MaxExtMom) {
       if (Tau < 0.0)
         Tau += Para.Beta;
@@ -361,6 +361,7 @@ double fermi::FockSigma(const momentum &Mom) {
 
 double fermi::PhyGreen(double Tau, const momentum &Mom, int GType,
                        double Scale) {
+  return 1.0;
   // if tau is exactly zero, set tau=0^-
   double green, Ek, kk, k;
   if (Tau == 0.0) {
