@@ -121,11 +121,15 @@ void weight::AcceptChange(group &Group) {
   Var.CurrGroup = &Group;
   Group.Weight = Group.NewWeight; // accept group  newweight
 
-  for (int i = 0; i < Group.TauNum; ++i)
-    Var.CurrWeight[i] = 0.0;
+  if (Group.Order == 0) {
+    Var.CurrWeight[0] = Group.Weight;
+  } else {
+    for (int i = 0; i < Group.TauNum; ++i)
+      Var.CurrWeight[i] = 0.0;
 
-  for (int i = 0; i < _DiagIndex[0]; ++i)
-    Var.CurrWeight[_ExtTau[Group.Order][0][i][INR]] += _Weight[0][i][0];
+    for (int i = 0; i < _DiagIndex[0]; ++i)
+      Var.CurrWeight[_ExtTau[Group.Order][0][i][INR]] += _Weight[0][i][0];
+  }
 }
 
 void weight::RejectChange(group &Group) { return; }

@@ -364,7 +364,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
 
     ////////////// construct  G table  /////////////////////////////////////
     for (int tL = LTauIndex; tL < RTauIndex; tL++)
-      for (int tR = RTauIndex; tL < TauIndex + (Order + 1) * 2; tL++) {
+      for (int tR = RTauIndex; tR < TauIndex + (Order + 1) * 2; tR++) {
         _GL2R[tL][tR] = Fermi.Green(Var.Tau[tR] - Var.Tau[tL], Internal, UP, 0,
                                     Var.CurrScale);
         _GR2L[tR][tL] = Fermi.Green(Var.Tau[tL] - Var.Tau[tR], Internal2, UP, 0,
