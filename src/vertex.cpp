@@ -110,7 +110,7 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
   if (VerType == 0) {
     // return 8.0 * PI / (k * k + Para.Mass2) /
     //        (1 + pow(Tau * 10.0, 2) * 10.0 / PI);
-    return 8.0 * PI / (k * k + Para.Mass2) / Para.Beta;
+    return -8.0 * PI / (k * k + Para.Mass2) / Para.Beta;
     // return 8.0 * PI / (k * k + Para.Mass2) *
     //        (0.5 / (1 + pow(abs(Tau) * 10.0, 2) * 10.0 / PI) +
     //         0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI));
@@ -189,8 +189,8 @@ void verQTheta::Update(double Ratio) {
       for (int tindex = 0; tindex < TauBinSize; ++tindex) {
         double OldValue = EffInter(angle, qindex, tindex);
         double NewValue = 0.0;
-        //for (int order = 1; order < MaxOrder; ++order) {
-        for (int order = 1; order < 2; ++order) {
+        for (int order = 1; order < MaxOrder; ++order) {
+          // for (int order = 1; order < 2; ++order) {
           NewValue += DiffInter(order, angle, qindex, tindex) / Normalization *
                       PhyWeight;
         }

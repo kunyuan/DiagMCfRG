@@ -81,7 +81,7 @@ double weight::fRG(int LoopNum, int ID) {
 
     // if (LoopNum == 2)
     //   // cout << Weight << endl;
-      // cout << count << endl;
+    // cout << count << endl;
     double Factor = 1.0 / pow(39.4, LoopNum);
     return Weight * Factor;
     // return Weight;
@@ -179,9 +179,9 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   //   VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
   double Tau = Var.Tau[TauIndex] - Var.Tau[TauIndex + 1];
   ////////////// bare interaction ///////////
-  double DiWeight = -VerQTheta.Interaction(InL, InR, DirTran, Tau, 0);
+  double DiWeight = VerQTheta.Interaction(InL, InR, DirTran, Tau, 0);
   double ExWeight =
-      -VerQTheta.Interaction(InL, InR, InR + DirTran - InL, Tau, 0);
+      VerQTheta.Interaction(InL, InR, InR + DirTran - InL, Tau, 0);
   _ExtTau[Level][DiagIndex][INL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][OUTL] = Var.Tau[TauIndex];
   _ExtTau[Level][DiagIndex][INR] = Var.Tau[TauIndex];

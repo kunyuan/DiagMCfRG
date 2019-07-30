@@ -56,7 +56,7 @@ void InitPara() {
       "1",
       "2",
   };
-  Para.ReWeight = {1, 2.0, 10.0, 1.0, 1.0};
+  Para.ReWeight = {1, 5.0, 3.0, 1.0, 1.0};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 
