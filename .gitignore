@@ -42,11 +42,13 @@ outfile/
 Beta*/
 build/
 Data/
+test*/
 *.log
 *.dat
 blitz/
 src/blitz/
 callgrind*
 *.pyc
+.ipynb*
 in00
 inlist
