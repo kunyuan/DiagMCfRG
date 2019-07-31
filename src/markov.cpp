@@ -65,23 +65,23 @@ void markov::PrintDeBugMCInfo() {
   msg += "\nMC Counter: " + to_string(Para.Counter) + ":\n";
   msg += "Current Group Info:\n " + ToString(*Var.CurrGroup);
 
-  msg += string(80, '=') + "\n";
-  msg += "GWeight: \n";
-  for (int i = 0; i < Var.CurrGroup->GNum; i++)
-    msg += ToString(Var.CurrGroup->Diag[0].G[i]->Weight) + "; ";
-  msg += "\n";
+  // msg += string(80, '=') + "\n";
+  // msg += "GWeight: \n";
+  // for (int i = 0; i < Var.CurrGroup->GNum; i++)
+  //   msg += ToString(Var.CurrGroup->Diag[0].G[i]->Weight) + "; ";
+  // msg += "\n";
 
-  msg += "VerWeight: \n";
-  for (int i = 0; i < Var.CurrGroup->Ver4Num; i++) {
-    msg += ToString(Var.CurrGroup->Diag[0].Ver4[i]->Weight[0]) + ", ";
-    msg += ToString(Var.CurrGroup->Diag[0].Ver4[i]->Weight[1]) + "; ";
-  }
-  msg += "\n";
+  // msg += "VerWeight: \n";
+  // for (int i = 0; i < Var.CurrGroup->Ver4Num; i++) {
+  //   msg += ToString(Var.CurrGroup->Diag[0].Ver4[i]->Weight[0]) + ", ";
+  //   msg += ToString(Var.CurrGroup->Diag[0].Ver4[i]->Weight[1]) + "; ";
+  // }
+  // msg += "\n";
 
   msg += string(80, '=') + "\n";
   msg += "LoopMom: \n";
   for (int d = 0; d < D; d++) {
-    for (int i = 0; i < Var.CurrGroup->LoopNum; i++)
+    for (int i = 0; i < Var.CurrGroup->Order + 3; i++)
       msg += ToString(Var.LoopMom[i][d]) + ", ";
     msg += "\n";
   }
@@ -89,7 +89,7 @@ void markov::PrintDeBugMCInfo() {
 
   msg += string(80, '=') + "\n";
   msg += "Tau: \n";
-  for (int i = 0; i < Var.CurrGroup->TauNum; i++)
+  for (int i = 0; i < Var.CurrGroup->Order + 1; i++)
     msg += ToString(Var.Tau[i]) + ", ";
 
   msg += "\n";
@@ -109,7 +109,8 @@ void markov::Measure() {
   Polar[Var.CurrGroup->ID][Var.CurrExtMomBin] += WeightFactor;
   PolarStatic[Var.CurrGroup->ID] += WeightFactor;
 
-  Weight.Measure(WeightFactor);
+  Weight.Measure(1.0 / MCWeight);
+  // Weight.Measure(WeightFactor);
 };
 
 void markov::UpdateWeight(double Ratio) { Weight.Update(Ratio); }
@@ -172,12 +173,12 @@ void markov::ChangeGroup() {
     // change to a new group with one higher order
     Name = INCREASE_ORDER;
     static momentum NewMom;
-    double NewTau;
+    double NewTau1, NewTau2;
     // Generate New Tau
-    Prop = GetNewTau(NewTau);
+    Prop = GetNewTau(NewTau1, NewTau2);
     int NewTauIndex = Var.CurrGroup->TauNum;
-    // ASSUME: NewTauIndex will never equal to 0 or 1
-    Var.Tau[NewTauIndex] = NewTau;
+    Var.Tau[NewTauIndex] = NewTau1;
+    Var.Tau[NewTauIndex + 1] = NewTau2;
     // Generate New Mom
     Prop *= GetNewK(NewMom);
     Var.LoopMom[Var.CurrGroup->LoopNum] = NewMom;
@@ -185,8 +186,8 @@ void markov::ChangeGroup() {
     // change to a new group with one lower order
     Name = DECREASE_ORDER;
     // Remove OldTau
-    int TauToRemove = Var.CurrGroup->TauNum - 1;
-    Prop = RemoveOldTau(Var.Tau[TauToRemove]);
+    int TauToRemove = Var.CurrGroup->TauNum - 2;
+    Prop = RemoveOldTau(Var.Tau[TauToRemove], Var.Tau[TauToRemove + 1]);
     // Remove OldMom
     int LoopToRemove = Var.CurrGroup->LoopNum - 1;
     Prop *= RemoveOldK(Var.LoopMom[LoopToRemove]);
@@ -197,20 +198,17 @@ void markov::ChangeGroup() {
 
   Proposed[Name][Var.CurrGroup->ID] += 1;
 
-  // if (NewGroup.ID == 3) {
-  //   cout << fmt::format("group 3\n");
-  //   cout << Weight.DebugInfo(NewGroup);
-  // }
-
-  Weight.ChangeGroup(NewGroup);
+  // Weight.ChangeGroup(NewGroup);
   double NewWeight = Weight.GetNewWeight(NewGroup) * NewGroup.ReWeight;
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight) /
              Var.CurrGroup->ReWeight;
 
-  // if (NewGroup.ID == 3) {
-  //   cout << fmt::format("weight {0}, prop {1}\n", NewWeight, Prop);
-  //   cout << Weight.DebugInfo(NewGroup);
+  // if (Name == INCREASE_ORDER) {
+  //   cout << "time:" << Var.Tau[2] << ", " << Var.Tau[3] << endl;
+  //   cout << NewWeight << endl;
   // }
+  // if (NewGroup.Order == 2)
+  //   cout << NewWeight << endl;
 
   if (Random.urn() < R) {
     Accepted[Name][Var.CurrGroup->ID]++;
@@ -225,8 +223,9 @@ void markov::ChangeTau() {
   int TauIndex = Random.irn(0, Var.CurrGroup->TauNum);
 
   // if TauIndex is a locked tau, skip
-  if (Var.CurrGroup->IsLockedTau[TauIndex])
+  if (Var.CurrGroup->IsLockedTau[TauIndex]) {
     return;
+  }
 
   Proposed[CHANGE_TAU][Var.CurrGroup->ID]++;
 
@@ -236,7 +235,7 @@ void markov::ChangeTau() {
 
   Var.Tau[TauIndex] = NewTau;
 
-  Weight.ChangeTau(*Var.CurrGroup, TauIndex);
+  // Weight.ChangeTau(*Var.CurrGroup, TauIndex);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
@@ -252,6 +251,7 @@ void markov::ChangeTau() {
 
 void markov::ChangeMomentum() {
   int LoopIndex = Random.irn(0, Var.CurrGroup->LoopNum - 1);
+  // int LoopIndex = int(Random.urn() * (Var.CurrGroup->Order + 3));
 
   // if loopIndex is a locked loop, skip
   if (Var.CurrGroup->IsLockedLoop[LoopIndex])
@@ -278,7 +278,7 @@ void markov::ChangeMomentum() {
     Prop = ShiftK(CurrMom, Var.LoopMom[LoopIndex]);
   }
 
-  Weight.ChangeMom(*Var.CurrGroup, LoopIndex);
+  // Weight.ChangeMom(*Var.CurrGroup, LoopIndex);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
   if (Random.urn() < R) {
@@ -310,7 +310,7 @@ void markov::ChangeScale() {
   Proposed[CHANGE_SCALE][Var.CurrGroup->ID] += 1;
 
   // force to change the group weight
-  Weight.ChangeGroup(*(Var.CurrGroup), true);
+  // Weight.ChangeGroup(*(Var.CurrGroup), true);
   double NewWeight = Weight.GetNewWeight(*Var.CurrGroup);
 
   double R = Prop * fabs(NewWeight) / fabs(Var.CurrGroup->Weight);
@@ -324,24 +324,41 @@ void markov::ChangeScale() {
   return;
 }
 
-double markov::GetNewTau(double &NewTau) {
-  NewTau = Random.urn() * Para.Beta;
-  return Para.Beta;
-};
-double markov::RemoveOldTau(double &OldTau) { return 1.0 / Para.Beta; }
+double markov::GetNewTau(double &NewTau1, double &NewTau2) {
+  double Step = 1.0;
+  NewTau1 = Random.urn() * Para.Beta;
+  NewTau2 = Random.urn() * Para.Beta;
+  // NewTau2 = (Random.urn() - 0.5) * Step + NewTau1;
+  // if (NewTau2 < 0.0)
+  //   NewTau2 += Para.Beta;
+  // if (NewTau2 > Para.Beta)
+  //   NewTau2 -= Para.Beta;
+  // return Para.Beta * Step;
+  return Para.Beta * Para.Beta;
+}
+
+double markov::RemoveOldTau(double &OldTau1, double &OldTau2) {
+  // double Step = 1.0;
+  // if (abs(OldTau2 - OldTau1) > Step / 2.0)
+  //   return 0.0;
+  // else
+  //   return 1.0 / Para.Beta / Step;
+  return 1.0 / Para.Beta / Para.Beta;
+}
 
 double markov::GetNewK(momentum &NewMom) {
   //====== The hard Way ======================//
   // double dK = Para.Kf / sqrt(Para.Beta) / 4.0;
   // if (dK > Para.Kf / 2)
   // dK = Para.Kf / 2; // to avoid dK>Kf situation
-  double dK = 1.0 * Var.CurrScale;
+  // double dK = 1.0 * Var.CurrScale;
   // double x = Random.urn();
   // double KAmp = dK / 2.0 + dK * x;
   // if (x < 0)
   //   KAmp = Para.Kf + KAmp;
   // else
   //   KAmp = Para.Kf - KAmp;
+  double dK = Para.Kf / 2.0;
   double KAmp = Para.Kf + (Random.urn() - 0.5) * 2.0 * dK;
   if (KAmp <= 0.0) {
     return 0.0;
@@ -378,10 +395,11 @@ double markov::GetNewK(momentum &NewMom) {
 
 double markov::RemoveOldK(momentum &OldMom) {
   //====== The hard Way ======================//
-  double dK = 1.0 * Var.CurrScale;
+  // double dK = 1.0 * Var.CurrScale;
   // double dK = Para.Kf / sqrt(Para.Beta) / 4.0;
   // if (dK > Para.Kf / 2)
   //   dK = Para.Kf / 2; // to avoid dK>Kf situation
+  double dK = Para.Kf / 2.0;
   double KAmp = OldMom.norm();
   if (KAmp < Para.Kf - dK || KAmp > Para.Kf + dK)
     // if (KAmp < Para.Kf - 1.5 * dK ||
@@ -482,13 +500,15 @@ double markov::ShiftExtLegK(const momentum &OldExtMom, momentum &NewExtMom) {
 double markov::ShiftTau(const double &OldTau, double &NewTau) {
   double x = Random.urn();
   if (x < 1.0 / 3) {
-    double DeltaT = Para.Beta / 3.0;
+    double DeltaT = Para.Beta / 10.0;
     NewTau = OldTau + DeltaT * (Random.urn() - 0.5);
   } else if (x < 2.0 / 3) {
     NewTau = -OldTau;
   } else {
     NewTau = Random.urn() * Para.Beta;
   }
+
+  // NewTau = Random.urn() * Para.Beta;
   if (NewTau < 0.0)
     NewTau += Para.Beta;
   if (NewTau > Para.Beta)

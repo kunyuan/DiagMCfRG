@@ -10,8 +10,8 @@ mat.rcParams["font.family"] = "Times New Roman"
 size = 12
 
 rs = 1.0
-Lambda = 1.0
-Beta = 20
+Lambda = 2
+Beta = 10
 
 ##############   3D    ##################################
 # kF = (9.0*np.pi/4.0)**(1.0/3.0)/rs  # 3D

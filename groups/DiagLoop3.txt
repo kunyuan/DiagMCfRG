@@ -1,13 +1,13 @@
 #Type: RG
 #DiagNum: 0
-#Order: 1
-#GNum: 2
-#Ver4Num: 2
-#LoopNum: 4
+#Order: 3
+#GNum: 6
+#Ver4Num: 4
+#LoopNum: 6
 #ExtLoopIndex: 0 1 2
 #ExtTransferLoopIndex: 0
 #ExtLegLoopIndex: 1 2
 #DummyLoopIndex: 
-#TauNum: 4
+#TauNum: 8
 #ExtTauIndex:
 #DummyTauIndex: 

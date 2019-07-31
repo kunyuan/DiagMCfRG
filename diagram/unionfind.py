@@ -24,6 +24,7 @@ class UnionFind:
     # all the node has its unique label
     # n circles in the graph
     def __init__(self, n):
+        self.n_nodes = n
         self.label = range(n)
         self.n_circle = n
 
@@ -37,9 +38,15 @@ class UnionFind:
     ## group two nodes with edges in between into a single circle
     ## meanwhile, keep track of the number of circles in the graph
     def union(self, node1, node2):
+        # print "before"
+        # print "circle: ", self.label
+        # print "n_circle: ", self.n_circle
         if self.find(node1) != self.find(node2):
             self.label[self.find(node1)] = self.find(node2)
             self.n_circle -= 1
+        # print "after"
+        # print "circle: ", self.label
+        # print "n_circle: ", self.n_circle
         return
 
     ## get the number of circles in the graph
@@ -48,7 +55,10 @@ class UnionFind:
 
     ## check if two nodes are in the same circle
     def is_connected(self, node1, node2):
-        return self.label[node1] == self.label[node2]
+        return self.label[self.find(node1)] == self.label[self.find(node2)]
+
+    def get_circles(self):
+        return [self.label[self.find(node)] for node in range(self.n_nodes)]
 
 def friend_circles(friends):
     if not friends or len(friends) == 0:

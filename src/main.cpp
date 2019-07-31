@@ -49,9 +49,14 @@ void InitPara() {
   // diagram file path: groups/DiagPolar1.dat
   // Para.DiagFileFormat = "groups/DiagPolar{}.txt";
   Para.DiagFileFormat = "groups/DiagLoop{}.txt";
-  Para.GroupName = {"0", "1"};
+  // Para.GroupName = {"0", "1", "2", "3"};
   // Para.GroupName = {"1", "2"};
-  Para.ReWeight = {0.1, 1.0, 5.0, 10.0, 0.1};
+  Para.GroupName = {
+      "0",
+      "1",
+      "2",
+  };
+  Para.ReWeight = {1, 5.0, 3.0, 1.0, 1.0};
   // Para.SelfEnergyType = FOCK;
   Para.SelfEnergyType = BARE;
 
@@ -158,7 +163,7 @@ void InitPara() {
 }
 
 void MonteCarlo() {
-  LOG_INFO("Initializing Markov!");
+  // LOG_INFO("Initializing Markov!");
   markov Markov;
   InterruptHandler Interrupt;
 
@@ -172,7 +177,8 @@ void MonteCarlo() {
   ReweightTimer.start();
 
   LOG_INFO("Start simulation ...")
-  int WaitStep = 100000;
+  long int WaitStep = 1000000;
+  int Flag = 0;
 
   for (int Block = 0; Block < Para.TotalStep; Block++) {
     for (int i = 0; i < 1000000; i++) {
@@ -192,30 +198,31 @@ void MonteCarlo() {
       } else if (x < 3.0 / 4.0) {
         Markov.ChangeTau();
         // ;
-      } else if (x < 4.0 / 4.0) {
-        Markov.ChangeScale();
+        // } else if (x < 4.0 / 4.0) {
+        //   Markov.ChangeScale();
         // ;
       }
+
+      // if (Markov.Weight.Var.CurrScale > Para.UVScale) {
+      //   cout << "Scale wrong!" << Markov.Weight.Var.CurrScale << endl;
+      //   ABORT("wrong");
+      // }
 
       // if (Para.Counter == 140737351830544) {
       //   cout << "After: " << Para.Counter << endl;
       //   Markov.PrintDeBugMCInfo();
       // }
 
-      Markov.Measure();
+      if (i % 2 == 0)
+        Markov.Measure();
       // Markov.DynamicTest();
 
       if (i % 1000 == 0) {
-
-        if (i % WaitStep == 0) {
-          Markov.UpdateWeight(1.0);
-          // WaitStep*=2;
-          // Markov.ClearStatis();
-        }
-        if (i % (WaitStep * 10)) {
-          Markov.Weight.ResetIRScale(int(Markov.Var.CurrIRScaleBin / 1.5));
-          LOG_INFO("Current IR Scale: " << Markov.Var.CurrIRScaleBin);
-        }
+        // cout << Markov.Weight.Var.Tau[0] << " vs " <<
+        // Markov.Weight.Var.Tau[1]
+        //      << endl;
+        // cout << Markov.Weight.Var.Tau[2] << " , " << Markov.Weight.Var.Tau[3]
+        //      << endl;
 
         // Markov.PrintDeBugMCInfo();
         if (PrinterTimer.check(Para.PrinterTimer)) {
@@ -237,6 +244,16 @@ void MonteCarlo() {
         }
       }
     }
+    if (Block % 10 == 0) {
+      // if (Flag == 0)
+      Markov.UpdateWeight(1.0);
+      LOG_INFO("Update weight, " << Block);
+      // Flag = 1;
+      // Markov.ClearStatis();
+    }
+    // if (i % (WaitStep * 10)) {
+    //   // LOG_INFO("Current IR Scale: " << Markov.Var.CurrIRScaleBin);
+    // }
   }
 
   LOG_INFO("Simulation is ended!");

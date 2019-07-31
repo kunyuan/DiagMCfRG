@@ -4,6 +4,7 @@
 #include "diagram.h"
 #include "utility/rng.h"
 #include "vertex.h"
+#include <vector>
 extern parameter Para;
 extern RandomFactory Random;
 
@@ -16,6 +17,7 @@ struct variable {
   double CurrTau;    // current external tau
   double CurrScale;  // Current (Reference) Scale: Index=1, ..., ScaleBinSize
   int CurrIRScaleBin;
+  double CurrWeight[MaxTauNum];
   array<momentum, MaxLoopNum> LoopMom; // all momentum loop variables
   array<double, MaxTauNum> Tau;        // all tau variables
   array<int, MaxLoopNum> LoopSpin;     // all spin variables
@@ -32,18 +34,19 @@ public:
   // MC updates related operations
   // double ChangeTemperature(double NewBeta);
   void ChangeMom(group &, int Index);
-  void ChangeTau(group &,
-                 int TauIndex); // two tau index on the two sides of interaction
-  void ChangeGroup(group &,
-                   bool Forced = false); // recalculate the weights in one group
-  double GetNewWeight(group &);          // return the current weight
+  void ChangeTau(group &, int TauIndex);
+  // two tau index on the two sides of interaction
+  void ChangeGroup(group &, bool Forced = false);
+  // recalculate the weights in one group
+  double GetNewWeight(group &); // return the current weight
   void AcceptChange(group &);
   void RejectChange(group &);
+
+  double Evaluate(group &);
 
   void Measure(double WeightFactor);
   void Update(double Ratio);
   void ClearStatis();
-  void ResetIRScale(int IRScaleBin);
   void Save();
 
   // run test in MC updates
@@ -89,6 +92,53 @@ private:
   verQ VerQ;
   verQTheta VerQTheta;
   verfunc VerFunc;
+
+  double fRG(int LoopNum, int ID);
+  int Vertex4(
+      const momentum &InL, const momentum &InR, const momentum &DirTran,
+      int LoopNum, int TauIndex, int LoopIndex, int Level,
+      bool *Channel,     // three flags, calculate t, u, s or not
+      int VerType = -1,  // -1: normal, 0: left(to project), 1: right(to diff)
+      int LVerOrder = -1 // order of left vertex
+  );
+
+  int Bubble(
+      const momentum &InL, const momentum &InR, const momentum &DirTran,
+      int LoopNum, int TauIndex, int LoopIndex, int Level,
+      bool *Channel,      // three flags, calculate t, u, s or not
+      int VerType = -1,   // -1: normal, 0: left(to project), 1: right(to diff)
+      int LVerOrder = -1, // order of left vertex
+      bool IsPenguin = false);
+
+  int Ver4Loop0(const momentum &InL, const momentum &InR,
+                const momentum &DirTran, int TauIndex, int LoopIndex,
+                int Level);
+
+  int OneLoop(const momentum &InL, const momentum &InR, const momentum &DirTran,
+              int LoopNum, int LVerLoopNum, int TauIndex, int LoopIndex,
+              int Level,
+              bool *Channel, // three flags, calculate t, u, s or not
+              bool IsProjected = false, bool IsPenguin = false);
+
+  int _DiagIndex[MaxLevel];
+  int _ExtTau[MaxOrder][MaxLevel][MaxDiagNum][4];
+  double _Weight[MaxLevel][MaxDiagNum][2];
+  int _DiagNum;
+  int _GlobalOrder;
+  double _GL2R[MaxTauNum][MaxTauNum];
+  double _GR2L[MaxTauNum][MaxTauNum];
+  double _GL2RS[MaxTauNum][MaxTauNum];
+  // double Ver4Loop2();
+  // double Ver6Loop1();
+  bool ALL[3] = {true, true, true};
+  bool US[3] = {false, true, true};
+  bool UT[3] = {true, true, false};
+  bool ST[3] = {true, false, true};
+  bool T[3] = {true, false, false};
+  bool U[3] = {false, true, false};
+  bool S[3] = {false, false, true};
+  int LEFT = 0;
+  int RIGHT = 1;
 };
 
 }; // namespace diag

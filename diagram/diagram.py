@@ -245,6 +245,7 @@ def IsConnected(Permutation, Reference, InteractionPairs):
 
 
 def FindAllLoops(permutation):
+    # find all loops in Feynman diagram (not Hugenholz diagram!)
     order = len(permutation)/2
     Visited = set()
     path = []
@@ -328,7 +329,7 @@ def FindIndependentK(permutation, reference, InteractionPairs):
     # print len(vectors)
     # print vectors
     freedoms = vectors.shape[1]
-    print "Freedom: ", freedoms
+    # print "Freedom: ", freedoms
     if freedoms != N+1:
         print "Warning! Rank is wrong for {0} with \n{1}".format(
             permutation, vectors)
