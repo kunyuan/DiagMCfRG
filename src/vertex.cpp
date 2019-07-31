@@ -150,34 +150,35 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
 }
 
 void verQTheta::Measure(const momentum &InL, const momentum &InR,
-                        const int QIndex, int Order, int DiagNum, double *Tau,
+                        const int QIndex, int Order, double *Tau,
                         double *Weight, double WeightFactor) {
   // cout << Order << ", " << DiagNum << endl;
   if (Order == 0) {
     Normalization += Weight[0] * WeightFactor;
     // Normalization += WeightFactor;
   } else {
-    double Factor = 1.0 / pow(39.4, Order);
+    double Factor = 1.0 / pow(2.0 * PI, 2 * Order);
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
-    for (int diag = 0; diag < DiagNum; ++diag) {
-      if (Tau[diag] < 0.0)
-        Tau[diag] += Para.Beta;
+    for (int tIndex = 0; tIndex < (Order + 1) * 2; ++tIndex) {
+      double dTau = Tau[tIndex] - Tau[0];
+      if (dTau < 0.0)
+        dTau += Para.Beta;
       // } else {
-      int tIndex = Tau2Index(Tau[diag]);
+      int tBin = Tau2Index(dTau);
       // cout << AngleIndex << endl;
       // cout << InL[0] << "," << InL[1] << endl;
       // cout << InR[0] << "," << InR[1] << endl;
       // cout << "angle: " << Angle2D(InL, InR) << endl;
-      DiffInter(Order, AngleIndex, QIndex, tIndex) +=
-          Weight[diag] * WeightFactor / Para.dAngleTable[AngleIndex] /
+      DiffInter(Order, AngleIndex, QIndex, tBin) +=
+          Weight[tIndex] * WeightFactor / Para.dAngleTable[AngleIndex] /
           (Para.Beta / TauBinSize) * Factor;
 
       // DiffInter(Order, AngleIndex, QIndex, tIndex) +=
       //     WeightFactor / Para.dAngleTable[AngleIndex] /
       //     (Para.Beta / TauBinSize) * Factor;
       // }
-      DiffInter(0, AngleIndex, QIndex, tIndex) +=
-          Weight[diag] * WeightFactor / Para.dAngleTable[AngleIndex] * Factor;
+      DiffInter(0, AngleIndex, QIndex, tBin) +=
+          Weight[tIndex] * WeightFactor / Para.dAngleTable[AngleIndex] * Factor;
     }
   }
   return;
@@ -189,8 +190,8 @@ void verQTheta::Update(double Ratio) {
       for (int tindex = 0; tindex < TauBinSize; ++tindex) {
         double OldValue = EffInter(angle, qindex, tindex);
         double NewValue = 0.0;
-        // for (int order = 1; order < MaxOrder; ++order) {
-        for (int order = 1; order < 2; ++order) {
+        for (int order = 1; order < MaxOrder; ++order) {
+          // for (int order = 1; order < 2; ++order) {
           NewValue += DiffInter(order, angle, qindex, tindex) / Normalization *
                       PhyWeight;
         }
@@ -360,6 +361,7 @@ double fermi::FockSigma(const momentum &Mom) {
 
 double fermi::PhyGreen(double Tau, const momentum &Mom, int GType,
                        double Scale) {
+  // return 1.0;
   // if tau is exactly zero, set tau=0^-
   double green, Ek, kk, k;
   if (Tau == 0.0) {

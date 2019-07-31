@@ -17,12 +17,12 @@ const bool DEBUGMODE = true;
 // D=2 or D=3
 const int D = 2;
 // number of q bins of the external momentum
-const int ExtMomBinSize = 32;
+const int ExtMomBinSize = 64;
 // number of bins for the angle between InL and InR legs
 const int AngBinSize = 16;
 // number of energy scales, only useful in RG approach
 const int ScaleBinSize = 64;
-const int TauBinSize = 128;
+const int TauBinSize = 256;
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
 enum type { RG, POLAR };
@@ -73,8 +73,9 @@ struct parameter {
 };
 
 //////////   Diagram  ////////////////////////////
-const int MaxOrder = 4;        // Max diagram order
-const int MaxGroupNum = 8;     // Max number of diagram groups
+const int MaxOrder = 4;            // Max diagram order
+const int MaxLevel = MaxOrder + 1; // Max diagram order
+const int MaxGroupNum = 8;         // Max number of diagram groups
 const int MaxDiagNum = 1024;   // Max number of Hugenholtz diagrams in one group
 const int MaxGPoolSize = 8192; // Max total indepdent G for all diagrams
 const int MaxVerPoolSize = 4096; // Max total indepdent vertex for all diagrams

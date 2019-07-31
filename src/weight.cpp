@@ -92,9 +92,17 @@ void weight::Initialization() {
   // Var.CurrScale = ScaleBinSize - 1;
   Var.CurrScale = Para.Kf;
 
-  Var.CurrDiagNum = 0;
-
   LOG_INFO("Calculating the weights of all objects...")
+
+  for (int i = 0; i < MaxOrder; i++) {
+    for (int j = 0; j < MaxLevel; j++) {
+      _DiagIndex[j] = 0;
+      for (int k = 0; k < MaxDiagNum; k++) {
+        for (int l = 0; l < 4; l++)
+          _ExtTau[i][j][k][l] = -1;
+      }
+    }
+  }
 
   // ChangeGroup(*Var.CurrGroup, true);
   GetNewWeight(*Var.CurrGroup);
@@ -112,12 +120,15 @@ void weight::AcceptChange(group &Group) {
   Var.CurrVersion++;
   Var.CurrGroup = &Group;
   Group.Weight = Group.NewWeight; // accept group  newweight
-  Var.CurrDiagNum = _DiagNum;
 
-  double inL = Var.Tau[0];
-  for (int i = 0; i < _DiagNum; ++i) {
-    Var.CurrWeight[i] = _Weight[0][i][0];
-    Var.CurrExtTau[i] = _ExtTau[0][i][INR] - inL;
+  if (Group.Order == 0) {
+    Var.CurrWeight[0] = Group.Weight;
+  } else {
+    for (int i = 0; i < Group.TauNum; ++i)
+      Var.CurrWeight[i] = 0.0;
+
+    for (int i = 0; i < _DiagIndex[0]; ++i)
+      Var.CurrWeight[_ExtTau[Group.Order][0][i][INR]] += _Weight[0][i][0];
   }
 }
 
@@ -127,8 +138,8 @@ void weight::Measure(double WeightFactor) {
   if (Para.Type == RG && Para.Vertex4Type == MOM_ANGLE) {
     // if (Var.CurrScale >= Para.ScaleTable[Var.CurrIRScaleBin])
     VerQTheta.Measure(Var.LoopMom[1], Var.LoopMom[2], Var.CurrExtMomBin,
-                      Var.CurrGroup->Order, Var.CurrDiagNum, Var.CurrExtTau,
-                      Var.CurrWeight, WeightFactor);
+                      Var.CurrGroup->Order, Var.Tau.data(), Var.CurrWeight,
+                      WeightFactor);
   }
 }
 
