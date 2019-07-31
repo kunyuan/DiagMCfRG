@@ -157,7 +157,7 @@ void verQTheta::Measure(const momentum &InL, const momentum &InR,
     Normalization += Weight[0] * WeightFactor;
     // Normalization += WeightFactor;
   } else {
-    double Factor = 1.0 / pow(39.4, Order);
+    double Factor = 1.0 / pow(2.0 * PI, 2 * Order);
     int AngleIndex = Angle2Index(Angle2D(InL, InR), AngBinSize);
     for (int tIndex = 0; tIndex < (Order + 1) * 2; ++tIndex) {
       double dTau = Tau[tIndex] - Tau[0];

@@ -11,7 +11,7 @@ mat.rcParams["font.family"] = "Times New Roman"
 size = 12
 
 rs = 1.0
-Lambda = 2
+Lambda = 4
 Beta = 20
 # XType = "Tau"
 XType = "Mom"
@@ -44,7 +44,7 @@ ExtMomBin = None
 AngleBin = None
 TauBin = None
 for f in files:
-    if re.match("vertex1"+"_pid[0-9]+.dat", f):
+    if re.match("vertex"+"_pid[0-9]+.dat", f):
         print f
         with open(folder+f, "r") as file:
             line1 = file.readline()

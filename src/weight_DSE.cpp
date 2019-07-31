@@ -94,7 +94,7 @@ double weight::fRG(int Order, int ID) {
     // if (LoopNum == 2)
     //   // cout << Weight << endl;
     // cout << count << endl;
-    return Weight / pow(39.4, Order);
+    return Weight / pow(2.0 * PI, 2 * Order);
     // return Weight;
   }
 }
