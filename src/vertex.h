@@ -57,6 +57,8 @@ public:
   // 1][AngBinSize][ExtMomBinSize]; double IntInteraction[MaxOrder][ScaleBinSize
   // + 1][AngBinSize][ExtMomBinSize];
 
+  // double TauBasis[TauBinSize][TauBasisNum];
+
   double Normalization;
   double PhyWeight;
 

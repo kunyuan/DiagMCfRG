@@ -52,8 +52,9 @@ void InitPara() {
   // Para.GroupName = {"0", "1", "2", "3"};
   // Para.GroupName = {"1", "2"};
   Para.GroupName = {
-      "0", "1",
-      // "2",
+      "0",
+      "1",
+      "2",
   };
   Para.ReWeight = {1, 5.0, 3.0, 1.0, 1.0};
   // Para.SelfEnergyType = FOCK;
@@ -157,7 +158,7 @@ void InitPara() {
                                    << "Fermi Energy: " << Para.Ef << "\n");
 
   Para.PrinterTimer = 5;
-  Para.SaveFileTimer = 30;
+  Para.SaveFileTimer = 60;
   Para.ReweightTimer = 30;
 }
 

@@ -116,7 +116,6 @@ double verQTheta::Interaction(const momentum &InL, const momentum &InR,
     //         0.5 / (1 + pow((Para.Beta - abs(Tau)) * 10.0, 2) * 10.0 / PI));
     // return 1.0 / Para.Beta;
   } else if (VerType == 1) {
-    return 0.0;
     if (k < Para.MaxExtMom) {
       if (Tau < 0.0)
         Tau += Para.Beta;
@@ -405,24 +404,10 @@ double fermi::PhyGreen(double Tau, const momentum &Mom, int GType,
 
   green *= s;
 
-  // if (Debug) { //   cout << "Tau=" << Tau << endl;
-  //   cout << "Counter" << Para.Counter << endl;
-  //   cout << "Tau=" << Tau << endl;
-  //   cout << "Mom=(" << Mom[0] << ", " << Mom[1] << ")" << endl;
-  //   cout << "Mom2=" << Mom[0] * Mom[0] + Mom[1] * Mom[1] << endl;
-  //   cout << "Ek=" << Ek << endl;
-  //   cout << "x=" << x << endl;
-  //   cout << "y=" << y << endl;
-  //   cout << "Green=" << green << endl << endl;
-  // }
-
-  // cout << "x: " << x << ", y: " << y << ", G: " << green << endl;
-  // cout << "G: " << green << endl;
-
-  if (std::isnan(green))
-    ABORT("Step:" << Para.Counter << ", Green is too large! Tau=" << Tau
-                  << ", Ek=" << Ek << ", Green=" << green << ", Mom"
-                  << ToString(Mom));
+  // if (std::isnan(green))
+  //   ABORT("Step:" << Para.Counter << ", Green is too large! Tau=" << Tau
+  //                 << ", Ek=" << Ek << ", Green=" << green << ", Mom"
+  //                 << ToString(Mom));
   return green;
 }
 

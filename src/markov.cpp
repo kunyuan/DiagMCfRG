@@ -116,6 +116,8 @@ void markov::Measure() {
 void markov::UpdateWeight(double Ratio) { Weight.Update(Ratio); }
 
 void markov::SaveToFile() {
+  // return;
+
   for (auto &group : Groups) {
     ofstream PolarFile;
     string FileName = fmt::format("group{0}_pid{1}.dat", group.Name, Para.PID);

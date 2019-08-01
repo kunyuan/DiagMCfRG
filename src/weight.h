@@ -127,7 +127,6 @@ private:
   int _GlobalOrder;
   double _GL2R[MaxTauNum][MaxTauNum];
   double _GR2L[MaxTauNum][MaxTauNum];
-  double _GL2RS[MaxTauNum][MaxTauNum];
   // double Ver4Loop2();
   // double Ver6Loop1();
   bool ALL[3] = {true, true, true};

@@ -13,8 +13,8 @@ size = 12
 rs = 1.0
 Lambda = 2
 Beta = 20
-XType = "Tau"
-# XType = "Mom"
+# XType = "Tau"
+XType = "Mom"
 # XType = "Angle"
 
 ##############   3D    ##################################
@@ -68,7 +68,7 @@ ExtMomBin /= kF
 
 Data = None
 for f in files:
-    if re.match("vertex1"+"_pid[0-9]+.dat", f):
+    if re.match("vertex2"+"_pid[0-9]+.dat", f):
         print f
         d = np.loadtxt(folder+f)
         if Data is None:

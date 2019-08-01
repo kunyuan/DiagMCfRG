@@ -363,18 +363,39 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     int RDiagIndex = _DiagIndex[nLevel];
 
     ////////////// construct  G table  /////////////////////////////////////
-    for (int tL = LTauIndex; tL < RTauIndex; tL++)
-      for (int tR = RTauIndex; tR < TauIndex + (Order + 1) * 2; tR++) {
-        _GL2R[tL][tR] = Fermi.Green(Var.Tau[tR] - Var.Tau[tL], Internal, UP, 0,
-                                    Var.CurrScale);
-        if (chan == 2)
-          _GR2L[tL][tR] = Fermi.Green(Var.Tau[tR] - Var.Tau[tL], Internal2, UP,
+    // for (int tL = LTauIndex; tL < RTauIndex; tL++)
+    //   for (int tR = RTauIndex; tR < TauIndex + (Order + 1) * 2; tR++) {
+    //     _GL2R[tL][tR] = Fermi.Green(Var.Tau[tR] - Var.Tau[tL], Internal, UP,
+    //     0,
+    //                                 Var.CurrScale);
+    //     if (chan == 2)
+    //       _GR2L[tL][tR] = Fermi.Green(Var.Tau[tR] - Var.Tau[tL], Internal2,
+    //       UP,
+    //                                   0, Var.CurrScale);
+    //     else
+    //       _GR2L[tR][tL] = Fermi.Green(Var.Tau[tL] - Var.Tau[tR], Internal2,
+    //       UP,
+    //                                   0, Var.CurrScale);
+    //     // cout << tR << "-" << tL << ", " << _GR2L[tR][tL] << endl;
+    //   }
+
+    if (chan == 2) {
+      for (int tL = LTauIndex; tL < RTauIndex; tL++) {
+        _GR2L[tL][RTauIndex] = Fermi.Green(Var.Tau[RTauIndex] - Var.Tau[tL],
+                                           Internal2, UP, 0, Var.CurrScale);
+        for (int tR = RTauIndex; tR < TauIndex + (Order + 1) * 2; tR++)
+          _GL2R[tL][tR] = Fermi.Green(Var.Tau[tR] - Var.Tau[tL], Internal, UP,
                                       0, Var.CurrScale);
-        else
+      }
+    } else {
+      for (int tL = LTauIndex; tL < RTauIndex; tL++) {
+        _GL2R[tL][RTauIndex] = Fermi.Green(Var.Tau[RTauIndex] - Var.Tau[tL],
+                                           Internal, UP, 0, Var.CurrScale);
+        for (int tR = RTauIndex; tR < TauIndex + (Order + 1) * 2; tR++)
           _GR2L[tR][tL] = Fermi.Green(Var.Tau[tL] - Var.Tau[tR], Internal2, UP,
                                       0, Var.CurrScale);
-        // cout << tR << "-" << tL << ", " << _GR2L[tR][tL] << endl;
       }
+    }
 
     int *_ExtTauC = _ExtTau[_GlobalOrder][Level][Index];
     for (int l = LIndex; l < LDiagIndex; l++) {
