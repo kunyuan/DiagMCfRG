@@ -50,8 +50,8 @@ double weight::fRG(int Order, int ID) {
       Vertex4(InL, InR, DirTran, Order, 0, 3, Level,
               T,  // t diagram only
               -1, // normal diagram
-              -1  // left vertex order
-      );
+              -1, // left vertex order
+              true);
       // if (ID == 0)
       //   return _Weight[0][0][0];
       // Weight = _Weight[Level][0];
@@ -60,16 +60,16 @@ double weight::fRG(int Order, int ID) {
               T,  // t diagram only
               -1, // normal diagram
                   // RIGHT, // normal diagram
-              -1  // left vertex order
+              -1, // left vertex order
                   // 1 // left vertex order
-      );
+              true);
     } else if (Order == 3) {
       Vertex4(InL, InR, DirTran, Order, 0, 3, Level,
               T,  // t diagram only
               -1, // normal diagram
               // 1, // diff diagram
-              -1 // left vertex order
-      );
+              -1, // left vertex order
+              true);
     }
     double Weight = 0.0;
     int count = 0;
@@ -104,8 +104,8 @@ int weight::Vertex4(
     int Order, int TauIndex, int LoopIndex, int Level,
     bool *Channel, // three flags, calculate t, u, s or not
     int VerType,   // -1: normal, 0: left(to project), 1: right(to diff)
-    int LVerOrder  // order of left vertex
-) {
+    int LVerOrder, // order of left vertex
+    bool IsDSE) {
   if (Order == 0) {
     return Ver4Loop0(InL, InR, DirTran, TauIndex, LoopIndex, Level);
   } else if (Order >= 1) {
@@ -117,21 +117,23 @@ int weight::Vertex4(
            VerType,   // VerType
            LVerOrder, // no projection
                       //  0,       // no projection
-           false      // not penguin diagram
+           false,     // not penguin diagram
+           IsDSE      // DSE
     );
 
-    // if (LoopNum == 2 && Level == 0)
-    //   cout << "2 order: " << LoopNum << "diag:" << DiagIndex << endl;
+    // if (Order == 2 && Level == 0)
+    //   cout << "2 order: " << Order << "diag:" << _DiagIndex[Level] << endl;
 
     if (Order >= 2) {
       Bubble(InL, InR, DirTran, Order, TauIndex, LoopIndex, Level, Channel,
              VerType,   // VerType
              LVerOrder, // no projection
-             true       // penguin diagram
+             true,      // penguin diagram
+             IsDSE      // DSE
       );
     }
-    // if (LoopNum == 2 && Level == 0)
-    //   cout << "2 order: " << LoopNum << "diag:" << DiagIndex << endl;
+    // if (Order == 2 && Level == 0)
+    // cout << "2 order: " << Order << "diag:" << _DiagIndex[Level] << endl;
     // for normal vertex or projected vertex, just return
     // penguin diagram
     return _DiagIndex[Level];
@@ -144,7 +146,7 @@ int weight::Bubble(
     bool *Channel, // three flags, calculate t, u, s or not
     int VerType,   // -1: normal, 0: left(to project), 1: right(to diff)
     int LVerOrder, // order of left vertex
-    bool IsPenguin) {
+    bool IsPenguin, bool IsDSE) {
 
   // calculate renormalized diagrams
   for (int OL = 0; OL < Order; OL++) {
@@ -157,7 +159,7 @@ int weight::Bubble(
       // for normal vertex or projected vertex, just return
       OneLoop(InL, InR, DirTran, Order, OL, TauIndex, LoopIndex, Level, Channel,
               false, // do not project
-              IsPenguin);
+              IsPenguin, IsDSE);
       // if (Order == 2 && Level == 0) {
       //   cout << VerType << ", index=" << _DiagIndex[Level]
       //        << ", level=" << Level << " OL:" << OL << endl;
@@ -169,7 +171,7 @@ int weight::Bubble(
       // do projection
       OneLoop(InL, InR, DirTran, Order, OL, TauIndex, LoopIndex, Level, Channel,
               true, // do projection
-              IsPenguin);
+              IsPenguin, IsDSE);
       // if (Order == 2 && Level == 0) {
       //   cout << VerType << ", index=" << _DiagIndex[Level]
       //        << ", level=" << Level << " OL:" << OL << endl;
@@ -217,7 +219,7 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
                     const momentum &DirTran, int Order, int LVerOrder,
                     int TauIndex, int LoopIndex, int Level,
                     bool *Channel, // three flags, calculate t, u, s or not
-                    bool IsProjected, bool IsPenguin) {
+                    bool IsProjected, bool IsPenguin, bool IsDSE) {
 
   double VerWeight;
   double GR2L, GL2R;
@@ -226,6 +228,9 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
   int &Index = _DiagIndex[Level];
 
   if (Order < 1)
+    return Index;
+
+  if (IsDSE && (LVerOrder > 0) && !IsPenguin)
     return Index;
 
   if (IsPenguin && (LVerOrder < 1 || Order < 2))
@@ -323,17 +328,20 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
              nLevel, nChannel,
              LVerType, // VerType
              -1,       // LVerOrder
-             false     // not penguin
-      );
+             false,    // not penguin
+             IsDSE);
     } else {
       // nChannel = T;
-      // if (Level == 0)
-      //   LVerType = -2;
-      Vertex4(VerLInL, VerLInR, VerLDiTran, LVerOrder, LTauIndex, LoopIndex,
-              nLevel, nChannel,
-              LVerType, // VerType
-              -1        // LVerOrder
-      );
+      if (IsDSE)
+        Ver4Loop0(VerLInL, VerLInR, VerLDiTran, LTauIndex, LoopIndex, nLevel,
+                  -2);
+
+      else
+        Vertex4(VerLInL, VerLInR, VerLDiTran, LVerOrder, LTauIndex, LoopIndex,
+                nLevel, nChannel,
+                LVerType, // VerType
+                -1        // LVerOrder
+        );
     }
     int LDiagIndex = _DiagIndex[nLevel];
 

@@ -97,10 +97,10 @@ private:
   int Vertex4(
       const momentum &InL, const momentum &InR, const momentum &DirTran,
       int LoopNum, int TauIndex, int LoopIndex, int Level,
-      bool *Channel,     // three flags, calculate t, u, s or not
-      int VerType = -1,  // -1: normal, 0: left(to project), 1: right(to diff)
-      int LVerOrder = -1 // order of left vertex
-  );
+      bool *Channel,      // three flags, calculate t, u, s or not
+      int VerType = -1,   // -1: normal, 0: left(to project), 1: right(to diff)
+      int LVerOrder = -1, // order of left vertex
+      bool IsDSE = false);
 
   int Bubble(
       const momentum &InL, const momentum &InR, const momentum &DirTran,
@@ -108,7 +108,7 @@ private:
       bool *Channel,      // three flags, calculate t, u, s or not
       int VerType = -1,   // -1: normal, 0: left(to project), 1: right(to diff)
       int LVerOrder = -1, // order of left vertex
-      bool IsPenguin = false);
+      bool IsPenguin = false, bool IsDSE = false);
 
   int Ver4Loop0(const momentum &InL, const momentum &InR,
                 const momentum &DirTran, int TauIndex, int LoopIndex, int Level,
@@ -119,7 +119,8 @@ private:
               int LoopNum, int LVerLoopNum, int TauIndex, int LoopIndex,
               int Level,
               bool *Channel, // three flags, calculate t, u, s or not
-              bool IsProjected = false, bool IsPenguin = false);
+              bool IsProjected = false, bool IsPenguin = false,
+              bool IsDSE = false);
 
   int _DiagIndex[MaxLevel];
   int _ExtTau[MaxOrder][MaxLevel][MaxDiagNum][4];
