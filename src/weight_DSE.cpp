@@ -61,7 +61,7 @@ double weight::fRG(int Order, int ID) {
               -1, // normal diagram
                   // RIGHT, // normal diagram
               -1  // left vertex order
-                  // 1   // left vertex order
+                  // 1 // left vertex order
       );
     } else if (Order == 3) {
       Vertex4(InL, InR, DirTran, Order, 0, 3, Level,
@@ -91,7 +91,7 @@ double weight::fRG(int Order, int ID) {
     // cout << _Weight[Level][0] << ": " << _Weight[Level][1] << ": "
     //      << _Weight[Level][2] << endl;
 
-    // if (LoopNum == 2)
+    // if (Order == 2)
     //   // cout << Weight << endl;
     // cout << count << endl;
     return Weight / pow(2.0 * PI, 2 * Order);
@@ -158,9 +158,9 @@ int weight::Bubble(
       OneLoop(InL, InR, DirTran, Order, OL, TauIndex, LoopIndex, Level, Channel,
               false, // do not project
               IsPenguin);
-      // if (LoopNum == 2 && Level == 0) {
-      //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
-      //        << " OL:" << OL << endl;
+      // if (Order == 2 && Level == 0) {
+      //   cout << VerType << ", index=" << _DiagIndex[Level]
+      //        << ", level=" << Level << " OL:" << OL << endl;
       // }
     }
 
@@ -170,9 +170,9 @@ int weight::Bubble(
       OneLoop(InL, InR, DirTran, Order, OL, TauIndex, LoopIndex, Level, Channel,
               true, // do projection
               IsPenguin);
-      // if (LoopNum == 2 && Level == 0) {
-      //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
-      //        << " OL:" << OL << endl;
+      // if (Order == 2 && Level == 0) {
+      //   cout << VerType << ", index=" << _DiagIndex[Level]
+      //        << ", level=" << Level << " OL:" << OL << endl;
       // }
     }
   }
@@ -325,7 +325,8 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
       );
     } else {
       // nChannel = T;
-      // LVerType = -1;
+      // if (Level == 0)
+      //   LVerType = -2;
       Vertex4(VerLInL, VerLInR, VerLDiTran, LVerOrder, LTauIndex, LoopIndex,
               nLevel, nChannel,
               LVerType, // VerType
@@ -337,9 +338,6 @@ int weight::OneLoop(const momentum &InL, const momentum &InR,
     // nChannel = T;
     // right vertex
     int RIndex = LDiagIndex;
-    // if (LoopNum == 2 && LVerLoopNum == 0) {
-    //   int a = 2;
-    // }
     Vertex4(VerRInL, VerRInR, VerRDiTran, Order - 1 - LVerOrder, RTauIndex,
             LoopIndex + 1 + LVerOrder, nLevel, ALL,
             // nChannel,

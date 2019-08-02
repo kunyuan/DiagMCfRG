@@ -17,12 +17,12 @@ const bool DEBUGMODE = true;
 // D=2 or D=3
 const int D = 2;
 // number of q bins of the external momentum
-const int ExtMomBinSize = 64;
+const int ExtMomBinSize = 32;
 // number of bins for the angle between InL and InR legs
-const int AngBinSize = 16;
+const int AngBinSize = 32;
 // number of energy scales, only useful in RG approach
 const int ScaleBinSize = 64;
-const int TauBinSize = 256;
+const int TauBinSize = 128;
 const int TauBasisNum = 32;
 
 enum selfenergy { BARE, FOCK, DRESSED }; // self energy type
