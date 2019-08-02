@@ -13,8 +13,8 @@ size = 12
 rs = 1.0
 Lambda = 2
 Beta = 20
-XType = "Tau"
-# XType = "Mom"
+# XType = "Tau"
+XType = "Mom"
 # XType = "Angle"
 
 ##############   3D    ##################################
@@ -44,7 +44,7 @@ ExtMomBin = None
 AngleBin = None
 TauBin = None
 for f in files:
-    if re.match("vertex1"+"_pid[0-9]+.dat", f):
+    if re.match("vertex"+"_pid[0-9]+.dat", f):
         print f
         with open(folder+f, "r") as file:
             line1 = file.readline()

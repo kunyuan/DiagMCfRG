@@ -165,17 +165,16 @@ int weight::Bubble(
     }
 
     /////// comment this block to calculate original diagrams  //////
-    // if (VerType == 0 || VerType == 1) {
-    //   // do projection
-    //   OneLoop(InL, InR, DirTran, Order, OL, TauIndex, LoopIndex, Level,
-    //   Channel,
-    //           true, // do projection
-    //           IsPenguin);
-    //   // if (LoopNum == 2 && Level == 0) {
-    //   //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
-    //   //        << " OL:" << OL << endl;
-    //   // }
-    // }
+    if (VerType == 0 || VerType == 1) {
+      // do projection
+      OneLoop(InL, InR, DirTran, Order, OL, TauIndex, LoopIndex, Level, Channel,
+              true, // do projection
+              IsPenguin);
+      // if (LoopNum == 2 && Level == 0) {
+      //   cout << VerType << ", index=" << DiagIndex << ", level=" << Level
+      //        << " OL:" << OL << endl;
+      // }
+    }
   }
   return _DiagIndex[Level];
 }
