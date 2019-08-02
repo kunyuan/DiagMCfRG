@@ -181,7 +181,7 @@ int weight::Bubble(
 
 int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
                       const momentum &DirTran, int TauIndex, int LoopIndex,
-                      int Level) {
+                      int Level, int Type) {
   //   return VerQTheta.Interaction(InL, InR, DirTran, 0, Var.CurrScale) -
   //   VerQTheta.Interaction(InL, InR, ExTran, 0, Var.CurrScale);
   double Tau = Var.Tau[TauIndex] - Var.Tau[TauIndex + 1];
@@ -195,18 +195,20 @@ int weight::Ver4Loop0(const momentum &InL, const momentum &InR,
   // _Weight[Level][DiagIndex][0] = DiWeight;
   Index += 1;
 
-  //////////// dressed interaction ///////////
-  DiWeight = VerQTheta.Interaction(InL, InR, DirTran, Tau, 1);
-  SETTAU(_GlobalOrder, Level, Index, TauIndex, TauIndex, TauIndex + 1,
-         TauIndex + 1);
-  _Weight[Level][Index][0] = DiWeight;
-  Index += 1;
+  if (Type != -2) {
+    //////////// dressed interaction ///////////
+    DiWeight = VerQTheta.Interaction(InL, InR, DirTran, Tau, 1);
+    SETTAU(_GlobalOrder, Level, Index, TauIndex, TauIndex, TauIndex + 1,
+           TauIndex + 1);
+    _Weight[Level][Index][0] = DiWeight;
+    Index += 1;
 
-  ExWeight = VerQTheta.Interaction(InL, InR, InR + DirTran - InL, Tau, 1);
-  SETTAU(_GlobalOrder, Level, Index, TauIndex, TauIndex + 1, TauIndex + 1,
-         TauIndex);
-  _Weight[Level][Index][0] = -ExWeight;
-  Index += 1;
+    ExWeight = VerQTheta.Interaction(InL, InR, InR + DirTran - InL, Tau, 1);
+    SETTAU(_GlobalOrder, Level, Index, TauIndex, TauIndex + 1, TauIndex + 1,
+           TauIndex);
+    _Weight[Level][Index][0] = -ExWeight;
+    Index += 1;
+  }
 
   return Index;
 }

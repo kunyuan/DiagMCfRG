@@ -111,8 +111,9 @@ private:
       bool IsPenguin = false);
 
   int Ver4Loop0(const momentum &InL, const momentum &InR,
-                const momentum &DirTran, int TauIndex, int LoopIndex,
-                int Level);
+                const momentum &DirTran, int TauIndex, int LoopIndex, int Level,
+                int Type = 0 // 0: renormalized interaction, -2: bare coupling
+  );
 
   int OneLoop(const momentum &InL, const momentum &InR, const momentum &DirTran,
               int LoopNum, int LVerLoopNum, int TauIndex, int LoopIndex,
